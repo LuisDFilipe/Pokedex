@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "required": ["pokedex"],
+  "additionalProperties": true,
+  "properties": {
+    "pokedex": {
+      "type": "object",
+      "required": ["pokemon"],
+      "additionalProperties": true,
+      "properties": {
+        "pokemon": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

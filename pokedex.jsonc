@@ -1,0 +1,187 @@
+{
+  "pokedex": {
+    "pokemon": [
+      {
+        "id": "0001",
+        "name": "Bulbasaur",
+        "forms": [
+          {
+            "id": "0001",
+            "name": "Bulbasaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1
+          }
+        ]
+      },
+      {
+        "id": "0003",
+        "name": "Venusaur",
+        "forms": [
+          {
+            "id": "0003-m",
+            "name": "Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "gender": "male"
+          },
+          {
+            "id": "0003-f",
+            "name": "Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "gender": "female"
+          },
+          {
+            "id": "0003-m-mega",
+            "name": "Mega Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 6,
+            "gender": "male"
+          },
+          {
+            "id": "0003-f-mega",
+            "name": "Mega Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 6,
+            "gender": "female",
+            "has_gender_diference": false
+          },
+          {
+            "id": "0003-m-gmax",
+            "name": "Gigantamax Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 8,
+            "gender": "male"
+          },
+          {
+            "id": "0003-f-gmax",
+            "name": "Gigantamax Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 8,
+            "gender": "female",
+            "has_gender_diference": false
+          }
+        ]
+      },
+      {
+        "id": "0006",
+        "name": "Charizard",
+        "forms": [
+          {
+            "id": "0006",
+            "name": "Charizard",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 1
+          },
+          {
+            "id": "0006-mega-x",
+            "name": "Mega Charizard X",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 6
+          },
+          {
+            "id": "0006-mega-y",
+            "name": "Mega Charizard Y",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 6
+          },
+          {
+            "id": "0006-gmax",
+            "name": "Gigantamax Charizard",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 8
+          }
+        ]
+      },
+      {
+        "id": "0019",
+        "name": "Rattata",
+        "forms": [
+          {
+            "id": "0019-m",
+            "name": "Rattata",
+            "type1": "Normal",
+            "gen": 1,
+            "gender": "male"
+          },
+          {
+            "id": "0019-f",
+            "name": "Rattata",
+            "type1": "Normal",
+            "gen": 1,
+            "gender": "female"
+          },
+          {
+            "id": "0019-alola",
+            "name": "Rattata",
+            "type1": "Dark",
+            "type2": "Normal",
+            "gen": 7
+          }
+        ]
+      },
+      {
+        "id": "0025",
+        "name": "Pikachu",
+        "forms": [
+          {
+            "id": "0025-m",
+            "name": "Pikachu",
+            "type1": "Electric",
+            "gen": 1,
+            "gender": "male"
+          },
+          {
+            "id": "0025-f",
+            "name": "Pikachu",
+            "type1": "Electric",
+            "gen": 1,
+            "gender": "female"
+          },
+          {
+            "id": "0025-m-gmax",
+            "name": "Gigantamax Pikachu",
+            "type1": "Electric",
+            "gen": 8,
+            "gender": "male",
+            "has_gender_diference": false
+          },
+          {
+            "id": "0025-f-gmax",
+            "name": "Pikachu",
+            "type1": "Electric",
+            "gen": 8,
+            "gender": "female",
+            "has_gender_diference": false
+          }
+        ]
+      },
+      {
+        "id": "0071",
+        "name": "Victreebel",
+        "forms": [
+          {
+            "id": "0071-mega",
+            "name": "Mega Victreebel",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "sprites/pokemon/victreebel-mega.png",
+            "shiny_sprite": "sprites/pokemon/locked.png"
+          }
+        ]
+      }
+    ]
+  }
+}
