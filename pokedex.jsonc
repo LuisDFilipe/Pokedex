@@ -154,8 +154,7 @@
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
             "gen": 8,
-            "gender": "male",
-            "has_gender_diference": false
+            "gender": "male"
           },
           {
             "id": "0025-f-gmax",
