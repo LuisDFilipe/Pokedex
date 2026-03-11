@@ -32,7 +32,7 @@
       .then(data => {
         const listContainer = document.getElementById('pokemon-list');
 
-        data.forEach(pokemon => {
+        data.pokedex.pokemon.forEach(pokemon => {
           const row = document.createElement('div');
           row.className = 'pokemon-row';
 
@@ -53,3 +53,4 @@
   </script>
 </body>
 </html>
+
