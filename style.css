@@ -1,0 +1,101 @@
+/* Base styles */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #ff1c1c; /* Pokémon red */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+/* Container for the Pokémon cards */
+#pokemon-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Individual Pokémon card */
+.pokemon-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 10px 15px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.pokemon-row:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.pokemon-row img {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 0px;
+}
+
+.pokemon-row span {
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: center;
+  color: #444;
+  height: 42px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+/* Button style */
+#switch-btn {
+  background: linear-gradient(135deg, #ff3b3b, #ff1c1c);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+#switch-btn:hover {
+  background: linear-gradient(135deg, #ff5a5a, #ff2d2d);
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Click effect */
+#switch-btn:active {
+  transform: scale(0.97);
+}
+
+/* Responsive tweaks */
+@media (max-width: 500px) {
+  .pokemon-row img {
+    width: 60px;
+    height: 60px;
+  }
+  .pokemon-row span {
+    font-size: 0.9rem;
+  }
+}

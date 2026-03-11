@@ -1,0 +1,251 @@
+{
+  "pokedex": {
+    "pokemon": [
+      {
+        "id": "0001",
+        "name": "Bulbasaur",
+        "forms": [
+          {
+            "id": "0001",
+            "name": "Bulbasaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0001"
+          }
+        ]
+      },
+      {
+        "id": "0002",
+        "name": "Ivysaur",
+        "forms": [
+          {
+            "id": "0002",
+            "name": "Ivysaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0002"
+          }
+        ]
+      },
+      {
+        "id": "0003",
+        "name": "Venusaur",
+        "forms": [
+          {
+            "id": "0003-m",
+            "name": "Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "gender": "male",
+            "sprite": "0003"
+          },
+          {
+            "id": "0003-f",
+            "name": "Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "gender": "female",
+            "sprite": "0003-f"
+          },
+          {
+            "id": "0003-m-mega",
+            "name": "Mega Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 6,
+            "gender": "male",
+            "sprite": "0003-mega"
+          },
+          {
+            "id": "0003-f-mega",
+            "name": "Mega Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 6,
+            "gender": "female",
+            "sprite": "0003-mega",
+            "has_gender_diference": false
+          },
+          {
+            "id": "0003-m-gmax",
+            "name": "Gigantamax Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 8,
+            "gender": "male",
+            "sprite": "0003-gigantamax"
+          },
+          {
+            "id": "0003-f-gmax",
+            "name": "Gigantamax Venusaur",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 8,
+            "gender": "female",
+            "sprite": "0003-gigantamax",
+            "has_gender_diference": false
+          }
+        ]
+      },
+      {
+        "id": "0004",
+        "name": "Charmander",
+        "forms": [
+          {
+            "id": "0004",
+            "name": "Charmander",
+            "type1": "Fire",
+            "gen": 1,
+            "sprite": "0004"
+          }
+        ]
+      },
+      {
+        "id": "0005",
+        "name": "Charmeleon",
+        "forms": [
+          {
+            "id": "0005",
+            "name": "Charmeleon",
+            "type1": "Fire",
+            "gen": 1,
+            "sprite": "0005"
+          }
+        ]
+      },
+      {
+        "id": "0006",
+        "name": "Charizard",
+        "forms": [
+          {
+            "id": "0006",
+            "name": "Charizard",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0006"
+          },
+          {
+            "id": "0006-mega-x",
+            "name": "Mega Charizard X",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 6,
+            "sprite": "0006-mega-x"
+          },
+          {
+            "id": "0006-mega-y",
+            "name": "Mega Charizard Y",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 6,
+            "sprite": "0006-mega-y"
+          },
+          {
+            "id": "0006-gmax",
+            "name": "Gigantamax Charizard",
+            "type1": "Fire",
+            "type2": "Flying",
+            "gen": 8,
+            "sprite": "0006-gigantamax"
+          }
+        ]
+      },
+      {
+        "id": "0019",
+        "name": "Rattata",
+        "forms": [
+          {
+            "id": "0019-m",
+            "name": "Rattata",
+            "type1": "Normal",
+            "gen": 1,
+            "gender": "male",
+            "sprite": "0019"
+          },
+          {
+            "id": "0019-f",
+            "name": "Rattata",
+            "type1": "Normal",
+            "gen": 1,
+            "gender": "female",
+            "sprite": "0019-f"
+          },
+          {
+            "id": "0019-alola",
+            "name": "Rattata",
+            "type1": "Dark",
+            "type2": "Normal",
+            "gen": 7,
+            "sprite": "0019-alolan"
+          }
+        ]
+      },
+      {
+        "id": "0025",
+        "name": "Pikachu",
+        "forms": [
+          {
+            "id": "0025-m",
+            "name": "Pikachu",
+            "type1": "Electric",
+            "gen": 1,
+            "gender": "male",
+            "sprite": "0025"
+          },
+          {
+            "id": "0025-f",
+            "name": "Pikachu",
+            "type1": "Electric",
+            "gen": 1,
+            "gender": "female",
+            "sprite": "0025-f"
+          },
+          {
+            "id": "0025-m-gmax",
+            "name": "Gigantamax Pikachu",
+            "type1": "Electric",
+            "gen": 8,
+            "gender": "male",
+            "sprite": "0025-gigantamax"
+          },
+          {
+            "id": "0025-f-gmax",
+            "name": "Gigantamax Pikachu",
+            "type1": "Electric",
+            "gen": 8,
+            "gender": "female",
+            "sprite": "0025-gigantamax",
+            "has_gender_diference": false
+          }
+        ]
+      },
+      {
+        "id": "0071",
+        "name": "Victreebel",
+        "forms": [
+          {
+            "id": "0071",
+            "name": "Victreebel",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0071"
+          },
+          {
+            "id": "0071-mega",
+            "name": "Mega Victreebel",
+            "type1": "Grass",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0071-mega"
+          }
+        ]
+      }
+    ]
+  }
+}
