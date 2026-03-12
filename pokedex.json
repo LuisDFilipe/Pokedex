@@ -119,6 +119,7 @@
             "id": "0004",
             "name": "Charmander",
             "type1": "Fire",
+            "type2": null,
             "gen": 1,
             "sprite": "0004",
             "gender": null,
@@ -135,6 +136,7 @@
             "id": "0005",
             "name": "Charmeleon",
             "type1": "Fire",
+            "type2": null,
             "gen": 1,
             "sprite": "0005",
             "gender": null,
@@ -194,6 +196,232 @@
         ]
       },
       {
+        "id": "0007",
+        "name": "Squirtle",
+        "forms": [
+          {
+            "id": "0007",
+            "name": "Squirtle",
+            "type1": "Water",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0007",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0008",
+        "name": "Wartortle",
+        "forms": [
+          {
+            "id": "0008",
+            "name": "Wartortle",
+            "type1": "Water",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0008",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0009",
+        "name": "Blastoise",
+        "forms": [
+          {
+            "id": "0009",
+            "name": "Blastoise",
+            "type1": "Water",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0009",
+            "gender": null,
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0009-mega",
+            "name": "Mega Blastoise",
+            "type1": "Water",
+            "type2": null,
+            "gen": 6,
+            "sprite": "0009-mega",
+            "gender": null,
+            "region": null,
+            "form": "gigantamax"
+          },
+          {
+            "id": "0009-gmax",
+            "name": "Gigantamax Blastoise",
+            "type1": "Water",
+            "type2": null,
+            "gen": 8,
+            "sprite": "0009-gigantamax",
+            "gender": null,
+            "region": null,
+            "form": "gigantamax"
+          }
+        ]
+      },
+      {
+        "id": "0010",
+        "name": "Caterpie",
+        "forms": [
+          {
+            "id": "0010",
+            "name": "Caterpie",
+            "type1": "Bug",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0010",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0011",
+        "name": "Metapod",
+        "forms": [
+          {
+            "id": "0011",
+            "name": "Metapod",
+            "type1": "Bug",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0011",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0012",
+        "name": "Butterfree",
+        "forms": [
+          {
+            "id": "0012",
+            "name": "Butterfree",
+            "type1": "Bug",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0012",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0013",
+        "name": "Weedle",
+        "forms": [
+          {
+            "id": "0013",
+            "name": "Weedle",
+            "type1": "Bug",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0013",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0014",
+        "name": "Kakuna",
+        "forms": [
+          {
+            "id": "0014",
+            "name": "Kakuna",
+            "type1": "Bug",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0014",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0015",
+        "name": "Beedrill",
+        "forms": [
+          {
+            "id": "0015",
+            "name": "Beedrill",
+            "type1": "Bug",
+            "type2": "Poison",
+            "gen": 1,
+            "sprite": "0015",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0016",
+        "name": "Pidgey",
+        "forms": [
+          {
+            "id": "0016",
+            "name": "Pidgey",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0016",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0017",
+        "name": "Pidgeotto",
+        "forms": [
+          {
+            "id": "0017",
+            "name": "Pidgeotto",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0017",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0018",
+        "name": "Pidgeot",
+        "forms": [
+          {
+            "id": "0018",
+            "name": "Pidgeot",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0018",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
         "id": "0019",
         "name": "Rattata",
         "forms": [
@@ -201,6 +429,7 @@
             "id": "0019-m",
             "name": "Rattata",
             "type1": "Normal",
+            "type2": null,
             "gen": 1,
             "sprite": "0019",
             "gender": "male",
@@ -211,6 +440,7 @@
             "id": "0019-f",
             "name": "Rattata",
             "type1": "Normal",
+            "type2": null,
             "gen": 1,
             "sprite": "0019-f",
             "gender": "female",
@@ -231,6 +461,91 @@
         ]
       },
       {
+        "id": "0020",
+        "name": "Raticate",
+        "forms": [
+          {
+            "id": "0020",
+            "name": "Raticate",
+            "type1": "Normal",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0020",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0021",
+        "name": "Spearow",
+        "forms": [
+          {
+            "id": "0021",
+            "name": "Spearow",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0021",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0022",
+        "name": "Fearow",
+        "forms": [
+          {
+            "id": "0022",
+            "name": "Fearow",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0022",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0023",
+        "name": "Ekans",
+        "forms": [
+          {
+            "id": "0023",
+            "name": "Ekans",
+            "type1": "Poison",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0023",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
+        "id": "0024",
+        "name": "Arbok",
+        "forms": [
+          {
+            "id": "0024",
+            "name": "Arbok",
+            "type1": "Poison",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0024",
+            "gender": null,
+            "region": null,
+            "form": null
+          }
+        ]
+      },
+      {
         "id": "0025",
         "name": "Pikachu",
         "forms": [
@@ -238,6 +553,7 @@
             "id": "0025-m",
             "name": "Pikachu",
             "type1": "Electric",
+            "type2": null,
             "gen": 1,
             "sprite": "0025",
             "gender": "male",
@@ -248,6 +564,7 @@
             "id": "0025-f",
             "name": "Pikachu",
             "type1": "Electric",
+            "type2": null,
             "gen": 1,
             "sprite": "0025-f",
             "gender": "female",
@@ -258,6 +575,7 @@
             "id": "0025-m-gmax",
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
+            "type2": null,
             "gen": 8,
             "sprite": "0025-gigantamax",
             "gender": "male",
@@ -269,6 +587,7 @@
             "id": "0025-f-gmax",
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
+            "type2": null,
             "gen": 8,
             "sprite": "0025-gigantamax",
             "gender": "female",

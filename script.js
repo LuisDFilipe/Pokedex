@@ -41,7 +41,7 @@ function init() {
   document.getElementById("filter-btn").addEventListener("click", () => {
     modal.style.display = "flex";
   });
-  document.getElementById("close-filters-btn").addEventListener("click", () => {
+  document.getElementById("filter-modal-close-btn").addEventListener("click", () => {
     modal.style.display = "none";
   });
 
@@ -50,10 +50,10 @@ function init() {
   });
 
   // Apply filters
-  document.querySelectorAll(".filter-option").forEach((element) => {
+  document.querySelectorAll(".filter-modal-option").forEach((element) => {
     element.addEventListener("click", () => {
       select_filters = Array.from(
-        document.querySelectorAll("#filter-options input:checked")
+        document.querySelectorAll("#filter-modal-options input:checked")
       ).map((c) => c.value);
 
       let hide_all_forms = select_filters.includes("hide_all_forms");
@@ -96,6 +96,7 @@ function fetch_pokemon() {
       div.style = `background: linear-gradient(to right, ${type_colors[pokemon.type1]} 50%, ${type_colors[pokemon.type2 ?? pokemon.type1]} 50%);`
 
       const img = document.createElement("img");
+      img.className = "pokemon-img";
 
       let sprite = `sprites/pokemon/${show_shiny_sprites ? "shiny" : "normal"}/${pokemon.sprite}.png`;
 
@@ -111,10 +112,16 @@ function fetch_pokemon() {
         corner_img.src = "assets/male.png";
       else if(pokemon.gender == "female")
         corner_img.src = "assets/female.png";
+
+      const corner_text = document.createElement("span");
+      corner_text.className = "corner-text";
+      corner_text.textContent = "#" + pokemon.id.substring(0, 4);
       
       const name = document.createElement("span");
+      name.className = "pokemon-text";
       name.textContent = pokemon.name;
 
+      div.appendChild(corner_text);
       div.appendChild(img);
       if (pokemon.gender && !hide_genders && (!hide_forms_without_gender_differences || (hide_forms_without_gender_differences && pokemon.show_gender != false))) {
         div.appendChild(corner_img);
