@@ -11,7 +11,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
-            "sprite": "0001"
+            "sprite": "0001",
+            "gender": null,
+            "region": null,
+            "form": null
           }
         ]
       },
@@ -25,7 +28,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
-            "sprite": "0002"
+            "sprite": "0002",
+            "gender": null,
+            "region": null,
+            "form": null
           }
         ]
       },
@@ -39,8 +45,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
+            "sprite": "0003",
             "gender": "male",
-            "sprite": "0003"
+            "region": null,
+            "form": null
           },
           {
             "id": "0003-f",
@@ -48,8 +56,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
+            "sprite": "0003-f",
             "gender": "female",
-            "sprite": "0003-f"
+            "region": null,
+            "form": null
           },
           {
             "id": "0003-m-mega",
@@ -57,8 +67,11 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 6,
+            "sprite": "0003-mega",
             "gender": "male",
-            "sprite": "0003-mega"
+            "region": null,
+            "form": "mega",
+            "show_gender": false
           },
           {
             "id": "0003-f-mega",
@@ -66,9 +79,11 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 6,
-            "gender": "female",
             "sprite": "0003-mega",
-            "has_gender_diference": false
+            "gender": "female",
+            "region": null,
+            "form": "mega",
+            "has_gender_difference": false
           },
           {
             "id": "0003-m-gmax",
@@ -76,8 +91,11 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 8,
+            "sprite": "0003-gigantamax",
             "gender": "male",
-            "sprite": "0003-gigantamax"
+            "region": null,
+            "form": "gigantamax",
+            "show_gender": false
           },
           {
             "id": "0003-f-gmax",
@@ -85,9 +103,11 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 8,
-            "gender": "female",
             "sprite": "0003-gigantamax",
-            "has_gender_diference": false
+            "gender": "female",
+            "region": null,
+            "form": "gigantamax",
+            "has_gender_difference": false
           }
         ]
       },
@@ -100,7 +120,10 @@
             "name": "Charmander",
             "type1": "Fire",
             "gen": 1,
-            "sprite": "0004"
+            "sprite": "0004",
+            "gender": null,
+            "region": null,
+            "form": null
           }
         ]
       },
@@ -113,7 +136,10 @@
             "name": "Charmeleon",
             "type1": "Fire",
             "gen": 1,
-            "sprite": "0005"
+            "sprite": "0005",
+            "gender": null,
+            "region": null,
+            "form": null
           }
         ]
       },
@@ -127,7 +153,10 @@
             "type1": "Fire",
             "type2": "Flying",
             "gen": 1,
-            "sprite": "0006"
+            "sprite": "0006",
+            "gender": null,
+            "region": null,
+            "form": null
           },
           {
             "id": "0006-mega-x",
@@ -135,7 +164,10 @@
             "type1": "Fire",
             "type2": "Flying",
             "gen": 6,
-            "sprite": "0006-mega-x"
+            "sprite": "0006-mega-x",
+            "gender": null,
+            "region": null,
+            "form": "mega"
           },
           {
             "id": "0006-mega-y",
@@ -143,7 +175,10 @@
             "type1": "Fire",
             "type2": "Flying",
             "gen": 6,
-            "sprite": "0006-mega-y"
+            "sprite": "0006-mega-y",
+            "gender": null,
+            "region": null,
+            "form": "gigantamax"
           },
           {
             "id": "0006-gmax",
@@ -151,7 +186,10 @@
             "type1": "Fire",
             "type2": "Flying",
             "gen": 8,
-            "sprite": "0006-gigantamax"
+            "sprite": "0006-gigantamax",
+            "gender": null,
+            "region": null,
+            "form": "gigantamax"
           }
         ]
       },
@@ -164,16 +202,20 @@
             "name": "Rattata",
             "type1": "Normal",
             "gen": 1,
+            "sprite": "0019",
             "gender": "male",
-            "sprite": "0019"
+            "region": null,
+            "form": null
           },
           {
             "id": "0019-f",
             "name": "Rattata",
             "type1": "Normal",
             "gen": 1,
+            "sprite": "0019-f",
             "gender": "female",
-            "sprite": "0019-f"
+            "region": null,
+            "form": null
           },
           {
             "id": "0019-alola",
@@ -181,7 +223,10 @@
             "type1": "Dark",
             "type2": "Normal",
             "gen": 7,
-            "sprite": "0019-alolan"
+            "sprite": "0019-alolan",
+            "gender": null,
+            "region": "alola",
+            "form": "alola"
           }
         ]
       },
@@ -194,33 +239,42 @@
             "name": "Pikachu",
             "type1": "Electric",
             "gen": 1,
+            "sprite": "0025",
             "gender": "male",
-            "sprite": "0025"
+            "region": null,
+            "form": null
           },
           {
             "id": "0025-f",
             "name": "Pikachu",
             "type1": "Electric",
             "gen": 1,
+            "sprite": "0025-f",
             "gender": "female",
-            "sprite": "0025-f"
+            "region": null,
+            "form": null
           },
           {
             "id": "0025-m-gmax",
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
             "gen": 8,
+            "sprite": "0025-gigantamax",
             "gender": "male",
-            "sprite": "0025-gigantamax"
+            "region": null,
+            "form": "gigantamax",
+            "show_gender": false
           },
           {
             "id": "0025-f-gmax",
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
             "gen": 8,
-            "gender": "female",
             "sprite": "0025-gigantamax",
-            "has_gender_diference": false
+            "gender": "female",
+            "region": null,
+            "form": "gigantamax",
+            "has_gender_difference": false
           }
         ]
       },
@@ -234,7 +288,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
-            "sprite": "0071"
+            "sprite": "0071",
+            "gender": null,
+            "region": null,
+            "form": null
           },
           {
             "id": "0071-mega",
@@ -242,7 +299,10 @@
             "type1": "Grass",
             "type2": "Poison",
             "gen": 1,
-            "sprite": "0071-mega"
+            "sprite": "0071-mega",
+            "gender": null,
+            "region": null,
+            "form": "mega"
           }
         ]
       }
