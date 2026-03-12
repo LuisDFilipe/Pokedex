@@ -307,15 +307,50 @@
         "name": "Butterfree",
         "forms": [
           {
-            "id": "0012",
+            "id": "0012-m",
             "name": "Butterfree",
             "type1": "Bug",
             "type2": "Flying",
             "gen": 1,
             "sprite": "0012",
-            "gender": null,
+            "gender": "male",
             "region": null,
             "form": null
+          },
+          {
+            "id": "0012-f",
+            "name": "Butterfree",
+            "type1": "Bug",
+            "type2": "Flying",
+            "gen": 1,
+            "sprite": "0012-f",
+            "gender": "female",
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0012-m-gmax",
+            "name": "Gigantamax Butterfree",
+            "type1": "Bug",
+            "type2": "Flying",
+            "gen": 8,
+            "sprite": "0012-gigantamax",
+            "gender": "male",
+            "region": null,
+            "form": "gigantamax",
+            "show_gender": false
+          },
+          {
+            "id": "0012-f-gmax",
+            "name": "Gigantamax Butterfree",
+            "type1": "Bug",
+            "type2": "Flying",
+            "gen": 8,
+            "sprite": "0012-gigantamax",
+            "gender": "female",
+            "region": null,
+            "form": "gigantamax",
+            "has_gender_difference": false
           }
         ]
       },
@@ -364,6 +399,17 @@
             "type2": "Poison",
             "gen": 1,
             "sprite": "0015",
+            "gender": null,
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0015-mega",
+            "name": "Mega Beedrill",
+            "type1": "Bug",
+            "type2": "Poison",
+            "gen": 6,
+            "sprite": "0015-mega",
             "gender": null,
             "region": null,
             "form": null
@@ -418,6 +464,17 @@
             "gender": null,
             "region": null,
             "form": null
+          },
+          {
+            "id": "0018-mega",
+            "name": "Mega Pidgeot",
+            "type1": "Normal",
+            "type2": "Flying",
+            "gen": 6,
+            "sprite": "0018-mega",
+            "gender": null,
+            "region": null,
+            "form": null
           }
         ]
       },
@@ -449,14 +506,14 @@
           },
           {
             "id": "0019-alola",
-            "name": "Rattata",
+            "name": "Alolan Rattata",
             "type1": "Dark",
             "type2": "Normal",
             "gen": 7,
             "sprite": "0019-alolan",
             "gender": null,
             "region": "alola",
-            "form": "alola"
+            "form": "alolan"
           }
         ]
       },
@@ -474,6 +531,17 @@
             "gender": null,
             "region": null,
             "form": null
+          },
+          {
+            "id": "0020-alola",
+            "name": "Alolan Raticate",
+            "type1": "Dark",
+            "type2": "Normal",
+            "gen": 7,
+            "sprite": "0020-alolan",
+            "gender": null,
+            "region": "alola",
+            "form": "alolan"
           }
         ]
       },
@@ -572,6 +640,94 @@
             "form": null
           },
           {
+            "id": "0025-original-cap",
+            "name": "Original Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-original-cap",
+            "gender": null,
+            "region": null,
+            "form": "original-cap"
+          },
+          {
+            "id": "0025-hoenn-cap",
+            "name": "Hoenn Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-hoenn-cap",
+            "gender": null,
+            "region": null,
+            "form": "hoenn-cap"
+          },
+          {
+            "id": "0025-sinnoh-cap",
+            "name": "Sinnoh Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-sinnoh-cap",
+            "gender": null,
+            "region": null,
+            "form": "sinnoh-cap"
+          },
+          {
+            "id": "0025-unova-cap",
+            "name": "Unova Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-unova-cap",
+            "gender": null,
+            "region": null,
+            "form": "unova-cap"
+          },
+          {
+            "id": "0025-kalos-cap",
+            "name": "Kalos Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-kalos-cap",
+            "gender": null,
+            "region": null,
+            "form": "kalos-cap"
+          },
+          {
+            "id": "0025-alola-cap",
+            "name": "Alola Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-alola-cap",
+            "gender": null,
+            "region": null,
+            "form": "alola-cap"
+          },
+          {
+            "id": "0025-partner-cap",
+            "name": "Partner Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-partner-cap",
+            "gender": null,
+            "region": null,
+            "form": "partner-cap"
+          },
+          {
+            "id": "0025-world-cap",
+            "name": "World Cap Pikachu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 7,
+            "sprite": "0025-world-cap",
+            "gender": null,
+            "region": null,
+            "form": "world-cap"
+          },
+          {
             "id": "0025-m-gmax",
             "name": "Gigantamax Pikachu",
             "type1": "Electric",
@@ -594,6 +750,73 @@
             "region": null,
             "form": "gigantamax",
             "has_gender_difference": false
+          }
+        ]
+      },
+      {
+        "id": "0026",
+        "name": "Raichu",
+        "forms": [
+          {
+            "id": "0026-m",
+            "name": "Raichu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0026",
+            "gender": "male",
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0026-f",
+            "name": "Raichu",
+            "type1": "Electric",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0026-f",
+            "gender": "female",
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0026-alola",
+            "name": "Alolan Raichu",
+            "type1": "Electric",
+            "type2": "Psychic",
+            "gen": 7,
+            "sprite": "0026-alolan",
+            "gender": null,
+            "region": "alola",
+            "form": "alolan"
+          }
+        ]
+      },
+      {
+        "id": "0027",
+        "name": "Sandshrew",
+        "forms": [
+          {
+            "id": "0027",
+            "name": "Sandshrew",
+            "type1": "Ground",
+            "type2": null,
+            "gen": 1,
+            "sprite": "0027",
+            "gender": null,
+            "region": null,
+            "form": null
+          },
+          {
+            "id": "0027-alola",
+            "name": "Alolan Sandshrew",
+            "type1": "Ice",
+            "type2": "Steel",
+            "gen": 7,
+            "sprite": "0027-alolan",
+            "gender": null,
+            "region": "alola",
+            "form": "alolan"
           }
         ]
       },
