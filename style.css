@@ -15,6 +15,59 @@ h1 {
   margin-bottom: 30px;
 }
 
+/* Sign In Button */
+#signin-button {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+#signin-button button {
+  background: linear-gradient(135deg, rgb(66, 133, 244), rgb(52, 168, 83));
+  color: rgb(255, 255, 255);
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+#signin-button button:hover {
+  background: linear-gradient(135deg, rgb(80, 150, 244), rgb(70, 180, 100));
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+#signin-button button:active {
+  transform: scale(0.97);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  #signin-button {
+    position: static;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  #signin-button button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Loading */
+#loading-pokedex-list {
+  text-align: center;
+  font-size: 18px;
+  color: rgb(51, 51, 51);
+  margin: 20px 0;
+}
+
 /* Container for the Pokémon */
 #pokedex-list {
   display: grid;
@@ -122,6 +175,45 @@ h1 {
 
 .controls #filter-btn:active {
   transform: scale(0.97);
+}
+
+/* Drive Controls */
+.drive-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.drive-controls button {
+  background: linear-gradient(135deg, rgb(59, 130, 246), rgb(28, 100, 200));
+  color: rgb(255, 255, 255);
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.drive-controls button:hover {
+  background: linear-gradient(135deg, rgb(90, 150, 246), rgb(45, 120, 220));
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.drive-controls button:active {
+  transform: scale(0.97);
+}
+
+.drive-controls input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
 }
 
 /* Filter Modal */

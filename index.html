@@ -6,12 +6,22 @@
         <title>The Pokedex</title>
         <link rel="icon" href="assets/icon_192.png" type="image/png" />
         <link rel="stylesheet" href="style.css" />
+        <script src="local-config.js"></script>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <meta name="google-signin-client_id" content="__GOOGLE_CLIENT_ID__">
     </head>
     <body>
         <h1>The Pokédex</h1>
 
-        <div class="controls">
+        <div id="signin-button"><button onclick="signIn()">Sign In with Google</button></div>
+
+        <div class="controls" style="display: none;">
             <button id="filter-btn">Filter Pokémon</button>
+        </div>
+
+        <div class="drive-controls" style="display: none;">
+            <button id="drive-btn" onclick="saveToDrive()">Save to Drive</button>
+            <button id="drive-btn" onclick="readFromDrive()">Read from Drive</button>
         </div>
 
         <!-- Filter Modal -->
@@ -41,6 +51,8 @@
                 </div>
             </div>
         </div>
+
+        <div id="loading-pokedex-list" style="display: none;">Loading...</div>
 
         <div id="pokedex-list"></div>
 
