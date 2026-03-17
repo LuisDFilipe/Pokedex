@@ -177,45 +177,6 @@ h1 {
   transform: scale(0.97);
 }
 
-/* Drive Controls */
-.drive-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 25px;
-}
-
-.drive-controls button {
-  background: linear-gradient(135deg, rgb(59, 130, 246), rgb(28, 100, 200));
-  color: rgb(255, 255, 255);
-  border: none;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 999px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
-}
-
-.drive-controls button:hover {
-  background: linear-gradient(135deg, rgb(90, 150, 246), rgb(45, 120, 220));
-  transform: scale(1.05);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
-.drive-controls button:active {
-  transform: scale(0.97);
-}
-
-.drive-controls input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
 /* Filter Modal */
 #filter-modal {
   display: none;

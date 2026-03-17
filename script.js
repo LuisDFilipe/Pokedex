@@ -13,6 +13,7 @@ let select_filters = [];
 let pokemon = {}
 
 // Google API variables
+const GOOGLE_CLIENT_ID = "355757228799-hcl5k9p84m9lqsqi4cok9cs4ldld6qhq.apps.googleusercontent.com";
 let tokenClient;
 let accessToken = null;
 let tokenExpiry = null;
@@ -60,7 +61,7 @@ function init() {  // Wait for Google API to load
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('tokenExpiry', tokenExpiry);
         updateSigninStatus(true);
-        // No need to load Drive API separately
+        
         readFromDrive();
       }
     },
@@ -73,7 +74,7 @@ function init() {  // Wait for Google API to load
     accessToken = storedToken;
     tokenExpiry = parseInt(storedExpiry);
     updateSigninStatus(true);
-    // No need to load Drive API
+    
     readFromDrive();
   } else {
     // Clear expired token
@@ -263,17 +264,14 @@ function handleCredentialResponse(response) {
 
 function updateSigninStatus(isSignedIn) {
   const controls = document.querySelector('.controls');
-  const driveControls = document.querySelector('.drive-controls');
   const loading_pokedex_list = document.querySelector('#loading-pokedex-list');
   if (isSignedIn) {
     document.getElementById('signin-button').innerHTML = '<button onclick="signOut()">Sign Out</button>';
     controls.style.display = 'flex';
-    driveControls.style.display = 'flex';
     loading_pokedex_list.style.display = '';
   } else {
     document.getElementById('signin-button').innerHTML = '<button onclick="signIn()">Sign In with Google</button>';
     controls.style.display = 'none';
-    driveControls.style.display = 'none';
     loading_pokedex_list.style.display = 'none';
   }
 }
