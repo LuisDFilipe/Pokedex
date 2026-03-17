@@ -13,7 +13,6 @@ let select_filters = [];
 let pokemon = {}
 
 // Google API variables
-const google_client_id = window.GOOGLE_CLIENT_ID || "__GOOGLE_CLIENT_ID__";
 let tokenClient;
 let accessToken = null;
 let tokenExpiry = null;
@@ -47,12 +46,12 @@ function init() {  // Wait for Google API to load
 
   // Initialize Google Identity Services
   google.accounts.id.initialize({
-    client_id: google_client_id,
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse
   });
 
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: google_client_id,
+    client_id: GOOGLE_CLIENT_ID,
     scope: 'https://www.googleapis.com/auth/drive.file',
     callback: (tokenResponse) => {
       if (tokenResponse && tokenResponse.access_token) {

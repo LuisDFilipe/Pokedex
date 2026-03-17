@@ -13,15 +13,11 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Replace Client ID
-      run: |
-        sed -i "s/__GOOGLE_CLIENT_ID__/${{ secrets.GOOGLE_CLIENT_ID }}/g" script.js index.html
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
