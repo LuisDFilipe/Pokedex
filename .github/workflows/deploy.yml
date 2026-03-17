@@ -21,7 +21,7 @@ jobs:
 
       - name: Replace Secrets in Code
         run: |
-          sed -i "s|process.env.GOOGLE_CLIENT_ID|'${{ secrets.GOOGLE_CLIENT_ID }}'|g" script.js
+          sed -i "s|GOOGLE_CLIENT_ID|'${{ secrets.GOOGLE_CLIENT_ID }}'|g" script.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
