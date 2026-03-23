@@ -3,5 +3,5 @@ import NavBarComponent from "../components/NavBarComponent.vue";
 </script>
 
 <template>
-  <div>About</div>
+  <div>Stats</div>
 </template>
