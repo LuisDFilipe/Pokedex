@@ -15,8 +15,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  build: {
-    outDir: 'target', // Changes the output folder name
-    emptyOutDir: true, // Ensures the folder is cleared before each build
-  }
 })
