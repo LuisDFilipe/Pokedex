@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PokedexView from '../views/PokedexView.vue'
+import GameView from '../views/GameView.vue'
 import StatsView from '../views/StatsView.vue'
 
 const router = createRouter({
@@ -26,6 +27,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/game',
+      name: 'game',
+      component: GameView,
+      meta: { 
+        title: 'Pokémon Game',
+        description: 'Pokémon Game of the Pokedex App.'
+      }
+    },
+    {
       path: '/stats',
       name: 'stats',
       component: StatsView,
@@ -43,8 +53,7 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
       meta: { 
         title: 'About',
-        //description: 'About the Pokedex App.',
-        description: 'About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App. About the Pokedex App.'
+        description: 'About the Pokedex App.',
       }
     },
   ],
