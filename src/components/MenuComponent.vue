@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import packageInfo from '../../package.json'
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import HomeIcon from './icons/HomeIcon.vue'
@@ -6,6 +7,7 @@ import PokedexIcon from './icons/PokedexIcon.vue'
 import StatsIcon from './icons/StatsIcon.vue'
 import AboutIcon from './icons/AboutIcon.vue'
 
+const appVersion = packageInfo.version
 const isOpen = ref(false)
 const route = useRoute()
 
@@ -37,7 +39,10 @@ watch(() => route.path, () => {
     </button>
 
     <div class="nav-drawer" :class="{ 'open': isOpen }">
-      <div class="drawer-content">        
+      <div class="version-tag">
+        v{{ appVersion }}
+      </div>
+      <div class="drawer-content">
         <router-link to="/" class="nav-item" @click="closeMenu">
           <HomeIcon /> <span>Home</span>
         </router-link>
@@ -68,7 +73,7 @@ watch(() => route.path, () => {
   top: 0;
   left: 0;
   height: 100vh;
-  width: 300px; /* Sidebar width */
+  width: 200px; /* Sidebar width */
   background-color: #0d0d0d;
   border-right: 1px solid #333;
   z-index: 2000;
@@ -79,6 +84,13 @@ watch(() => route.path, () => {
 /* Hide burger button on desktop */
 .burger-btn {
   display: none; 
+}
+
+.version-tag {
+  font-size: 12px;
+  color: #444;
+  padding: 10px 20px;
+  text-align: center;
 }
 
 .nav-drawer {
@@ -154,8 +166,8 @@ watch(() => route.path, () => {
     pointer-events: auto;
     position: fixed;
     top: 0;
-    left: -300px; /* Hide off-screen */
-    width: 300px;
+    left: -200px; /* Hide off-screen */
+    width: 200px;
     height: 100vh;
     background-color: #0d0d0d;
     border-right: 1px solid #333;

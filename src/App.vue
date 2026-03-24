@@ -38,7 +38,7 @@ body {
   align-items: center;
   min-height: 100vh;
   /* Leave room for the 300px sidebar on desktop */
-  margin-left: 300px;
+  margin-left: 200px;
   transition: margin-left 0.3s ease;
 }
 
