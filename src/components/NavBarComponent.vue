@@ -3,9 +3,7 @@ import HomeIcon from './icons/HomeIcon.vue'
 import PokedexIcon from './icons/PokedexIcon.vue'
 import StatsIcon from './icons/StatsIcon.vue'
 import AboutIcon from './icons/AboutIcon.vue'
-
 </script>
-
 
 <template>
   <nav class="nav-container">
@@ -85,7 +83,7 @@ import AboutIcon from './icons/AboutIcon.vue'
     border-radius: 0; /* Full width bar on mobile */
     border: none;
     border-top: 1px solid #333;
-    padding: 10px 0;
+    padding: 0 0 10px 0;
     justify-content: space-around; /* Space items evenly */
     background-color: #000;
   }
@@ -95,6 +93,7 @@ import AboutIcon from './icons/AboutIcon.vue'
     gap: 4px;
     padding: 5px;
     font-size: 11px; /* Smaller text for mobile */
+    width: 100%;
   }
 
   .nav-item .icon {
