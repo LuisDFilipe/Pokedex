@@ -7,7 +7,6 @@ var gameInstance = null;
 const map = ref(null);
 var ground_1_tileset;
 var ground_1_layer;
-var object_layer;
 
 const TILE_SIZE = 32;
 var player;

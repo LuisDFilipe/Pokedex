@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 
 import HomeIcon from "./icons/HomeIcon.vue";
 import PokedexIcon from "./icons/PokedexIcon.vue";
-import GameIcon from "./icons/GameIcon.vue";
+/* import GameIcon from "./icons/GameIcon.vue"; */
 import StatsIcon from "./icons/StatsIcon.vue";
 import AboutIcon from "./icons/AboutIcon.vue";
 
@@ -54,9 +54,9 @@ watch(
           <PokedexIcon /> <span>Pokedex</span>
         </router-link>
 
-        <router-link to="/game" class="nav-item" @click="closeMenu">
+<!--         <router-link to="/game" class="nav-item" @click="closeMenu">
           <GameIcon /> <span>Game</span>
-        </router-link>
+        </router-link> -->
         
         <router-link to="/stats" class="nav-item" @click="closeMenu">
           <StatsIcon /> <span>Stats</span>

@@ -11,9 +11,9 @@ const route = useRoute()
       <h1 class="main-title">
         {{ route.meta.title }} <span class="highlight">{{ route.meta.highlight }}</span>
       </h1>
-      <p class="section-description">
+      <!-- <p class="section-description">
         {{ route.meta.description }}
-      </p>
+      </p> -->
     </header>
 
     <MenuComponent />
@@ -35,11 +35,17 @@ body {
 .app-wrapper {
   display: flex;
   flex-direction: column; /* Stack header, nav, and content vertically */
-  align-items: center;
+  align-items: stretch;
   min-height: 100vh;
   /* Leave room for the 300px sidebar on desktop */
   margin-left: 200px;
   transition: margin-left 0.3s ease;
+}
+
+.content-area {
+  width: min(1600px, 100%);
+  margin: 0 auto;
+  padding: 0 24px 32px;
 }
 
 .page-header {
