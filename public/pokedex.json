@@ -412,7 +412,7 @@
             "sprite": "0015-mega",
             "gender": null,
             "region": null,
-            "form": null
+            "form": "mega"
           }
         ]
       },
@@ -474,7 +474,7 @@
             "sprite": "0018-mega",
             "gender": null,
             "region": null,
-            "form": null
+            "form": "mega"
           }
         ]
       },
