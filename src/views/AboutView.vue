@@ -36,11 +36,6 @@ const stats = [
 
       <footer class="card-footer">
         <p>Developed with ❤️ by {{ creator }}</p>
-        <div class="decorative-buttons">
-          <div class="dot blue"></div>
-          <div class="dot red"></div>
-          <div class="dot yellow"></div>
-        </div>
       </footer>
     </div>
   </div>
