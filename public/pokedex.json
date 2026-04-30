@@ -839,12 +839,12 @@
       },
       {
         "id": "0029",
-        "name": "?",
+        "name": "Nidoran-F",
         "forms": [
           {
             "id": "0029",
-            "name": "?",
-            "type1": "Unknown",
+            "name": "Nidoran-F",
+            "type1": "Poison",
             "type2": null,
             "gen": 1,
             "sprite": "0029",
