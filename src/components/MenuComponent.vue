@@ -7,7 +7,7 @@ import { useRoute } from "vue-router";
 import PokedexIcon from "./icons/PokedexIcon.vue";
 /* import GameIcon from "./icons/GameIcon.vue"; */
 /* import StatsIcon from "./icons/StatsIcon.vue"; */
-/* import AboutIcon from "./icons/AboutIcon.vue"; */
+import AboutIcon from "./icons/AboutIcon.vue";
 
 const appVersion = packageInfo.version;
 const isOpen = ref(false);
@@ -62,9 +62,9 @@ watch(
           <StatsIcon /> <span>Stats</span>
         </router-link> -->
 
-<!--         <router-link to="/about" class="nav-item" @click="closeMenu">
+        <router-link to="/about" class="nav-item" @click="closeMenu">
           <AboutIcon /> <span>About</span>
-        </router-link> -->
+        </router-link>
       </div>
     </div>
   </nav>
