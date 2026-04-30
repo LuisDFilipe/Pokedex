@@ -822,12 +822,12 @@
       },
       {
         "id": "0028",
-        "name": "?",
+        "name": "Sandslash",
         "forms": [
           {
             "id": "0028",
-            "name": "?",
-            "type1": null,
+            "name": "Sandslash",
+            "type1": "Ground",
             "type2": null,
             "gen": 1,
             "sprite": "0028",
