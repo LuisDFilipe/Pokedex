@@ -169,10 +169,56 @@ watch(pageDraft, (value) => {
 
 watch(itemsPerPage, () => {
   page.value = 1
+  pageDraft.value = 1
 })
 
 watch(filterQuery, () => {
   page.value = 1
+  pageDraft.value = 1
+})
+
+watch(selectedGenerations, () => {
+  page.value = 1
+  pageDraft.value = 1
+})
+
+watch(excludeGigantamax, () => {
+  page.value = 1
+  pageDraft.value = 1
+})
+
+watch(excludeMegas, () => {
+  page.value = 1
+  pageDraft.value = 1
+})
+
+watch(showBaseFormOnly, () => {
+  page.value = 1
+  pageDraft.value = 1
+})
+
+watch(selectedGenerations, (newVal) => {
+  localStorage.setItem('selectedGenerations', JSON.stringify(newVal))
+}, { deep: true })
+
+watch(excludeGigantamax, (newVal) => {
+  localStorage.setItem('excludeGigantamax', newVal.toString())
+})
+
+watch(excludeMegas, (newVal) => {
+  localStorage.setItem('excludeMegas', newVal.toString())
+})
+
+watch(showBaseFormOnly, (newVal) => {
+  localStorage.setItem('showBaseFormOnly', newVal.toString())
+})
+
+watch(filterQuery, (newVal) => {
+  localStorage.setItem('filterQuery', newVal)
+})
+
+watch(itemsPerPage, (newVal) => {
+  localStorage.setItem('itemsPerPage', newVal.toString())
 })
 
 const pagedPokemon = computed(() => {
@@ -310,8 +356,24 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
-onMounted(() => {
-  loadPokedex()
+onMounted(async () => {
+  await loadPokedex()
+  // Load saved filters
+  const savedGenerations = localStorage.getItem('selectedGenerations')
+  if (savedGenerations) {
+    selectedGenerations.value = JSON.parse(savedGenerations)
+  }
+  excludeGigantamax.value = localStorage.getItem('excludeGigantamax') === 'true'
+  excludeMegas.value = localStorage.getItem('excludeMegas') === 'true'
+  showBaseFormOnly.value = localStorage.getItem('showBaseFormOnly') === 'true'
+  const savedQuery = localStorage.getItem('filterQuery')
+  if (savedQuery) {
+    filterQuery.value = savedQuery
+  }
+  const savedItemsPerPage = localStorage.getItem('itemsPerPage')
+  if (savedItemsPerPage) {
+    itemsPerPage.value = parseInt(savedItemsPerPage)
+  }
   window.addEventListener('keydown', handleKeyDown)
 })
 
