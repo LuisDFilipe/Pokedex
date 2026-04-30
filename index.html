@@ -1,61 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>The Pokedex</title>
-        <link rel="icon" href="assets/icon_192.png" type="image/png" />
-        <link rel="stylesheet" href="style.css" />
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-        <meta name="google-signin-client_id" content="%GOOGLE_CLIENT_ID%">
-    </head>
-    <body>
-        <h1>The Pokédex</h1>
-
-        <div id="signin-button"><button onclick="signIn()">Sign In with Google</button></div>
-
-        <div class="controls" style="display: none;">
-            <button id="filter-btn">Filter Pokémon</button>
-        </div>
-
-        <!-- Filter Modal -->
-        <div id="filter-modal" class="modal">
-            <div id="filter-modal-content">
-                <span id="filter-modal-close-btn" class="close">&times;</span>
-                <h2>Apply Filters</h2>
-                <div id="filter-modal-options">
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_genders">Hide Gender Differences</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_forms_without_gender_differences">Hide Forms Without Gender Differences</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_region_forms">Hide Region Forms</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_mega_forms">Hide Mega Forms</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gigantamax_forms">Hide Gigantamax Forms</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_all_forms">Hide All Forms</label>
-                    <br/>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_1">Hide Gen 1 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_2">Hide Gen 2 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_3">Hide Gen 3 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_4">Hide Gen 4 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_5">Hide Gen 5 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_6">Hide Gen 6 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_7">Hide Gen 7 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_8">Hide Gen 8 Pokémon</label>
-                    <label><input class="filter-modal-option" type="checkbox" value="hide_gen_9">Hide Gen 9 Pokémon</label>
-                    <br/>
-                    <label><input class="filter-modal-option" type="checkbox" value="show_shiny_sprites">Show Shiny Sprites</label>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading-pokedex-list" style="display: none;">Loading...</div>
-
-        <div id="pokedex-list"></div>
-
-        <!-- Pokemon Modal -->
-        <div id="pokemon-modal" class="modal">
-            <div id="pokemon-modal-content">
-            </div>
-        </div>
-
-        <script src="script.js"></script>
-    </body>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/icon_192.png" type="image/png" />
+    <title>The Pokédex</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

@@ -1,0 +1,82 @@
+{
+  "type": "object",
+  "required": ["pokedex"],
+  "additionalProperties": false,
+  "properties": {
+    "pokedex": {
+      "type": "object",
+      "required": ["pokemon"],
+      "additionalProperties": false,
+      "properties": {
+        "pokemon": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "forms"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "forms": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "type1",
+                    "gen",
+                    "sprite",
+                    "gender",
+                    "region",
+                    "form"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type1": {
+                      "type": "string"
+                    },
+                    "type2": {
+                      "type": "string"
+                    },
+                    "gen": {
+                      "type": "integer"
+                    },
+                    "sprite": {
+                      "type": "string"
+                    },
+                    "gender": {
+                      "type": ["string", "null"]
+                    },
+                    "region": {
+                      "type": ["string", "null"]
+                    },
+                    "form": {
+                      "type": ["string", "null"]
+                    },
+                    "show_gender": {
+                      "type": ["boolean", "null"]
+                    },
+                    "has_gender_difference": {
+                      "type": ["boolean", "null"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
