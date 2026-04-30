@@ -12,12 +12,6 @@ let hide_gender_diffs = true;
 let select_filters = [];
 let pokemon = {}
 
-// Google API variables
-const GOOGLE_CLIENT_ID = "355757228799-hcl5k9p84m9lqsqi4cok9cs4ldld6qhq.apps.googleusercontent.com";
-let tokenClient;
-let accessToken = null;
-let tokenExpiry = null;
-
 const type_colors = {
   Normal: "#A8A77ABE",
   Fire: "#EE8130BE",
@@ -39,55 +33,12 @@ const type_colors = {
   Fairy: "#D685ADBE"
 };
 
-function init() {  // Wait for Google API to load
-  if (typeof google === 'undefined') {
-    setTimeout(init, 100);
-    return;
-  }
-
-  // Initialize Google Identity Services
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleCredentialResponse
-  });
-
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GOOGLE_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/drive.file',
-    callback: (tokenResponse) => {
-      if (tokenResponse && tokenResponse.access_token) {
-        accessToken = tokenResponse.access_token;
-        tokenExpiry = Date.now() + (tokenResponse.expires_in * 1000);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('tokenExpiry', tokenExpiry);
-        updateSigninStatus(true);
-        
-        readFromDrive();
-      }
-    },
-  });
-
-  // Check for stored token
-  const storedToken = localStorage.getItem('accessToken');
-  const storedExpiry = localStorage.getItem('tokenExpiry');
-  if (storedToken && storedExpiry && Date.now() < parseInt(storedExpiry)) {
-    accessToken = storedToken;
-    tokenExpiry = parseInt(storedExpiry);
-    updateSigninStatus(true);
-    
-    readFromDrive();
-  } else {
-    // Clear expired token
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('tokenExpiry');
-    updateSigninStatus(false);
-  }
-
+function init() {
   fetch("pokedex.json")
     .then((response) => response.json())
     .then((data) => {
       pokedex_data = data.pokedex.pokemon.flatMap((p) => p.forms);
-      //fetch_pokemon();
+      fetch_pokemon();
     })
     .catch((error) => console.error("Error loading JSON:", error));
 
