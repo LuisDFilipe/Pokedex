@@ -456,8 +456,7 @@ onUnmounted(() => {
           </div>
           <div class="detail-text">
             <h2>
-              {{ selectedPokemon.id }} · {{ selectedPokemon.name }}
-              <small v-if="activeForm?.name && activeForm?.name !== selectedPokemon.name">({{ activeForm.name }})</small>
+              {{ activeForm?.name || selectedPokemon.name }}
             </h2>
             <div class="detail-type-pills">
               <span
