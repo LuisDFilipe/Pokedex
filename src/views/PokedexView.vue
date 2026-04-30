@@ -11,8 +11,9 @@ interface PokemonForm {
   gender: string | null
   region: string | null
   form: string | null
-  show_gender: boolean | null
-  has_gender_difference: boolean | null
+  boxable: boolean
+  //show_gender: boolean | null
+  //has_gender_difference: boolean | null
 }
 
 interface PokemonEntry {
@@ -41,6 +42,7 @@ const showFilterModal = ref(false)
 const selectedGenerations = ref<number[]>([])
 const excludeGigantamax = ref(false)
 const excludeMegas = ref(false)
+const showBoxableOnly = ref(false)
 const showBaseFormOnly = ref(false)
 
 const type_colors: Record<string, string> = {
@@ -117,10 +119,13 @@ const allFormsFlat = computed(() => {
 })
 
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
-  if (excludeGigantamax.value && form.form === 'gigantamax') {
+  if (excludeGigantamax.value && form.form?.toLowerCase().includes('gigantamax')) {
     return true
   }
-  if (excludeMegas.value && form.form === 'mega') {
+  if (excludeMegas.value && form.form?.toLowerCase().includes('mega')) {
+    return true
+  }
+  if (showBoxableOnly.value && !form.boxable) {
     return true
   }
   if (showBaseFormOnly.value && !form.isBaseForm) {
@@ -192,6 +197,11 @@ watch(excludeMegas, () => {
   pageDraft.value = 1
 })
 
+watch(showBoxableOnly, () => {
+  page.value = 1
+  pageDraft.value = 1
+})
+
 watch(showBaseFormOnly, () => {
   page.value = 1
   pageDraft.value = 1
@@ -207,6 +217,10 @@ watch(excludeGigantamax, (newVal) => {
 
 watch(excludeMegas, (newVal) => {
   localStorage.setItem('excludeMegas', newVal.toString())
+})
+
+watch(showBoxableOnly, (newVal) => {
+  localStorage.setItem('showBoxableOnly', newVal.toString())
 })
 
 watch(showBaseFormOnly, (newVal) => {
@@ -334,6 +348,8 @@ const toggleGenerationFilter = (gen: number) => {
   } else {
     selectedGenerations.value.push(gen)
   }
+  page.value = 1
+  pageDraft.value = 1
 }
 
 const isGenerationSelected = (gen: number) => {
@@ -344,6 +360,7 @@ const clearFilters = () => {
   selectedGenerations.value = []
   excludeGigantamax.value = false
   excludeMegas.value = false
+  showBoxableOnly.value = false
   showBaseFormOnly.value = false
 }
 
@@ -365,6 +382,7 @@ onMounted(async () => {
   }
   excludeGigantamax.value = localStorage.getItem('excludeGigantamax') === 'true'
   excludeMegas.value = localStorage.getItem('excludeMegas') === 'true'
+  showBoxableOnly.value = localStorage.getItem('showBoxableOnly') === 'true'
   showBaseFormOnly.value = localStorage.getItem('showBaseFormOnly') === 'true'
   const savedQuery = localStorage.getItem('filterQuery')
   if (savedQuery) {
@@ -524,6 +542,14 @@ onUnmounted(() => {
                 :disabled="showBaseFormOnly"
               />
               <span>Exclude Megas</span>
+            </label>
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                v-model="showBoxableOnly"
+                :disabled="showBaseFormOnly"
+              />
+              <span>Show Only Boxable Forms</span>
             </label>
             <label class="filter-checkbox">
               <input
