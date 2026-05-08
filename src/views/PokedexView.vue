@@ -33,6 +33,7 @@ const pageSizeOptions = [5, 10, 20, 30, 50, 100]
 const page = ref(1)
 const pageDraft = ref(1)
 const filterQuery = ref('')
+const debouncedQuery = ref('')
 const pokemonList = ref<PokemonEntry[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -44,6 +45,7 @@ const excludeGigantamax = ref(false)
 const excludeMegas = ref(false)
 const showBoxableOnly = ref(false)
 const showBaseFormOnly = ref(false)
+const showShiny = ref(false)
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -122,10 +124,10 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
   if (excludeGigantamax.value && form.form?.toLowerCase().includes('gigantamax')) {
     return true
   }
-  if (excludeMegas.value && form.form?.toLowerCase().includes('mega')) {
+  if (excludeMegas.value && (form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal'))) {
     return true
   }
-  if (showBoxableOnly.value && !form.boxable) {
+  if (showBoxableOnly.value && !form.boxable) { 
     return true
   }
   if (showBaseFormOnly.value && !form.isBaseForm) {
@@ -138,7 +140,7 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
 }
 
 const filteredPokemon = computed(() => {
-  const query = filterQuery.value.trim().toLowerCase()
+  const query = debouncedQuery.value.trim().toLowerCase()
 
   // Filter forms first
   const filteredForms = allFormsFlat.value.filter((form) => {
@@ -172,68 +174,34 @@ watch(pageDraft, (value) => {
   }
 })
 
-watch(itemsPerPage, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(filterQuery, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(selectedGenerations, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(excludeGigantamax, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(excludeMegas, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(showBoxableOnly, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(showBaseFormOnly, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(selectedGenerations, (newVal) => {
-  localStorage.setItem('selectedGenerations', JSON.stringify(newVal))
-}, { deep: true })
-
-watch(excludeGigantamax, (newVal) => {
-  localStorage.setItem('excludeGigantamax', newVal.toString())
-})
-
-watch(excludeMegas, (newVal) => {
-  localStorage.setItem('excludeMegas', newVal.toString())
-})
-
-watch(showBoxableOnly, (newVal) => {
-  localStorage.setItem('showBoxableOnly', newVal.toString())
-})
-
-watch(showBaseFormOnly, (newVal) => {
-  localStorage.setItem('showBaseFormOnly', newVal.toString())
-})
-
+// Debounce search query to improve performance
+let debounceTimer: ReturnType<typeof setTimeout>
 watch(filterQuery, (newVal) => {
-  localStorage.setItem('filterQuery', newVal)
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    debouncedQuery.value = newVal
+  }, 300)
 })
 
-watch(itemsPerPage, (newVal) => {
-  localStorage.setItem('itemsPerPage', newVal.toString())
-})
+watch(
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, showShiny, filterQuery, itemsPerPage],
+  () => {
+    page.value = 1
+    pageDraft.value = 1
+
+    localStorage.setItem('pokedex-settings', JSON.stringify({
+      selectedGenerations: selectedGenerations.value,
+      excludeGigantamax: excludeGigantamax.value,
+      excludeMegas: excludeMegas.value,
+      showBoxableOnly: showBoxableOnly.value,
+      showBaseFormOnly: showBaseFormOnly.value,
+      showShiny: showShiny.value,
+      filterQuery: filterQuery.value,
+      itemsPerPage: itemsPerPage.value
+    }))
+  },
+  { deep: true }
+)
 
 const pagedPokemon = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
@@ -246,24 +214,11 @@ const currentRange = computed(() => {
   return `${start}-${end}`
 })
 
-const getTypeBackground = (pokemon: PokemonEntry) => {
-  const primary = pokemon.forms[0]?.type1
-  const secondary = pokemon.forms[0]?.type2
-
-  const primaryColor = primary ? type_colors[primary] ?? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.08)'
-  const secondaryColor = secondary ? type_colors[secondary] ?? primaryColor : null
-
-  if (!secondaryColor) return primaryColor
-
-  return `linear-gradient(to right, ${primaryColor} 0%, ${primaryColor} 50%, ${secondaryColor} 50%, ${secondaryColor} 100%)`
-}
-
 const getSpriteUrl = (id: string) => {
+  if (showShiny.value) {
+    return shinySpriteMap[id] ?? normalSpriteMap[id] ?? ''
+  }
   return normalSpriteMap[id] ?? ''
-  //if(true)
-  //  return normalSpriteMap[id] ?? ''
-  //else 
-  //  return shinySpriteMap[id] ?? ''
 }
 
 const getGenderIcons = (gender: string | null) => {
@@ -318,11 +273,6 @@ const nextPage = () => {
   pageDraft.value = page.value
 }
 
-const selectPokemon = (pokemon: PokemonEntry) => {
-  selectedPokemon.value = pokemon
-  selectedForm.value = pokemon.forms[0] ?? null
-}
-
 const selectForm = (form: PokemonForm) => {
   selectedForm.value = form
 }
@@ -362,6 +312,7 @@ const clearFilters = () => {
   excludeMegas.value = false
   showBoxableOnly.value = false
   showBaseFormOnly.value = false
+  showShiny.value = false
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -376,21 +327,18 @@ const handleKeyDown = (event: KeyboardEvent) => {
 onMounted(async () => {
   await loadPokedex()
   // Load saved filters
-  const savedGenerations = localStorage.getItem('selectedGenerations')
-  if (savedGenerations) {
-    selectedGenerations.value = JSON.parse(savedGenerations)
-  }
-  excludeGigantamax.value = localStorage.getItem('excludeGigantamax') === 'true'
-  excludeMegas.value = localStorage.getItem('excludeMegas') === 'true'
-  showBoxableOnly.value = localStorage.getItem('showBoxableOnly') === 'true'
-  showBaseFormOnly.value = localStorage.getItem('showBaseFormOnly') === 'true'
-  const savedQuery = localStorage.getItem('filterQuery')
-  if (savedQuery) {
-    filterQuery.value = savedQuery
-  }
-  const savedItemsPerPage = localStorage.getItem('itemsPerPage')
-  if (savedItemsPerPage) {
-    itemsPerPage.value = parseInt(savedItemsPerPage)
+  const savedSettings = localStorage.getItem('pokedex-settings')
+  if (savedSettings) {
+    const settings = JSON.parse(savedSettings)
+    if (settings.selectedGenerations !== undefined) selectedGenerations.value = settings.selectedGenerations
+    if (settings.filterQuery !== undefined) filterQuery.value = settings.filterQuery
+    if (settings.excludeGigantamax !== undefined) excludeGigantamax.value = settings.excludeGigantamax
+    if (settings.excludeMegas !== undefined) excludeMegas.value = settings.excludeMegas
+    if (settings.showBoxableOnly !== undefined) showBoxableOnly.value = settings.showBoxableOnly
+    if (settings.showBaseFormOnly !== undefined) showBaseFormOnly.value = settings.showBaseFormOnly
+    if (settings.showShiny !== undefined) showShiny.value = settings.showShiny
+    if (settings.filterQuery !== undefined) filterQuery.value = settings.filterQuery
+    if (settings.itemsPerPage !== undefined) itemsPerPage.value = settings.itemsPerPage
   }
   window.addEventListener('keydown', handleKeyDown)
 })
@@ -440,10 +388,13 @@ onUnmounted(() => {
         <div class="detail-badge">#{{ selectedPokemon.id }}</div>
         <div class="detail-main">
           <div class="detail-image">
-            <img
-              :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id)"
-              :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
-            />
+        <Transition name="sprite-fade" mode="out-in">
+          <img
+            :key="`${activeForm?.sprite || selectedPokemon.id}-${showShiny}`"
+            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id)"
+            :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
+          />
+        </Transition>
             <div v-if="activeGenderIcons.length" class="gender-overlay">
               <img
                 v-for="src in activeGenderIcons"
@@ -523,9 +474,9 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Gigantamax Filter -->
           <div class="filter-section">
             <h3>Special Forms</h3>
+            <!-- Gigantamax Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -534,6 +485,7 @@ onUnmounted(() => {
               />
               <span>Exclude Gigantamax</span>
             </label>
+            <!-- Mega Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -542,6 +494,7 @@ onUnmounted(() => {
               />
               <span>Exclude Megas</span>
             </label>
+            <!-- Boxable Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -550,12 +503,22 @@ onUnmounted(() => {
               />
               <span>Show Only Boxable Forms</span>
             </label>
+            <!-- All Forms Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
                 v-model="showBaseFormOnly"
               />
               <span>Hide all forms</span>
+          </label>
+
+          <!-- Shiny Filter -->
+          <label class="filter-checkbox">
+            <input
+              type="checkbox"
+              v-model="showShiny"
+            />
+            <span>Show Shiny Sprites</span>
             </label>
           </div>
         </div>
@@ -565,6 +528,11 @@ onUnmounted(() => {
           <button class="btn-close" @click="showFilterModal = false">Done</button>
         </div>
       </div>
+    </div>
+
+    <div v-if="!loading && !error && filteredPokemon.length === 0" class="no-results">
+      <h3>No Pokémon found</h3>
+      <p>Try adjusting your filters or search query.</p>
     </div>
 
     <div v-if="!loading && !error" class="pokemon-grid">
@@ -587,7 +555,9 @@ onUnmounted(() => {
           />
         </div>
         <div class="pokemon-card_image">
-          <img :src="getSpriteUrl(form.sprite || form.id)" :alt="form.name" loading="lazy" />
+          <Transition name="sprite-fade" mode="out-in">
+            <img :key="`${form.sprite || form.id}-${showShiny}`" :src="getSpriteUrl(form.sprite || form.id)" :alt="form.name" loading="lazy" />
+          </Transition>
         </div>
         <div class="pokemon-card_info">
           <h2>{{ form.pokemonName }}</h2>
@@ -621,6 +591,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.no-results {
+  text-align: center;
+  padding: 80px 24px;
+  color: #a6a6a6;
+}
+.no-results h3 {
+  margin-bottom: 8px;
+}
 .pokedex-view {
   padding: 24px;
   color: #ececec;
@@ -1248,5 +1226,19 @@ onUnmounted(() => {
 
 .btn-close:hover {
   background: #ff5757;
+}
+
+/* Sprite transition styles */
+.sprite-fade-enter-active,
+.sprite-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.sprite-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.sprite-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.1);
 }
 </style>
