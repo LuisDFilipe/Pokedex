@@ -183,25 +183,32 @@ watch(filterQuery, (newVal) => {
   }, 300)
 })
 
+const saveSettings = () => {
+  localStorage.setItem('pokedex-settings', JSON.stringify({
+    selectedGenerations: selectedGenerations.value,
+    excludeGigantamax: excludeGigantamax.value,
+    excludeMegas: excludeMegas.value,
+    showBoxableOnly: showBoxableOnly.value,
+    showBaseFormOnly: showBaseFormOnly.value,
+    showShiny: showShiny.value,
+    filterQuery: filterQuery.value,
+    itemsPerPage: itemsPerPage.value
+  }))
+}
+
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, showShiny, filterQuery, itemsPerPage],
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage],
   () => {
     page.value = 1
     pageDraft.value = 1
-
-    localStorage.setItem('pokedex-settings', JSON.stringify({
-      selectedGenerations: selectedGenerations.value,
-      excludeGigantamax: excludeGigantamax.value,
-      excludeMegas: excludeMegas.value,
-      showBoxableOnly: showBoxableOnly.value,
-      showBaseFormOnly: showBaseFormOnly.value,
-      showShiny: showShiny.value,
-      filterQuery: filterQuery.value,
-      itemsPerPage: itemsPerPage.value
-    }))
+    saveSettings()
   },
   { deep: true }
 )
+
+watch(showShiny, () => {
+  saveSettings()
+})
 
 const pagedPokemon = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
@@ -337,7 +344,6 @@ onMounted(async () => {
     if (settings.showBoxableOnly !== undefined) showBoxableOnly.value = settings.showBoxableOnly
     if (settings.showBaseFormOnly !== undefined) showBaseFormOnly.value = settings.showBaseFormOnly
     if (settings.showShiny !== undefined) showShiny.value = settings.showShiny
-    if (settings.filterQuery !== undefined) filterQuery.value = settings.filterQuery
     if (settings.itemsPerPage !== undefined) itemsPerPage.value = settings.itemsPerPage
   }
   window.addEventListener('keydown', handleKeyDown)
@@ -368,6 +374,14 @@ onUnmounted(() => {
         </div>
 
         <div class="page-meta-right">
+          <label v-if="!loading && !error" class="shiny-toggle" title="Toggle shiny sprites">
+            <div class="switch">
+              <input type="checkbox" v-model="showShiny" />
+              <span class="slider"></span>
+            </div>
+            <span>Shiny</span>
+          </label>
+
           <button v-if="!loading && !error" class="filter-btn" @click="showFilterModal = true" title="Open filter settings">
             Filters
           </button>
@@ -510,15 +524,6 @@ onUnmounted(() => {
                 v-model="showBaseFormOnly"
               />
               <span>Hide all forms</span>
-          </label>
-
-          <!-- Shiny Filter -->
-          <label class="filter-checkbox">
-            <input
-              type="checkbox"
-              v-model="showShiny"
-            />
-            <span>Show Shiny Sprites</span>
             </label>
           </div>
         </div>
@@ -561,10 +566,10 @@ onUnmounted(() => {
         </div>
         <div class="pokemon-card_info">
           <h2>{{ form.pokemonName }}</h2>
-          <p>
+          <!-- <p>
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
-          </p>
+          </p> -->
           <p class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
       </article>
@@ -688,10 +693,12 @@ onUnmounted(() => {
 @media (max-width: 720px) {
   .page-meta {
     grid-template-columns: 1fr;
+    gap: 12px; /* Reduce vertical gap between page-meta-left and page-meta-right */
   }
 
   .page-meta-right {
     justify-content: flex-start;
+    flex-wrap: wrap; /* Allow items to wrap onto the next line */
   }
 
   .filter-search,
@@ -1086,11 +1093,71 @@ onUnmounted(() => {
   border-color: rgba(255, 255, 255, 0.24);
 }
 
+.shiny-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #a6a6a6;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.shiny-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #eaeaea;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: .3s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px; width: 12px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
 .filter-modal {
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
+
+input:checked + .slider {
+  background-color: #ff4747;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
   background: rgba(0, 0, 0, 0.25);
   z-index: 9998;
   padding: 24px;
