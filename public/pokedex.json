@@ -21054,15 +21054,15 @@
             "boxable": true
           },
           {
-            "id": "0849-gigantamax",
+            "id": "0849-amped-gigantamax",
             "name": "Gigantamax Toxtricity (Amped)",
             "type1": "Electric",
             "type2": "Poison",
             "gen": 8,
-            "sprite": "0849-gigantamax",
+            "sprite": "0849-amped-gigantamax",
             "gender": null,
             "region": null,
-            "form": "gigantamax",
+            "form": "amped-gigantamax",
             "boxable": true
           },
           {
@@ -21078,15 +21078,15 @@
             "boxable": true
           },
           {
-            "id": "0849-gigantamax",
+            "id": "0849-low-key-gigantamax",
             "name": "Gigantamax Toxtricity (Low Key)",
             "type1": "Electric",
             "type2": "Poison",
             "gen": 8,
-            "sprite": "0849-gigantamax",
+            "sprite": "0849-low-key-gigantamax",
             "gender": null,
             "region": null,
-            "form": "gigantamax",
+            "form": "low-key-gigantamax",
             "boxable": true
           }
         ]
@@ -21180,27 +21180,27 @@
         "name": "Sinistea",
         "forms": [
           {
-            "id": "0854",
+            "id": "0854-phony",
             "name": "Sinistea (Phony)",
             "type1": "Ghost",
             "type2": null,
             "gen": 8,
-            "sprite": "0854",
+            "sprite": "0854-phony",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "phony",
             "boxable": true
           },
           {
-            "id": "0854",
+            "id": "0854-antique",
             "name": "Sinistea (Antique)",
             "type1": "Ghost",
             "type2": null,
             "gen": 8,
-            "sprite": "0854",
+            "sprite": "0854-antique",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "antique",
             "boxable": true
           }
         ]
@@ -21210,27 +21210,27 @@
         "name": "Polteageist",
         "forms": [
           {
-            "id": "0855",
+            "id": "0855-phony",
             "name": "Polteageist (Phony)",
             "type1": "Ghost",
             "type2": null,
             "gen": 8,
-            "sprite": "0855",
+            "sprite": "0855-phony",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "phony",
             "boxable": true
           },
           {
-            "id": "0855",
+            "id": "0855-antique",
             "name": "Polteageist (Antique)",
             "type1": "Ghost",
             "type2": null,
             "gen": 8,
-            "sprite": "0855",
+            "sprite": "0855-antique",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "antique",
             "boxable": true
           }
         ]
@@ -25236,27 +25236,27 @@
         "name": "Poltchageist",
         "forms": [
           {
-            "id": "1012",
+            "id": "1012-counterfeit",
             "name": "Poltchageist (Counterfeit)",
             "type1": "Grass",
             "type2": "Ghost",
             "gen": 9,
-            "sprite": "1012",
+            "sprite": "1012-counterfeit",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "counterfeit",
             "boxable": true
           },
           {
-            "id": "1012",
+            "id": "1012-artisan",
             "name": "Poltchageist (Artisan)",
             "type1": "Grass",
             "type2": "Ghost",
             "gen": 9,
-            "sprite": "1012",
+            "sprite": "1012-artisan",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "artisan",
             "boxable": true
           }
         ]
@@ -25266,27 +25266,27 @@
         "name": "Sinistcha",
         "forms": [
           {
-            "id": "1013",
+            "id": "1013-counterfeit",
             "name": "Sinistcha (Unremarkable)",
             "type1": "Grass",
             "type2": "Ghost",
             "gen": 9,
-            "sprite": "1013",
+            "sprite": "1013-counterfeit",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "counterfeit",
             "boxable": true
           },
           {
-            "id": "1013",
+            "id": "1013-artisan",
             "name": "Sinistcha (Masterpiece)",
             "type1": "Grass",
             "type2": "Ghost",
             "gen": 9,
-            "sprite": "1013",
+            "sprite": "1013-artisan",
             "gender": null,
             "region": null,
-            "form": null,
+            "form": "artisan",
             "boxable": true
           }
         ]

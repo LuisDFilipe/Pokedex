@@ -570,7 +570,7 @@ onUnmounted(() => {
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
           </p> -->
-          <p class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
+          <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
       </article>
     </div>
@@ -598,7 +598,7 @@ onUnmounted(() => {
 <style scoped>
 .no-results {
   text-align: center;
-  padding: 80px 24px;
+  padding: 70px 24px;
   color: #a6a6a6;
 }
 .no-results h3 {
@@ -715,7 +715,13 @@ onUnmounted(() => {
 .pokemon-grid {
   display: grid;
   gap: 18px;
-  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  grid-template-columns: repeat(6, minmax(180px, 1fr));
+}
+
+@media (max-width: 1480px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(5, minmax(180px, 1fr));
+  }
 }
 
 @media (max-width: 1280px) {
@@ -1145,19 +1151,19 @@ onUnmounted(() => {
   border-radius: 50%;
 }
 
+.switch input:checked + .slider {
+  background-color: #ff4747;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
 .filter-modal {
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
-
-input:checked + .slider {
-  background-color: #ff4747;
-}
-
-input:checked + .slider:before {
-  transform: translateX(14px);
-}
   background: rgba(0, 0, 0, 0.25);
   z-index: 9998;
   padding: 24px;

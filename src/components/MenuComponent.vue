@@ -32,6 +32,10 @@ watch(
 
 <template>
   <nav class="nav-container">
+    <Transition name="fade">
+      <div v-if="isOpen" class="overlay" @click="closeMenu"></div>
+    </Transition>
+
     <button
       class="burger-btn"
       @click="toggleMenu"
@@ -128,10 +132,19 @@ watch(
 }
 
 .overlay {
-  display: none; /* No overlay needed on desktop */
+  display: none;
 }
 
 @media (max-width: 1024px) {
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
+    pointer-events: auto;
+  }
+
   .nav-container {
     height: auto;
     width: 100%;
@@ -144,6 +157,8 @@ watch(
   .burger-btn {
     display: flex;
     pointer-events: auto;
+    position: relative;
+    z-index: 2001;
     flex-direction: column;
     gap: 6px;
     background: #1a1a1a;
@@ -175,6 +190,7 @@ watch(
     position: fixed;
     top: 0;
     left: -200px;
+    z-index: 2000;
     width: 200px;
     height: 100vh;
     background-color: #0d0d0d;
@@ -189,5 +205,15 @@ watch(
   .drawer-content {
     padding-top: 100px;
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
