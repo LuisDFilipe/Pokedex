@@ -3,10 +3,10 @@ import packageInfo from "../../package.json";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-import HomeIcon from "./icons/HomeIcon.vue";
+/* import HomeIcon from "./icons/HomeIcon.vue"; */
 import PokedexIcon from "./icons/PokedexIcon.vue";
 /* import GameIcon from "./icons/GameIcon.vue"; */
-import StatsIcon from "./icons/StatsIcon.vue";
+/* import StatsIcon from "./icons/StatsIcon.vue"; */
 import AboutIcon from "./icons/AboutIcon.vue";
 
 const appVersion = packageInfo.version;
@@ -32,6 +32,10 @@ watch(
 
 <template>
   <nav class="nav-container">
+    <Transition name="fade">
+      <div v-if="isOpen" class="overlay" @click="closeMenu"></div>
+    </Transition>
+
     <button
       class="burger-btn"
       @click="toggleMenu"
@@ -46,9 +50,9 @@ watch(
     <div class="nav-drawer" :class="{ open: isOpen }">
       <div class="version-tag">v{{ appVersion }}</div>
       <div class="drawer-content">
-        <router-link to="/" class="nav-item" @click="closeMenu">
+<!--         <router-link to="/" class="nav-item" @click="closeMenu">
           <HomeIcon /> <span>Home</span>
-        </router-link>
+        </router-link> -->
 
         <router-link to="/pokedex" class="nav-item" @click="closeMenu">
           <PokedexIcon /> <span>Pokedex</span>
@@ -58,9 +62,9 @@ watch(
           <GameIcon /> <span>Game</span>
         </router-link> -->
         
-        <router-link to="/stats" class="nav-item" @click="closeMenu">
+<!--         <router-link to="/stats" class="nav-item" @click="closeMenu">
           <StatsIcon /> <span>Stats</span>
-        </router-link>
+        </router-link> -->
 
         <router-link to="/about" class="nav-item" @click="closeMenu">
           <AboutIcon /> <span>About</span>
@@ -128,10 +132,19 @@ watch(
 }
 
 .overlay {
-  display: none; /* No overlay needed on desktop */
+  display: none;
 }
 
 @media (max-width: 1024px) {
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
+    pointer-events: auto;
+  }
+
   .nav-container {
     height: auto;
     width: 100%;
@@ -144,6 +157,8 @@ watch(
   .burger-btn {
     display: flex;
     pointer-events: auto;
+    position: relative;
+    z-index: 2001;
     flex-direction: column;
     gap: 6px;
     background: #1a1a1a;
@@ -175,6 +190,7 @@ watch(
     position: fixed;
     top: 0;
     left: -200px;
+    z-index: 2000;
     width: 200px;
     height: 100vh;
     background-color: #0d0d0d;
@@ -189,5 +205,15 @@ watch(
   .drawer-content {
     padding-top: 100px;
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

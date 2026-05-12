@@ -11,8 +11,9 @@ interface PokemonForm {
   gender: string | null
   region: string | null
   form: string | null
-  show_gender: boolean | null
-  has_gender_difference: boolean | null
+  boxable: boolean
+  //show_gender: boolean | null
+  //has_gender_difference: boolean | null
 }
 
 interface PokemonEntry {
@@ -32,6 +33,7 @@ const pageSizeOptions = [5, 10, 20, 30, 50, 100]
 const page = ref(1)
 const pageDraft = ref(1)
 const filterQuery = ref('')
+const debouncedQuery = ref('')
 const pokemonList = ref<PokemonEntry[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -41,7 +43,9 @@ const showFilterModal = ref(false)
 const selectedGenerations = ref<number[]>([])
 const excludeGigantamax = ref(false)
 const excludeMegas = ref(false)
+const showBoxableOnly = ref(false)
 const showBaseFormOnly = ref(false)
+const showShiny = ref(false)
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -117,10 +121,13 @@ const allFormsFlat = computed(() => {
 })
 
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
-  if (excludeGigantamax.value && form.form === 'gigantamax') {
+  if (excludeGigantamax.value && form.form?.toLowerCase().includes('gigantamax')) {
     return true
   }
-  if (excludeMegas.value && form.form === 'mega') {
+  if (excludeMegas.value && (form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal'))) {
+    return true
+  }
+  if (showBoxableOnly.value && !form.boxable) { 
     return true
   }
   if (showBaseFormOnly.value && !form.isBaseForm) {
@@ -133,7 +140,7 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
 }
 
 const filteredPokemon = computed(() => {
-  const query = filterQuery.value.trim().toLowerCase()
+  const query = debouncedQuery.value.trim().toLowerCase()
 
   // Filter forms first
   const filteredForms = allFormsFlat.value.filter((form) => {
@@ -167,58 +174,40 @@ watch(pageDraft, (value) => {
   }
 })
 
-watch(itemsPerPage, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(filterQuery, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(selectedGenerations, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(excludeGigantamax, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(excludeMegas, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(showBaseFormOnly, () => {
-  page.value = 1
-  pageDraft.value = 1
-})
-
-watch(selectedGenerations, (newVal) => {
-  localStorage.setItem('selectedGenerations', JSON.stringify(newVal))
-}, { deep: true })
-
-watch(excludeGigantamax, (newVal) => {
-  localStorage.setItem('excludeGigantamax', newVal.toString())
-})
-
-watch(excludeMegas, (newVal) => {
-  localStorage.setItem('excludeMegas', newVal.toString())
-})
-
-watch(showBaseFormOnly, (newVal) => {
-  localStorage.setItem('showBaseFormOnly', newVal.toString())
-})
-
+// Debounce search query to improve performance
+let debounceTimer: ReturnType<typeof setTimeout>
 watch(filterQuery, (newVal) => {
-  localStorage.setItem('filterQuery', newVal)
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    debouncedQuery.value = newVal
+  }, 300)
 })
 
-watch(itemsPerPage, (newVal) => {
-  localStorage.setItem('itemsPerPage', newVal.toString())
+const saveSettings = () => {
+  localStorage.setItem('pokedex-settings', JSON.stringify({
+    selectedGenerations: selectedGenerations.value,
+    excludeGigantamax: excludeGigantamax.value,
+    excludeMegas: excludeMegas.value,
+    showBoxableOnly: showBoxableOnly.value,
+    showBaseFormOnly: showBaseFormOnly.value,
+    showShiny: showShiny.value,
+    filterQuery: filterQuery.value,
+    itemsPerPage: itemsPerPage.value
+  }))
+}
+
+watch(
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage],
+  () => {
+    page.value = 1
+    pageDraft.value = 1
+    saveSettings()
+  },
+  { deep: true }
+)
+
+watch(showShiny, () => {
+  saveSettings()
 })
 
 const pagedPokemon = computed(() => {
@@ -232,24 +221,11 @@ const currentRange = computed(() => {
   return `${start}-${end}`
 })
 
-const getTypeBackground = (pokemon: PokemonEntry) => {
-  const primary = pokemon.forms[0]?.type1
-  const secondary = pokemon.forms[0]?.type2
-
-  const primaryColor = primary ? type_colors[primary] ?? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.08)'
-  const secondaryColor = secondary ? type_colors[secondary] ?? primaryColor : null
-
-  if (!secondaryColor) return primaryColor
-
-  return `linear-gradient(to right, ${primaryColor} 0%, ${primaryColor} 50%, ${secondaryColor} 50%, ${secondaryColor} 100%)`
-}
-
 const getSpriteUrl = (id: string) => {
+  if (showShiny.value) {
+    return shinySpriteMap[id] ?? normalSpriteMap[id] ?? ''
+  }
   return normalSpriteMap[id] ?? ''
-  //if(true)
-  //  return normalSpriteMap[id] ?? ''
-  //else 
-  //  return shinySpriteMap[id] ?? ''
 }
 
 const getGenderIcons = (gender: string | null) => {
@@ -304,11 +280,6 @@ const nextPage = () => {
   pageDraft.value = page.value
 }
 
-const selectPokemon = (pokemon: PokemonEntry) => {
-  selectedPokemon.value = pokemon
-  selectedForm.value = pokemon.forms[0] ?? null
-}
-
 const selectForm = (form: PokemonForm) => {
   selectedForm.value = form
 }
@@ -334,6 +305,8 @@ const toggleGenerationFilter = (gen: number) => {
   } else {
     selectedGenerations.value.push(gen)
   }
+  page.value = 1
+  pageDraft.value = 1
 }
 
 const isGenerationSelected = (gen: number) => {
@@ -344,7 +317,9 @@ const clearFilters = () => {
   selectedGenerations.value = []
   excludeGigantamax.value = false
   excludeMegas.value = false
+  showBoxableOnly.value = false
   showBaseFormOnly.value = false
+  showShiny.value = false
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -359,20 +334,17 @@ const handleKeyDown = (event: KeyboardEvent) => {
 onMounted(async () => {
   await loadPokedex()
   // Load saved filters
-  const savedGenerations = localStorage.getItem('selectedGenerations')
-  if (savedGenerations) {
-    selectedGenerations.value = JSON.parse(savedGenerations)
-  }
-  excludeGigantamax.value = localStorage.getItem('excludeGigantamax') === 'true'
-  excludeMegas.value = localStorage.getItem('excludeMegas') === 'true'
-  showBaseFormOnly.value = localStorage.getItem('showBaseFormOnly') === 'true'
-  const savedQuery = localStorage.getItem('filterQuery')
-  if (savedQuery) {
-    filterQuery.value = savedQuery
-  }
-  const savedItemsPerPage = localStorage.getItem('itemsPerPage')
-  if (savedItemsPerPage) {
-    itemsPerPage.value = parseInt(savedItemsPerPage)
+  const savedSettings = localStorage.getItem('pokedex-settings')
+  if (savedSettings) {
+    const settings = JSON.parse(savedSettings)
+    if (settings.selectedGenerations !== undefined) selectedGenerations.value = settings.selectedGenerations
+    if (settings.filterQuery !== undefined) filterQuery.value = settings.filterQuery
+    if (settings.excludeGigantamax !== undefined) excludeGigantamax.value = settings.excludeGigantamax
+    if (settings.excludeMegas !== undefined) excludeMegas.value = settings.excludeMegas
+    if (settings.showBoxableOnly !== undefined) showBoxableOnly.value = settings.showBoxableOnly
+    if (settings.showBaseFormOnly !== undefined) showBaseFormOnly.value = settings.showBaseFormOnly
+    if (settings.showShiny !== undefined) showShiny.value = settings.showShiny
+    if (settings.itemsPerPage !== undefined) itemsPerPage.value = settings.itemsPerPage
   }
   window.addEventListener('keydown', handleKeyDown)
 })
@@ -402,6 +374,14 @@ onUnmounted(() => {
         </div>
 
         <div class="page-meta-right">
+          <label v-if="!loading && !error" class="shiny-toggle" title="Toggle shiny sprites">
+            <div class="switch">
+              <input type="checkbox" v-model="showShiny" />
+              <span class="slider"></span>
+            </div>
+            <span>Shiny</span>
+          </label>
+
           <button v-if="!loading && !error" class="filter-btn" @click="showFilterModal = true" title="Open filter settings">
             Filters
           </button>
@@ -422,10 +402,13 @@ onUnmounted(() => {
         <div class="detail-badge">#{{ selectedPokemon.id }}</div>
         <div class="detail-main">
           <div class="detail-image">
-            <img
-              :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id)"
-              :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
-            />
+        <Transition name="sprite-fade" mode="out-in">
+          <img
+            :key="`${activeForm?.sprite || selectedPokemon.id}-${showShiny}`"
+            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id)"
+            :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
+          />
+        </Transition>
             <div v-if="activeGenderIcons.length" class="gender-overlay">
               <img
                 v-for="src in activeGenderIcons"
@@ -438,8 +421,7 @@ onUnmounted(() => {
           </div>
           <div class="detail-text">
             <h2>
-              {{ selectedPokemon.id }} · {{ selectedPokemon.name }}
-              <small v-if="activeForm?.name && activeForm?.name !== selectedPokemon.name">({{ activeForm.name }})</small>
+              {{ activeForm?.name || selectedPokemon.name }}
             </h2>
             <div class="detail-type-pills">
               <span
@@ -506,9 +488,9 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Gigantamax Filter -->
           <div class="filter-section">
             <h3>Special Forms</h3>
+            <!-- Gigantamax Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -517,6 +499,7 @@ onUnmounted(() => {
               />
               <span>Exclude Gigantamax</span>
             </label>
+            <!-- Mega Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -525,6 +508,16 @@ onUnmounted(() => {
               />
               <span>Exclude Megas</span>
             </label>
+            <!-- Boxable Filter -->
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                v-model="showBoxableOnly"
+                :disabled="showBaseFormOnly"
+              />
+              <span>Show Only Boxable Forms</span>
+            </label>
+            <!-- All Forms Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
@@ -540,6 +533,11 @@ onUnmounted(() => {
           <button class="btn-close" @click="showFilterModal = false">Done</button>
         </div>
       </div>
+    </div>
+
+    <div v-if="!loading && !error && filteredPokemon.length === 0" class="no-results">
+      <h3>No Pokémon found</h3>
+      <p>Try adjusting your filters or search query.</p>
     </div>
 
     <div v-if="!loading && !error" class="pokemon-grid">
@@ -562,15 +560,17 @@ onUnmounted(() => {
           />
         </div>
         <div class="pokemon-card_image">
-          <img :src="getSpriteUrl(form.sprite || form.id)" :alt="form.name" loading="lazy" />
+          <Transition name="sprite-fade" mode="out-in">
+            <img :key="`${form.sprite || form.id}-${showShiny}`" :src="getSpriteUrl(form.sprite || form.id)" :alt="form.name" loading="lazy" />
+          </Transition>
         </div>
         <div class="pokemon-card_info">
           <h2>{{ form.pokemonName }}</h2>
-          <p>
+          <!-- <p>
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
-          </p>
-          <p class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
+          </p> -->
+          <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
       </article>
     </div>
@@ -596,6 +596,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.no-results {
+  text-align: center;
+  padding: 70px 24px;
+  color: #a6a6a6;
+}
+.no-results h3 {
+  margin-bottom: 8px;
+}
 .pokedex-view {
   padding: 24px;
   color: #ececec;
@@ -685,10 +693,12 @@ onUnmounted(() => {
 @media (max-width: 720px) {
   .page-meta {
     grid-template-columns: 1fr;
+    gap: 12px; /* Reduce vertical gap between page-meta-left and page-meta-right */
   }
 
   .page-meta-right {
     justify-content: flex-start;
+    flex-wrap: wrap; /* Allow items to wrap onto the next line */
   }
 
   .filter-search,
@@ -705,7 +715,13 @@ onUnmounted(() => {
 .pokemon-grid {
   display: grid;
   gap: 18px;
-  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  grid-template-columns: repeat(6, minmax(180px, 1fr));
+}
+
+@media (max-width: 1480px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(5, minmax(180px, 1fr));
+  }
 }
 
 @media (max-width: 1280px) {
@@ -1083,6 +1099,66 @@ onUnmounted(() => {
   border-color: rgba(255, 255, 255, 0.24);
 }
 
+.shiny-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #a6a6a6;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.shiny-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #eaeaea;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: .3s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px; width: 12px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: #ff4747;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
 .filter-modal {
   position: fixed;
   inset: 0;
@@ -1223,5 +1299,19 @@ onUnmounted(() => {
 
 .btn-close:hover {
   background: #ff5757;
+}
+
+/* Sprite transition styles */
+.sprite-fade-enter-active,
+.sprite-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.sprite-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.sprite-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.1);
 }
 </style>
