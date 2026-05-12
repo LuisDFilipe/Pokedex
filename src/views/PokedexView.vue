@@ -29,16 +29,21 @@ interface PokedexJson {
 }
 
 const itemsPerPage = ref(10)
-const pageSizeOptions = [5, 10, 20, 30, 50, 100]
+const pageSizeOptions = [5, 6, 10, 12, 18, 20, 24, 30, 50, 60, 100]
 const page = ref(1)
 const pageDraft = ref(1)
 const filterQuery = ref('')
 const debouncedQuery = ref('')
+const collectedNormal = ref<string[]>([])
+const collectedShiny = ref<string[]>([])
+const showCollectedOnly = ref(false)
+const showUncollectedOnly = ref(false)
 const pokemonList = ref<PokemonEntry[]>([])
 const loading = ref(true)
 const error = ref('')
 const selectedPokemon = ref<PokemonEntry | null>(null)
 const selectedForm = ref<PokemonForm | null>(null)
+const localShowShiny = ref(false)
 const showFilterModal = ref(false)
 const selectedGenerations = ref<number[]>([])
 const excludeGigantamax = ref(false)
@@ -120,6 +125,23 @@ const allFormsFlat = computed(() => {
   )
 })
 
+const isCollected = (id: string, isShiny: boolean) => {
+  const list = isShiny ? collectedShiny.value : collectedNormal.value
+  return list.includes(id)
+}
+
+const toggleCollection = (id: string, isShiny: boolean) => {
+  const list = isShiny ? collectedShiny.value : collectedNormal.value
+  const index = list.indexOf(id)
+  if (index > -1) {
+    list.splice(index, 1)
+  } else {
+    list.push(id)
+  }
+  saveCollection()
+  saveSettings()
+}
+
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
   if (excludeGigantamax.value && form.form?.toLowerCase().includes('gigantamax')) {
     return true
@@ -145,6 +167,22 @@ const filteredPokemon = computed(() => {
   // Filter forms first
   const filteredForms = allFormsFlat.value.filter((form) => {
     if (isFormExcluded(form)) return false
+
+    // Collection Filters
+    const normalCollected = collectedNormal.value.includes(form.id)
+    const shinyCollected = collectedShiny.value.includes(form.id)
+
+    if (showCollectedOnly.value) {
+      const isCurrentlyShiny = showShiny.value
+      if (isCurrentlyShiny && !shinyCollected) return false
+      if (!isCurrentlyShiny && !normalCollected) return false
+    }
+
+    if (showUncollectedOnly.value) {
+      const isCurrentlyShiny = showShiny.value
+      if (isCurrentlyShiny && shinyCollected) return false
+      if (!isCurrentlyShiny && normalCollected) return false
+    }
 
     if (!query) return true
 
@@ -183,6 +221,13 @@ watch(filterQuery, (newVal) => {
   }, 300)
 })
 
+const saveCollection = () => {
+  localStorage.setItem('pokedex-collection', JSON.stringify({
+    normal: collectedNormal.value,
+    shiny: collectedShiny.value
+  }))
+}
+
 const saveSettings = () => {
   localStorage.setItem('pokedex-settings', JSON.stringify({
     selectedGenerations: selectedGenerations.value,
@@ -191,13 +236,18 @@ const saveSettings = () => {
     showBoxableOnly: showBoxableOnly.value,
     showBaseFormOnly: showBaseFormOnly.value,
     showShiny: showShiny.value,
+    showCollectedOnly: showCollectedOnly.value,
+    showUncollectedOnly: showUncollectedOnly.value,
     filterQuery: filterQuery.value,
     itemsPerPage: itemsPerPage.value
   }))
 }
 
+watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
+watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
+
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage],
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -221,8 +271,8 @@ const currentRange = computed(() => {
   return `${start}-${end}`
 })
 
-const getSpriteUrl = (id: string) => {
-  if (showShiny.value) {
+const getSpriteUrl = (id: string, isShiny: boolean = showShiny.value) => {
+  if (isShiny) {
     return shinySpriteMap[id] ?? normalSpriteMap[id] ?? ''
   }
   return normalSpriteMap[id] ?? ''
@@ -290,6 +340,7 @@ const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId
   if (pokemon) {
     selectedPokemon.value = pokemon
     selectedForm.value = form
+    localShowShiny.value = showShiny.value
   }
 }
 
@@ -320,6 +371,8 @@ const clearFilters = () => {
   showBoxableOnly.value = false
   showBaseFormOnly.value = false
   showShiny.value = false
+  showCollectedOnly.value = false
+  showUncollectedOnly.value = false
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -333,6 +386,14 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 onMounted(async () => {
   await loadPokedex()
+
+  const savedCollection = localStorage.getItem('pokedex-collection')
+  if (savedCollection) {
+    const data = JSON.parse(savedCollection)
+    if (data.normal) collectedNormal.value = data.normal
+    if (data.shiny) collectedShiny.value = data.shiny
+  }
+
   // Load saved filters
   const savedSettings = localStorage.getItem('pokedex-settings')
   if (savedSettings) {
@@ -344,6 +405,8 @@ onMounted(async () => {
     if (settings.showBoxableOnly !== undefined) showBoxableOnly.value = settings.showBoxableOnly
     if (settings.showBaseFormOnly !== undefined) showBaseFormOnly.value = settings.showBaseFormOnly
     if (settings.showShiny !== undefined) showShiny.value = settings.showShiny
+    if (settings.showCollectedOnly !== undefined) showCollectedOnly.value = settings.showCollectedOnly
+    if (settings.showUncollectedOnly !== undefined) showUncollectedOnly.value = settings.showUncollectedOnly
     if (settings.itemsPerPage !== undefined) itemsPerPage.value = settings.itemsPerPage
   }
   window.addEventListener('keydown', handleKeyDown)
@@ -361,7 +424,7 @@ onUnmounted(() => {
         <div class="page-meta-left">
           <span v-if="loading">Loading...</span>
           <span v-else-if="error" class="error">{{ error }}</span>
-          <span v-else>{{ filteredPokemon.length }} form{{ filteredPokemon.length !== 1 ? 's' : '' }} · Showing {{ currentRange }} of {{ filteredPokemon.length }}</span>
+          <span v-else>{{ filteredPokemon.length }} form{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
           <label v-if="!loading && !error" class="filter-search">
             <span>Filter</span>
             <input
@@ -404,9 +467,11 @@ onUnmounted(() => {
           <div class="detail-image">
         <Transition name="sprite-fade" mode="out-in">
           <img
-            :key="`${activeForm?.sprite || selectedPokemon.id}-${showShiny}`"
-            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id)"
+            :key="`${activeForm?.sprite || selectedPokemon.id}-${localShowShiny}`"
+            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id, localShowShiny)"
             :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
+            @click="localShowShiny = !localShowShiny"
+            :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
           />
         </Transition>
             <div v-if="activeGenderIcons.length" class="gender-overlay">
@@ -441,6 +506,23 @@ onUnmounted(() => {
             </div>
             <p v-if="activeForm?.gen" class="detail-extra"><strong>Gen:</strong> {{ activeForm.gen }}</p>
             <p v-if="activeForm?.region" class="detail-extra"><strong>Region:</strong> {{ activeForm.region }}</p>
+
+            <div class="collection-toggles" v-if="activeForm">
+              <button 
+                class="collect-btn" 
+                :class="{ collected: isCollected(activeForm.id, false) }"
+                @click="toggleCollection(activeForm.id, false)"
+              >
+                <span class="icon">●</span> Normal
+              </button>
+              <button 
+                class="collect-btn shiny" 
+                :class="{ collected: isCollected(activeForm.id, true) }"
+                @click="toggleCollection(activeForm.id, true)"
+              >
+                <span class="icon">★</span> Shiny
+              </button>
+            </div>
           </div>
         </div>
 
@@ -526,6 +608,25 @@ onUnmounted(() => {
               <span>Hide all forms</span>
             </label>
           </div>
+
+          <div class="filter-section">
+            <h3>Collection Status</h3>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showCollectedOnly" />
+              <span>Show Collected Only</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showUncollectedOnly" />
+              <span>Show Uncollected Only</span>
+            </label>
+          </div>
+
+<!--           <div class="filter-section">
+            <h3>Collection Management</h3>
+            <button class="btn-export" @click="exportCollection">Export Collection</button>
+            <input type="file" ref="importFile" @change="handleFileImport" accept="application/json" style="display: none;" />
+            <button class="btn-import" @click="importCollection">Import Collection</button>
+          </div> -->
         </div>
 
         <div class="filter-footer">
@@ -558,6 +659,18 @@ onUnmounted(() => {
             :src="src"
             :alt="src.includes('female') ? 'Female' : 'Male'"
           />
+        </div>
+        <div class="pokemon-card_collection">
+          <span 
+            class="collect-indicator" 
+            :class="{ active: isCollected(form.id, false) }"
+            title="Normal Collected"
+          >●</span>
+          <span 
+            class="collect-indicator shiny" 
+            :class="{ active: isCollected(form.id, true) }"
+            title="Shiny Collected"
+          >★</span>
         </div>
         <div class="pokemon-card_image">
           <Transition name="sprite-fade" mode="out-in">
@@ -605,7 +718,7 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 .pokedex-view {
-  padding: 24px;
+  padding: 10px;
   color: #ececec;
 }
 
@@ -714,7 +827,7 @@ onUnmounted(() => {
 
 .pokemon-grid {
   display: grid;
-  gap: 18px;
+  gap: 10px;
   grid-template-columns: repeat(6, minmax(180px, 1fr));
 }
 
@@ -996,7 +1109,6 @@ onUnmounted(() => {
 .pokemon-card_image {
   display: grid;
   place-items: center;
-  margin-bottom: 10px;
   min-height: 120px;
 }
 
@@ -1313,5 +1425,70 @@ onUnmounted(() => {
 .sprite-fade-leave-to {
   opacity: 0;
   transform: scale(1.1);
+}
+
+/* Collection styles */
+.collection-toggles {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.collect-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #a6a6a6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.collect-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.collect-btn.collected {
+  background: rgba(255, 71, 71, 0.2);
+  border-color: #ff4747;
+  color: #fff;
+}
+
+.collect-btn.shiny.collected {
+  background: rgba(247, 208, 44, 0.2);
+  border-color: #f7d02c;
+  color: #fff;
+}
+
+.pokemon-card_collection {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 1;
+}
+
+.collect-indicator {
+  font-size: 1rem;
+  opacity: 0.15;
+  transition: opacity 0.2s ease;
+}
+
+.collect-indicator.active {
+  opacity: 1;
+  color: #ff4747;
+  text-shadow: 0 0 8px rgba(255, 71, 71, 0.6);
+}
+
+.collect-indicator.shiny.active {
+  color: #f7d02c;
+  text-shadow: 0 0 8px rgba(247, 208, 44, 0.6);
 }
 </style>

@@ -3,7 +3,7 @@ import packageInfo from "../../package.json";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-/* import HomeIcon from "./icons/HomeIcon.vue"; */
+import HomeIcon from "./icons/HomeIcon.vue";
 import PokedexIcon from "./icons/PokedexIcon.vue";
 /* import GameIcon from "./icons/GameIcon.vue"; */
 /* import StatsIcon from "./icons/StatsIcon.vue"; */
@@ -50,9 +50,9 @@ watch(
     <div class="nav-drawer" :class="{ open: isOpen }">
       <div class="version-tag">v{{ appVersion }}</div>
       <div class="drawer-content">
-<!--         <router-link to="/" class="nav-item" @click="closeMenu">
+        <router-link to="/" class="nav-item" @click="closeMenu">
           <HomeIcon /> <span>Home</span>
-        </router-link> -->
+        </router-link>
 
         <router-link to="/pokedex" class="nav-item" @click="closeMenu">
           <PokedexIcon /> <span>Pokedex</span>
