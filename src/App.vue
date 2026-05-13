@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useRoute } from 'vue-router'
 import MenuComponent from './components/MenuComponent.vue'
 
@@ -9,11 +9,11 @@ const route = useRoute()
   <div class="app-wrapper">
     <header class="page-header">
       <h1 class="main-title">
-        {{ route.meta.title }} <span class="highlight">{{ route.meta.highlight }}</span>
+        {{ route.meta.title }}
       </h1>
-      <!-- <p class="section-description">
+      <p v-if="route.meta.description" class="section-description">
         {{ route.meta.description }}
-      </p> -->
+      </p>
     </header>
 
     <MenuComponent />
@@ -27,9 +27,11 @@ const route = useRoute()
 <style>
 body {
   margin: 0;
-  background-color: #000;
+  background:
+    radial-gradient(circle at top, rgba(255, 71, 71, 0.14), transparent 32%),
+    linear-gradient(180deg, #0b0b0b 0%, #000 100%);
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .app-wrapper {
@@ -50,6 +52,7 @@ body {
 
 .page-header {
   text-align: center;
+  padding: 20px 12px 8px;
 }
 
 .main-title {
@@ -60,11 +63,20 @@ body {
   text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.5);
 }
 
+.section-description {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.68);
+}
+
 @media (max-width: 1024px) {
   .app-wrapper {
     /* On mobile, the menu is floating/hidden, so no margin needed */
     margin-left: 0; 
     padding-top: 80px; /* Room for the burger button at the top */
+  }
+
+  .main-title {
+    font-size: 2.5rem;
   }
 }
 </style>

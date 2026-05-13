@@ -1,144 +1,149 @@
-<script setup>
-import packageInfo from "../../package.json";
-import { ref } from 'vue';
+<script setup lang="ts">
+import packageInfo from '../../package.json'
 
-const appVersion = packageInfo.version;
-const creator = ref('Luis D. Pereira');
-const stats = [
-  { label: 'Total Pokémon', value: '1,025' },
-  { label: 'Regions Covered', value: '9' },
-  { label: 'System Status', value: 'Online' }
-];
+const appVersion = packageInfo.version
+
+const projectFacts = [
+  { label: 'Current release', value: `v${appVersion}` },
+  { label: 'Built with', value: 'Vue 3 + TypeScript + Vite' },
+  { label: 'Focus', value: 'Collection tracking and Pokedex browsing' },
+]
+
+const nextSteps = [
+  'Add deeper species detail such as evolutions, weaknesses, and move context.',
+  'Grow the game prototype into a cleaner encounter and battle loop.',
+  'Keep tightening the collection workflow around progress tracking.',
+]
 </script>
 
 <template>
-  <div class="about-container">
-    <div class="pokedex-card">
-      <header class="card-header">
-        <h1>The Pokedex Project</h1>
-        <span class="version-tag">v{{ appVersion }}</span>
-      </header>
+  <section class="about-view">
+    <article class="about-card">
+      <p class="eyebrow">Project overview</p>
+      <h2>The Pokedex Project</h2>
+      <p class="lead">
+        A personal Pokemon tracker built around form browsing, collection logging, and a growing set of trainer-facing tools.
+      </p>
 
-      <section class="description">
-        <p>
-          Welcome to the ultimate digital encyclopedia for Pokémon Trainers.
-        </p>
-      </section>
-
-      <hr class="divider" />
-
-      <div class="stats-grid">
-        <div v-for="stat in stats" :key="stat.label" class="stat-box">
-          <span class="stat-label">{{ stat.label }}</span>
-          <span class="stat-value">{{ stat.value }}</span>
+      <div class="facts-grid">
+        <div v-for="fact in projectFacts" :key="fact.label" class="fact-card">
+          <span>{{ fact.label }}</span>
+          <strong>{{ fact.value }}</strong>
         </div>
       </div>
 
-      <footer class="card-footer">
-        <p>Developed with ❤️ by {{ creator }}</p>
-      </footer>
-    </div>
-  </div>
+      <section class="about-section">
+        <h3>What is already working</h3>
+        <p>
+          The Pokedex view already handles filters, pagination, shiny tracking, and saved collection state. This release also adds a fuller stats dashboard so the collection data becomes more useful.
+        </p>
+      </section>
+
+      <section class="about-section">
+        <h3>What comes next</h3>
+        <ul>
+          <li v-for="item in nextSteps" :key="item">{{ item }}</li>
+        </ul>
+      </section>
+    </article>
+  </section>
 </template>
 
 <style scoped>
-.about-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 80vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.about-view {
+  display: grid;
+  place-items: center;
+  padding: 16px;
 }
 
-.pokedex-card {
-  background: #fdfdfd;
-  border: 4px solid #333;
-  border-radius: 15px;
-  max-width: 500px;
-  padding: 2rem;
-  box-shadow: 10px 10px 0px #ee1515;
+.about-card {
+  width: min(760px, 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    #101010;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-h1 {
-  margin: 0;
-  color: #333;
-  font-size: 1.8rem;
+.eyebrow {
+  color: #ffb4b4;
   text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-.version-tag {
-  background: #333;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 5px;
+  letter-spacing: 0.08em;
   font-size: 0.8rem;
 }
 
-.description p {
-  line-height: 1.6;
-  color: #555;
+.about-card h2 {
+  margin-top: 10px;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 800;
 }
 
-.divider {
-  border: 0;
-  border-top: 2px solid #eee;
-  margin: 1.5rem 0;
+.lead {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 60ch;
 }
 
-.stats-grid {
+.facts-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
 }
 
-.stat-box {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
+.fact-card,
+.about-section {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.stat-label {
-  font-size: 0.7rem;
-  color: #888;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  font-weight: bold;
-  color: #333;
-}
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  color: black;
-}
-
-.decorative-buttons {
-  display: flex;
+.fact-card {
+  padding: 16px;
+  display: grid;
   gap: 8px;
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.2);
+.fact-card span {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.88rem;
 }
 
-.blue { background: #51adff; }
-.red { background: #ff5959; }
-.yellow { background: #ffd342; }
+.fact-card strong {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.about-section {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.about-section h3 {
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.about-section p,
+.about-section li {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.about-section ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+@media (max-width: 720px) {
+  .facts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-card {
+    padding: 18px;
+  }
+}
 </style>

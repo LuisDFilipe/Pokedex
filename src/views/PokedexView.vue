@@ -1,32 +1,7 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-
-interface PokemonForm {
-  id: string
-  name: string
-  type1: string
-  type2: string | null
-  gen: number
-  sprite: string
-  gender: string | null
-  region: string | null
-  form: string | null
-  boxable: boolean
-  //show_gender: boolean | null
-  //has_gender_difference: boolean | null
-}
-
-interface PokemonEntry {
-  id: string
-  name: string
-  forms: PokemonForm[]
-}
-
-interface PokedexJson {
-  pokedex: {
-    pokemon: PokemonEntry[]
-  }
-}
+import { loadPokedex, readCollection } from '@/lib/pokedex'
+import type { PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 const itemsPerPage = ref(10)
 const pageSizeOptions = [5, 6, 10, 12, 18, 20, 24, 30, 50, 60, 100]
@@ -301,18 +276,12 @@ const activeGenderIcons = computed(() => {
   return getGenderIcons(activeForm.value?.gender ?? null)
 })
 
-const loadPokedex = async () => {
+const loadPokedexData = async () => {
   loading.value = true
   error.value = ''
 
   try {
-    const response = await fetch('/pokedex.json')
-    if (!response.ok) {
-      throw new Error(`Failed to load pokedex.json: ${response.status}`)
-    }
-
-    const data = (await response.json()) as PokedexJson
-    pokemonList.value = data.pokedex.pokemon
+    pokemonList.value = await loadPokedex()
   } catch (err) {
     error.value = err instanceof Error ? err.message : String(err)
   } finally {
@@ -385,14 +354,11 @@ const handleKeyDown = (event: KeyboardEvent) => {
 }
 
 onMounted(async () => {
-  await loadPokedex()
+  await loadPokedexData()
 
-  const savedCollection = localStorage.getItem('pokedex-collection')
-  if (savedCollection) {
-    const data = JSON.parse(savedCollection)
-    if (data.normal) collectedNormal.value = data.normal
-    if (data.shiny) collectedShiny.value = data.shiny
-  }
+  const savedCollection = readCollection()
+  collectedNormal.value = savedCollection.normal
+  collectedShiny.value = savedCollection.shiny
 
   // Load saved filters
   const savedSettings = localStorage.getItem('pokedex-settings')
@@ -431,7 +397,7 @@ onUnmounted(() => {
               v-model="filterQuery"
               type="search"
               placeholder="Name, Type, or Number"
-              aria-label="Filter Pokémon by Name, Type, or Number"
+              aria-label="Filter Pokemon by Name, Type, or Number"
             />
           </label>
         </div>
@@ -461,7 +427,7 @@ onUnmounted(() => {
 
     <div v-if="selectedPokemon" class="pokemon-modal" @click.self="closeDetail">
       <div class="detail-card" role="dialog" aria-modal="true">
-        <button class="detail-close" @click="closeDetail">×</button>
+        <button class="detail-close" aria-label="Close details" @click="closeDetail">&times;</button>
         <div class="detail-badge">#{{ selectedPokemon.id }}</div>
         <div class="detail-main">
           <div class="detail-image">
@@ -513,14 +479,14 @@ onUnmounted(() => {
                 :class="{ collected: isCollected(activeForm.id, false) }"
                 @click="toggleCollection(activeForm.id, false)"
               >
-                <span class="icon">●</span> Normal
+                <span class="icon">&bull;</span> Normal
               </button>
               <button 
                 class="collect-btn shiny" 
                 :class="{ collected: isCollected(activeForm.id, true) }"
                 @click="toggleCollection(activeForm.id, true)"
               >
-                <span class="icon">★</span> Shiny
+                <span class="icon">&#9733;</span> Shiny
               </button>
             </div>
           </div>
@@ -551,7 +517,7 @@ onUnmounted(() => {
       <div class="filter-panel" role="dialog" aria-modal="true">
         <div class="filter-header">
           <h2>Filter Settings</h2>
-          <button class="filter-close" @click="showFilterModal = false">×</button>
+          <button class="filter-close" aria-label="Close filters" @click="showFilterModal = false">&times;</button>
         </div>
 
         <div class="filter-content">
@@ -637,7 +603,7 @@ onUnmounted(() => {
     </div>
 
     <div v-if="!loading && !error && filteredPokemon.length === 0" class="no-results">
-      <h3>No Pokémon found</h3>
+      <h3>No Pokemon found</h3>
       <p>Try adjusting your filters or search query.</p>
     </div>
 
@@ -661,16 +627,16 @@ onUnmounted(() => {
           />
         </div>
         <div class="pokemon-card_collection">
-          <span 
-            class="collect-indicator" 
+          <span
+            class="collect-indicator"
             :class="{ active: isCollected(form.id, false) }"
             title="Normal Collected"
-          >●</span>
-          <span 
-            class="collect-indicator shiny" 
+          >&bull;</span>
+          <span
+            class="collect-indicator shiny"
             :class="{ active: isCollected(form.id, true) }"
             title="Shiny Collected"
-          >★</span>
+          >&#9733;</span>
         </div>
         <div class="pokemon-card_image">
           <Transition name="sprite-fade" mode="out-in">
@@ -1492,3 +1458,5 @@ onUnmounted(() => {
   text-shadow: 0 0 8px rgba(247, 208, 44, 0.6);
 }
 </style>
+
+
