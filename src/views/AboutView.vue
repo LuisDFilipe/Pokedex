@@ -45,6 +45,21 @@ const nextSteps = [
           <li v-for="item in nextSteps" :key="item">{{ item }}</li>
         </ul>
       </section>
+
+      <section class="about-section support-section">
+        <h3>Support the project</h3>
+        <p>
+          If this tracker has been useful, you can support future updates and feature work on Ko-fi.
+        </p>
+        <a
+          href="https://ko-fi.com/luisdfilipe"
+          target="_blank"
+          rel="noreferrer"
+          class="support-button"
+        >
+          Buy me a coffee
+        </a>
+      </section>
     </article>
   </section>
 </template>
@@ -135,6 +150,31 @@ const nextSteps = [
 .about-section ul {
   margin: 0;
   padding-left: 18px;
+}
+
+.support-section {
+  display: grid;
+  gap: 14px;
+}
+
+.support-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #ff4747;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.support-button:hover {
+  background: #ff5a5a;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 720px) {

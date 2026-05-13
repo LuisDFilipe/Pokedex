@@ -6,6 +6,7 @@ A Vue 3 + TypeScript Pokedex focused on form browsing, collection tracking, and 
 
 - Netlify: [the-pokedex-site.netlify.app](https://the-pokedex-site.netlify.app/)
 - GitHub Pages: [luisdfilipe.github.io/Pokedex](https://luisdfilipe.github.io/Pokedex/)
+- Support the project: [Buy me a coffee on Ko-fi](https://ko-fi.com/luisdfilipe)
 
 ## Current Features
 

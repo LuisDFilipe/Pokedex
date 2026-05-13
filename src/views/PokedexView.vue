@@ -315,6 +315,44 @@ const activeGenderIcons = computed(() => {
   return getGenderIcons(activeForm.value?.gender ?? null)
 })
 
+const pokemonFormMap = computed(() => {
+  const entries: Array<[string, PokemonForm & { pokemonName: string; pokemonId: string }]> = []
+
+  pokemonList.value.forEach((pokemon) => {
+    pokemon.forms.forEach((form) => {
+      entries.push([
+        form.id,
+        {
+          ...form,
+          pokemonName: pokemon.name,
+          pokemonId: pokemon.id,
+        },
+      ])
+    })
+  })
+
+  return Object.fromEntries(entries)
+})
+
+const activeEvolutionChain = computed(() => {
+  const evolutions = activeForm.value?.evolutions ?? []
+
+  return evolutions
+    .map((evolution) => {
+      const matchedForm = pokemonFormMap.value[evolution.id]
+
+      return {
+        id: evolution.id,
+        stage: evolution.stage,
+        label: matchedForm ? matchedForm.name : evolution.id,
+        sprite: matchedForm?.sprite ?? evolution.id,
+        pokemonId: matchedForm?.pokemonId ?? null,
+        isCurrent: activeForm.value?.id === evolution.id,
+      }
+    })
+    .sort((left, right) => left.stage - right.stage)
+})
+
 const loadPokedexData = async () => {
   loading.value = true
   error.value = ''
@@ -350,6 +388,23 @@ const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId
     selectedForm.value = form
     localShowShiny.value = showShiny.value
   }
+}
+
+const selectEvolutionForm = (evolutionId: string) => {
+  const matchedForm = pokemonFormMap.value[evolutionId]
+
+  if (!matchedForm) {
+    return
+  }
+
+  const pokemon = pokemonList.value.find((entry) => entry.id === matchedForm.pokemonId)
+
+  if (!pokemon) {
+    return
+  }
+
+  selectedPokemon.value = pokemon
+  selectedForm.value = matchedForm
 }
 
 const closeDetail = () => {
@@ -566,6 +621,31 @@ onUnmounted(() => {
                 @click="toggleCollection(activeForm.id, true)"
               >
                 <span class="icon">&#9733;</span> Shiny
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div v-if="activeEvolutionChain.length" class="evolution-chain">
+            <h3>Evolution Line</h3>
+            <div class="evolution-list">
+              <button
+                v-for="evolution in activeEvolutionChain"
+                :key="evolution.id"
+                type="button"
+                class="evolution-item"
+                :class="{ current: evolution.isCurrent }"
+                :title="evolution.isCurrent ? 'Currently viewing this Pokemon' : `View ${evolution.label}`"
+                @click="selectEvolutionForm(evolution.id)"
+              >
+                <img
+                  :src="getSpriteUrl(evolution.sprite, localShowShiny)"
+                  :alt="evolution.label"
+                  loading="lazy"
+                />
+                <span class="evolution-stage">Stage {{ evolution.stage }}</span>
+                <strong>{{ evolution.label }}</strong>
               </button>
             </div>
           </div>
@@ -1132,6 +1212,65 @@ onUnmounted(() => {
 
 .detail-extra {
   margin-top: 16px;
+}
+
+.evolution-chain {
+  margin-top: 18px;
+}
+
+.evolution-chain h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: #f0f0f0;
+}
+
+.evolution-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.evolution-item {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  width: 100%;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.evolution-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.evolution-item:focus-visible {
+  outline: 2px solid rgba(255, 71, 71, 0.9);
+  outline-offset: 2px;
+}
+
+.evolution-item.current {
+  border-color: rgba(255, 71, 71, 0.7);
+  background: rgba(255, 71, 71, 0.12);
+}
+
+.evolution-item img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.45)) drop-shadow(1px 1px 0px rgb(0, 0, 0));
+}
+
+.evolution-stage {
+  font-size: 0.78rem;
+  color: #bdbdbd;
 }
 .form-option {
   width: 100%;
