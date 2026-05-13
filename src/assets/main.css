@@ -9,20 +9,13 @@
 
 a {
   text-decoration: none;
-  color: rgb(0, 189, 126);
+  color: inherit;
   transition: 0.4s;
-  padding: 3px;
+  padding: 0;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: rgba(0, 189, 126, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
+    background-color: transparent;
   }
 }

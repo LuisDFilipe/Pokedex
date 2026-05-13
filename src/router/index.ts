@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PokedexView from '../views/PokedexView.vue'
-import GameView from '../views/GameView.vue'
 import StatsView from '../views/StatsView.vue'
 
 const router = createRouter({
@@ -12,49 +11,46 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { 
+      meta: {
         title: 'Home',
-        description: 'Home of the Pokedex App.'
-      }
+        description: 'Browse the project and jump into your collection.',
+      },
     },
     {
       path: '/pokedex',
       name: 'pokedex',
       component: PokedexView,
-      meta: { 
+      meta: {
         title: 'Pokedex',
-        description: 'Pokedex of the Pokedex App.'
-      }
+        description: 'Track forms, filter the dex, and mark your collection.',
+      },
     },
     {
       path: '/game',
       name: 'game',
-      component: GameView,
-      meta: { 
-        title: 'Pokémon Game',
-        description: 'Pokémon Game of the Pokedex App.'
-      }
+      component: () => import('../views/GameView.vue'),
+      meta: {
+        title: 'Pokemon Game',
+        description: 'Walk the map and prototype wild encounter ideas.',
+      },
     },
     {
       path: '/stats',
       name: 'stats',
       component: StatsView,
-      meta: { 
+      meta: {
         title: 'Stats',
-        description: 'Stats of the Pokedex App.'
-      }
+        description: 'See collection completion by generation, type, and form.',
+      },
     },
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
-      meta: { 
+      meta: {
         title: 'About',
-        description: 'About the Pokedex App.',
-      }
+        description: 'Project details, scope, and current release notes.',
+      },
     },
   ],
 })
