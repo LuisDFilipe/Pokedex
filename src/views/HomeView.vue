@@ -34,6 +34,23 @@ const quickLinks = [
         <p>{{ link.copy }}</p>
       </router-link>
     </div>
+
+    <section class="support-panel">
+      <div class="support-copy">
+        <h3>Support the project</h3>
+        <p>
+          If this tracker has been useful, you can help support future updates and new features on Ko-fi.
+        </p>
+      </div>
+      <a
+        href="https://ko-fi.com/luisdfilipe"
+        target="_blank"
+        rel="noreferrer"
+        class="support-button"
+      >
+        Buy me a coffee
+      </a>
+    </section>
   </section>
 </template>
 
@@ -102,6 +119,52 @@ const quickLinks = [
   background: rgba(255, 255, 255, 0.06);
 }
 
+.support-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.support-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.support-copy h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.support-copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.support-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #ff4747;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.support-button:hover {
+  background: #ff5a5a;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 900px) {
   .link-grid {
     grid-template-columns: 1fr;
@@ -109,6 +172,11 @@ const quickLinks = [
 
   .hero {
     padding: 22px 18px;
+  }
+
+  .support-panel {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

@@ -1,3 +1,8 @@
+export interface EvolutionLink {
+  stage: number
+  id: string
+}
+
 export interface PokemonForm {
   id: string
   name: string
@@ -9,6 +14,8 @@ export interface PokemonForm {
   region: string | null
   form: string | null
   boxable: boolean
+  stage?: number
+  evolutions?: EvolutionLink[]
 }
 
 export interface PokemonEntry {
