@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { loadPokedex, readCollection } from '@/lib/pokedex'
 import type { PokemonEntry, PokemonForm } from '@/types/pokedex'
@@ -39,7 +39,7 @@ const collectedBoxableShinyCount = computed(
 )
 
 const completionPercentage = (collected: number, total: number) =>
-  total === 0 ? 0 : Math.round((collected / total) * 100)
+  total === 0 ? 0 : Math.round((collected / total) * 100 * 100) / 100
 
 const totalForms = computed(() => boxableFormList.value.length)
 const shinyReadyForms = computed(() => boxableFormList.value.filter((form) => form.sprite).length)
@@ -85,6 +85,8 @@ const generationBreakdown = computed(() => {
       ...stats,
       normalRate: completionPercentage(stats.normal, stats.total),
       shinyRate: completionPercentage(stats.shiny, stats.total),
+      normalLabel: stats.normal + "/" + stats.total,
+      shinyLabel: stats.shiny + "/" + stats.total,
     }))
 })
 
@@ -111,15 +113,15 @@ const typeBreakdown = computed(() => {
 })
 
 const topMissingForms = computed(() =>
-  boxableFormList.value
-    .filter((form) => !normalSet.value.has(form.id))
-    .slice(0, 8)
+  [...boxableFormList.value.filter((form) => !normalSet.value.has(form.id))]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 5)
     .map((form) => ({
       id: form.id,
       name: form.name,
       pokemonName: form.pokemonName,
       generation: form.gen,
-      label: form.name === form.pokemonName ? form.pokemonName : `${form.pokemonName} (${form.name})`,
+      label: form.name === form.pokemonName ? form.pokemonName : `${form.name}`,
     })),
 )
 
@@ -182,15 +184,17 @@ onMounted(async () => {
               </div>
               <div class="meter-group">
                 <div>
-                  <label>Normal</label>
+                  <label>Normal · {{ entry.normalLabel }}</label>
                   <div class="meter">
-                    <span :style="{ width: `${entry.normalRate}%` }"></span>
+                    <span class="meter-fill" :style="{ width: `${entry.normalRate}%` }"></span>
+                    <span class="meter-value">{{ entry.normalRate }}%</span>
                   </div>
                 </div>
                 <div>
-                  <label>Shiny</label>
+                  <label>Shiny · {{ entry.shinyLabel }}</label>
                   <div class="meter shiny">
-                    <span :style="{ width: `${entry.shinyRate}%` }"></span>
+                    <span class="meter-fill" :style="{ width: `${entry.shinyRate}%` }"></span>
+                    <span class="meter-value">{{ entry.shinyRate }}%</span>
                   </div>
                 </div>
               </div>
@@ -211,7 +215,8 @@ onMounted(async () => {
                 <span>{{ entry.owned }}/{{ entry.total }}</span>
               </div>
               <div class="meter">
-                <span :style="{ width: `${entry.rate}%` }"></span>
+                <span class="meter-fill" :style="{ width: `${entry.rate}%` }"></span>
+                <span class="meter-value">{{ entry.rate }}%</span>
               </div>
             </article>
           </div>
@@ -228,7 +233,6 @@ onMounted(async () => {
           <ul class="missing-list">
             <li v-for="form in topMissingForms" :key="form.id">
               <strong>{{ form.label }}</strong>
-              <span>#{{ form.id }} · Gen {{ form.generation }}</span>
             </li>
           </ul>
         </section>
@@ -389,21 +393,35 @@ onMounted(async () => {
 }
 
 .meter {
+  position: relative;
   overflow: hidden;
-  height: 10px;
+  height: 24px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.meter span {
+.meter-fill {
   display: block;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ff6b6b, #ffd166);
 }
 
-.meter.shiny span {
+.meter.shiny .meter-fill {
   background: linear-gradient(90deg, #7dd3fc, #facc15);
+}
+
+.meter-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
 }
 
 .missing-list,
@@ -447,3 +465,4 @@ onMounted(async () => {
   }
 }
 </style>
+
