@@ -1,7 +1,16 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { loadPokedex, readCollection } from '@/lib/pokedex'
-import type { PokemonEntry, PokemonForm } from '@/types/pokedex'
+import {
+  createSyncPayload,
+  defaultSettings,
+  loadPokedex,
+  parseSyncPayload,
+  readCollection,
+  readSettings,
+  writeCollection,
+  writeSettings,
+} from '@/lib/pokedex'
+import type { PokedexSettings, PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 const itemsPerPage = ref(10)
 const pageSizeOptions = [5, 6, 10, 12, 18, 20, 24, 30, 50, 60, 100]
@@ -26,6 +35,9 @@ const excludeMegas = ref(false)
 const showBoxableOnly = ref(false)
 const showBaseFormOnly = ref(false)
 const showShiny = ref(false)
+const importFile = ref<HTMLInputElement | null>(null)
+const syncMessage = ref('')
+const syncMessageType = ref<'success' | 'error' | ''>('')
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -197,14 +209,41 @@ watch(filterQuery, (newVal) => {
 })
 
 const saveCollection = () => {
-  localStorage.setItem('pokedex-collection', JSON.stringify({
+  writeCollection({
     normal: collectedNormal.value,
-    shiny: collectedShiny.value
-  }))
+    shiny: collectedShiny.value,
+  })
+}
+
+const getCurrentSettings = (): PokedexSettings => ({
+  selectedGenerations: selectedGenerations.value,
+  excludeGigantamax: excludeGigantamax.value,
+  excludeMegas: excludeMegas.value,
+  showBoxableOnly: showBoxableOnly.value,
+  showBaseFormOnly: showBaseFormOnly.value,
+  showShiny: showShiny.value,
+  showCollectedOnly: showCollectedOnly.value,
+  showUncollectedOnly: showUncollectedOnly.value,
+  filterQuery: filterQuery.value,
+  itemsPerPage: itemsPerPage.value,
+})
+
+const applySettings = (settings: PokedexSettings) => {
+  selectedGenerations.value = settings.selectedGenerations
+  excludeGigantamax.value = settings.excludeGigantamax
+  excludeMegas.value = settings.excludeMegas
+  showBoxableOnly.value = settings.showBoxableOnly
+  showBaseFormOnly.value = settings.showBaseFormOnly
+  showShiny.value = settings.showShiny
+  showCollectedOnly.value = settings.showCollectedOnly
+  showUncollectedOnly.value = settings.showUncollectedOnly
+  filterQuery.value = settings.filterQuery
+  debouncedQuery.value = settings.filterQuery
+  itemsPerPage.value = settings.itemsPerPage
 }
 
 const saveSettings = () => {
-  localStorage.setItem('pokedex-settings', JSON.stringify({
+  writeSettings({
     selectedGenerations: selectedGenerations.value,
     excludeGigantamax: excludeGigantamax.value,
     excludeMegas: excludeMegas.value,
@@ -214,8 +253,8 @@ const saveSettings = () => {
     showCollectedOnly: showCollectedOnly.value,
     showUncollectedOnly: showUncollectedOnly.value,
     filterQuery: filterQuery.value,
-    itemsPerPage: itemsPerPage.value
-  }))
+    itemsPerPage: itemsPerPage.value,
+  })
 }
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
@@ -334,14 +373,68 @@ const isGenerationSelected = (gen: number) => {
 }
 
 const clearFilters = () => {
-  selectedGenerations.value = []
-  excludeGigantamax.value = false
-  excludeMegas.value = false
-  showBoxableOnly.value = false
-  showBaseFormOnly.value = false
-  showShiny.value = false
-  showCollectedOnly.value = false
-  showUncollectedOnly.value = false
+  applySettings(defaultSettings)
+}
+
+const setSyncMessage = (message: string, type: 'success' | 'error') => {
+  syncMessage.value = message
+  syncMessageType.value = type
+}
+
+const exportCollection = () => {
+  const payload = createSyncPayload(
+    {
+      normal: collectedNormal.value,
+      shiny: collectedShiny.value,
+    },
+    getCurrentSettings(),
+  )
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  const dateStamp = new Date().toISOString().slice(0, 10)
+
+  link.href = url
+  link.download = `pokedex-sync-${dateStamp}.json`
+  link.click()
+  URL.revokeObjectURL(url)
+
+  setSyncMessage('Sync file downloaded. Import it on your other device to restore your collection.', 'success')
+}
+
+const importCollection = () => {
+  importFile.value?.click()
+}
+
+const handleFileImport = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) {
+    return
+  }
+
+  try {
+    const rawValue = await file.text()
+    const payload = parseSyncPayload(rawValue)
+
+    collectedNormal.value = payload.collection.normal
+    collectedShiny.value = payload.collection.shiny
+    applySettings(payload.settings)
+    page.value = 1
+    pageDraft.value = 1
+
+    saveCollection()
+    saveSettings()
+
+    setSyncMessage(`Imported sync file from ${new Date(payload.exportedAt).toLocaleString()}.`, 'success')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to import sync file.'
+    setSyncMessage(message, 'error')
+  } finally {
+    input.value = ''
+  }
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -360,21 +453,7 @@ onMounted(async () => {
   collectedNormal.value = savedCollection.normal
   collectedShiny.value = savedCollection.shiny
 
-  // Load saved filters
-  const savedSettings = localStorage.getItem('pokedex-settings')
-  if (savedSettings) {
-    const settings = JSON.parse(savedSettings)
-    if (settings.selectedGenerations !== undefined) selectedGenerations.value = settings.selectedGenerations
-    if (settings.filterQuery !== undefined) filterQuery.value = settings.filterQuery
-    if (settings.excludeGigantamax !== undefined) excludeGigantamax.value = settings.excludeGigantamax
-    if (settings.excludeMegas !== undefined) excludeMegas.value = settings.excludeMegas
-    if (settings.showBoxableOnly !== undefined) showBoxableOnly.value = settings.showBoxableOnly
-    if (settings.showBaseFormOnly !== undefined) showBaseFormOnly.value = settings.showBaseFormOnly
-    if (settings.showShiny !== undefined) showShiny.value = settings.showShiny
-    if (settings.showCollectedOnly !== undefined) showCollectedOnly.value = settings.showCollectedOnly
-    if (settings.showUncollectedOnly !== undefined) showUncollectedOnly.value = settings.showUncollectedOnly
-    if (settings.itemsPerPage !== undefined) itemsPerPage.value = settings.itemsPerPage
-  }
+  applySettings(readSettings())
   window.addEventListener('keydown', handleKeyDown)
 })
 
@@ -587,12 +666,24 @@ onUnmounted(() => {
             </label>
           </div>
 
-<!--           <div class="filter-section">
-            <h3>Collection Management</h3>
-            <button class="btn-export" @click="exportCollection">Export Collection</button>
-            <input type="file" ref="importFile" @change="handleFileImport" accept="application/json" style="display: none;" />
-            <button class="btn-import" @click="importCollection">Import Collection</button>
-          </div> -->
+          <div class="filter-section">
+            <h3>Sync Between Devices</h3>
+            <p class="sync-copy">
+              Export your collection and filters as a sync file, then import that file on another device.
+            </p>
+            <div class="sync-actions">
+              <button type="button" class="btn-clear" @click="exportCollection">Export Sync File</button>
+              <button type="button" class="btn-close" @click="importCollection">Import Sync File</button>
+            </div>
+            <input
+              ref="importFile"
+              type="file"
+              accept="application/json"
+              class="sync-input"
+              @change="handleFileImport"
+            />
+            <p v-if="syncMessage" class="sync-message" :class="syncMessageType">{{ syncMessage }}</p>
+          </div>
         </div>
 
         <div class="filter-footer">
@@ -783,6 +874,10 @@ onUnmounted(() => {
   .filter-search,
   .page-size-selector {
     width: 100%;
+  }
+
+  .sync-actions {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1312,6 +1407,37 @@ onUnmounted(() => {
   margin: 0;
   font-size: 1rem;
   color: #eaeaea;
+}
+
+.sync-copy {
+  color: #b7b7b7;
+  line-height: 1.5;
+}
+
+.sync-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sync-input {
+  display: none;
+}
+
+.sync-message {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+}
+
+.sync-message.success {
+  background: rgba(122, 199, 76, 0.12);
+  color: #bde7a6;
+}
+
+.sync-message.error {
+  background: rgba(255, 107, 107, 0.12);
+  color: #ffb3b3;
 }
 
 .filter-options {

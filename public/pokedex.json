@@ -25586,42 +25586,6 @@
         ]
       },
       {
-        "id": "1027",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1027",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1027",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
-        "id": "1028",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1028",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1028",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
         "id": "1029",
         "name": "Pombon",
         "forms": [
@@ -25640,42 +25604,6 @@
         ]
       },
       {
-        "id": "1030",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1030",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1030",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
-        "id": "1031",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1031",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1031",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
         "id": "1032",
         "name": "Gecqua",
         "forms": [
@@ -25686,42 +25614,6 @@
             "type2": null,
             "gen": 10,
             "sprite": "1032",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
-        "id": "1033",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1033",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1033",
-            "gender": null,
-            "region": null,
-            "form": null,
-            "boxable": true
-          }
-        ]
-      },
-      {
-        "id": "1034",
-        "name": "-",
-        "forms": [
-          {
-            "id": "1034",
-            "name": "-",
-            "type1": "-",
-            "type2": null,
-            "gen": 10,
-            "sprite": "1034",
             "gender": null,
             "region": null,
             "form": null,
