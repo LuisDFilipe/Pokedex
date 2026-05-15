@@ -720,7 +720,6 @@ onUnmounted(() => {
               <input
                 type="checkbox"
                 v-model="showBoxableOnly"
-                :disabled="showBaseFormOnly"
               />
               <span>Show Only Boxable Forms</span>
             </label>
@@ -802,7 +801,7 @@ onUnmounted(() => {
             class="collect-indicator"
             :class="{ active: isCollected(form.id, false) }"
             title="Normal Collected"
-          >&bull;</span>
+          >&#9679;</span>
           <span
             class="collect-indicator shiny"
             :class="{ active: isCollected(form.id, true) }"
