@@ -596,6 +596,14 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
+
+watch(selectedPokemon, (newVal) => {
+  if (newVal) {
+    document.body.classList.add('no-scroll')
+  } else {
+    document.body.classList.remove('no-scroll')
+  }
+})
 </script>
 
 <template>
@@ -642,72 +650,71 @@ onUnmounted(() => {
 
     <div v-if="selectedPokemon" class="pokemon-modal" @click.self="closeDetail">
       <div class="detail-card" role="dialog" aria-modal="true">
-        <button class="detail-close" aria-label="Close details" @click="closeDetail">&times;</button>
-        <div class="detail-badge">#{{ selectedPokemon.id }}</div>
-        <div class="detail-main">
-          <div class="detail-image">
-        <Transition name="sprite-fade" mode="out-in">
-          <img
-            :key="`${activeForm?.sprite || selectedPokemon.id}-${localShowShiny}`"
-            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id, localShowShiny)"
-            :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
-            @click="localShowShiny = !localShowShiny"
-            :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
-          />
-        </Transition>
-            <div v-if="activeGenderIcons.length" class="gender-overlay">
-              <img
-                v-for="src in activeGenderIcons"
-                :key="src"
-                :src="src"
-                class="gender-icon"
-                :alt="src.includes('male') ? 'Male' : 'Female'"
-              />
+        <div class="detail-header">
+          <button class="detail-close" aria-label="Close details" @click="closeDetail">&#10006;</button>
+          <div class="detail-main">
+            <div class="detail-image">
+              <Transition name="sprite-fade" mode="out-in">
+                <img
+                  :key="`${activeForm?.sprite || selectedPokemon.id}-${localShowShiny}`"
+                  :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id, localShowShiny)"
+                  :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
+                  @click="localShowShiny = !localShowShiny"
+                  :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
+                />
+              </Transition>
+              <div v-if="activeGenderIcons.length" class="gender-overlay">
+                <img
+                  v-for="src in activeGenderIcons"
+                  :key="src"
+                  :src="src"
+                  class="gender-icon"
+                  :alt="src.includes('male') ? 'Male' : 'Female'"
+                />
+              </div>
+            </div>
+            <div class="detail-text">
+              <h2>{{ activeForm?.name || selectedPokemon.name }}</h2>
+              <div class="detail-type-pills">
+                <span
+                  v-if="activeForm?.type1"
+                  class="type-pill"
+                  :style="{ background: type_colors[activeForm.type1] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                >
+                  {{ activeForm.type1 }}
+                </span>
+                <span
+                  v-if="activeForm?.type2"
+                  class="type-pill"
+                  :style="{ background: type_colors[activeForm.type2] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                >
+                  {{ activeForm.type2 }}
+                </span>
+              </div>
+              <!-- <p v-if="activeForm?.gen" class="detail-extra"><strong>Gen:</strong> {{ activeForm.gen }}</p>
+              <p v-if="activeForm?.region" class="detail-extra"><strong>Region:</strong> {{ activeForm.region }}</p> -->
             </div>
           </div>
-          <div class="detail-text">
-            <h2>
-              {{ activeForm?.name || selectedPokemon.name }}
-            </h2>
-            <div class="detail-type-pills">
-              <span
-                v-if="activeForm?.type1"
-                class="type-pill"
-                :style="{ background: type_colors[activeForm.type1] || 'rgba(255,255,255,0.18)', color: '#111' }"
-              >
-                {{ activeForm.type1 }}
-              </span>
-              <span
-                v-if="activeForm?.type2"
-                class="type-pill"
-                :style="{ background: type_colors[activeForm.type2] || 'rgba(255,255,255,0.18)', color: '#111' }"
-              >
-                {{ activeForm.type2 }}
-              </span>
-            </div>
-            <p v-if="activeForm?.gen" class="detail-extra"><strong>Gen:</strong> {{ activeForm.gen }}</p>
-            <p v-if="activeForm?.region" class="detail-extra"><strong>Region:</strong> {{ activeForm.region }}</p>
-
-            <div class="collection-toggles" v-if="activeForm">
-              <button 
-                class="collect-btn" 
-                :class="{ collected: isCollected(activeForm.id, false) }"
-                @click="toggleCollection(activeForm.id, false)"
-              >
-                <span class="icon">&bull;</span> Normal
-              </button>
-              <button 
-                class="collect-btn shiny" 
-                :class="{ collected: isCollected(activeForm.id, true) }"
-                @click="toggleCollection(activeForm.id, true)"
-              >
-                <span class="icon">&#9733;</span> Shiny
-              </button>
-            </div>
+          
+          <div class="collection-toggles" v-if="activeForm">
+            <button 
+              class="collect-btn" 
+              :class="{ collected: isCollected(activeForm.id, false) }"
+              @click="toggleCollection(activeForm.id, false)"
+            >
+              <span class="icon">&#9679;</span> Normal
+            </button>
+            <button 
+              class="collect-btn shiny" 
+              :class="{ collected: isCollected(activeForm.id, true) }"
+              @click="toggleCollection(activeForm.id, true)"
+            >
+              <span class="icon">&#9733;</span> Shiny
+            </button>
           </div>
         </div>
 
-        <div>
+        <div class="detail-body">
           <div v-if="activeEvolutionChain.length" class="evolution-chain">
             <h3>Evolution Line</h3>
             <div class="evolution-list">
@@ -730,25 +737,25 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
-        </div>
 
-        <div class="detail-forms-list">
-          <h3>Forms</h3>
-          <ul>
-            <li v-for="form in selectedPokemon.forms" :key="form.id">
-              <button
-                type="button"
-                class="form-option"
-                :class="{ active: activeForm?.id === form.id }"
-                @click="selectForm(form)"
-              >
-                <div>
-                  <strong>{{ form.name }}</strong>
-                  <span>• {{ form.type1 || 'Unknown' }}<span v-if="form.type2"> / {{ form.type2 }}</span></span>
-                </div>
-              </button>
-            </li>
-          </ul>
+          <div class="detail-forms-list">
+            <h3>Forms</h3>
+            <ul>
+              <li v-for="form in selectedPokemon.forms" :key="form.id">
+                <button
+                  type="button"
+                  class="form-option"
+                  :class="{ active: activeForm?.id === form.id }"
+                  @click="selectForm(form)"
+                >
+                  <div>
+                    <strong>{{ form.name }}</strong>
+                    <span>• {{ form.type1 || 'Unknown' }}<span v-if="form.type2"> / {{ form.type2 }}</span></span>
+                  </div>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -1158,17 +1165,49 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.75);
   z-index: 9999;
   padding: 24px;
+  overflow: hidden;
 }
 
 .detail-card {
   width: min(980px, 100%);
+  max-height: calc(100vh - 48px);
   background: rgba(15, 15, 15, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 24px;
-  padding: 24px;
   color: #f6f6f6;
   box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-header {
+  flex-shrink: 0;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.95);
+  position: relative;
+  z-index: 5;
+}
+
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 480px) {
+  .pokemon-modal {
+    padding: 10px;
+  }
+  .detail-card {
+    max-height: calc(100vh - 20px);
+  }
+  .detail-header, .detail-body {
+    padding: 16px;
+  }
 }
 
 .detail-close {
@@ -1292,7 +1331,7 @@ onUnmounted(() => {
 }
 
 .detail-forms-list {
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 .detail-forms-list h3 {
@@ -1304,13 +1343,18 @@ onUnmounted(() => {
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .detail-forms-list li {
   display: block;
+}
+
+@media (max-width: 640px) {
+  .detail-forms-list ul {
+    grid-template-columns: 1fr;
+  }
 }
 
 .detail-extra {
@@ -1318,7 +1362,8 @@ onUnmounted(() => {
 }
 
 .evolution-chain {
-  margin-top: 18px;
+  margin-top: 0px;
+  margin-bottom: 6px;
 }
 
 .evolution-chain h3 {
@@ -1385,6 +1430,12 @@ onUnmounted(() => {
   padding: 14px 16px;
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+@media (max-width: 480px) {
+  .form-option {
+    padding: 10px 12px;
+  }
 }
 
 .form-option:hover {
@@ -1835,7 +1886,7 @@ onUnmounted(() => {
 
 .pokemon-card_collection {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   right: 12px;
   display: flex;
   gap: 6px;
@@ -1896,5 +1947,12 @@ onUnmounted(() => {
   color: #a6a6a6;
   min-width: 40px;
   text-align: center;
+}
+</style>
+
+<style>
+.no-scroll {
+  overflow: hidden !important;
+  color: red !important;
 }
 </style>
