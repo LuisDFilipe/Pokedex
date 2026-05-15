@@ -29,8 +29,8 @@ export const defaultSettings: PokedexSettings = {
   showCollectedOnly: false,
   showUncollectedOnly: false,
   filterQuery: '',
-  itemsPerPage: 10,
-  groupForms: false,
+  itemsPerPage: 12,
+  groupForms: true,
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
