@@ -601,7 +601,7 @@ watch(selectedPokemon, (newVal) => {
         <div class="page-meta-left">
           <span v-if="loading">Loading...</span>
           <span v-else-if="error" class="error">{{ error }}</span>
-          <span v-else>{{ filteredPokemon.length }} {{ groupForms ? 'species' : 'form' }}{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
+          <span v-else>{{ filteredPokemon.length }} {{ groupForms ? 'species' : 'forms' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected</span>
           <label v-if="!loading && !error" class="filter-search">
             <span>Filter</span>
             <input
