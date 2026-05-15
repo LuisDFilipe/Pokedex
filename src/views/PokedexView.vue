@@ -38,6 +38,8 @@ const showShiny = ref(false)
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
 const syncMessageType = ref<'success' | 'error' | ''>('')
+const groupForms = ref(false)
+const speciesActiveFormId = ref<Record<string, string>>({})
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -151,8 +153,8 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
 const filteredPokemon = computed(() => {
   const query = debouncedQuery.value.trim().toLowerCase()
 
-  // Filter forms first
-  const filteredForms = allFormsFlat.value.filter((form) => {
+  // Filter base forms list first
+  const flatResults = allFormsFlat.value.filter((form) => {
     if (isFormExcluded(form)) return false
 
     // Collection Filters
@@ -188,7 +190,20 @@ const filteredPokemon = computed(() => {
     )
   })
 
-  return filteredForms
+  if (!groupForms.value) return flatResults
+
+  // Group results by species if carousel mode is active
+  // A species is included if at least one of its forms matches the filters
+  const seen = new Set<string>()
+  const speciesList: PokemonEntry[] = []
+  flatResults.forEach((form) => {
+    if (!seen.has(form.pokemonId)) {
+      seen.add(form.pokemonId)
+      const pokemon = pokemonList.value.find((p) => p.id === form.pokemonId)
+      if (pokemon) speciesList.push(pokemon)
+    }
+  })
+  return speciesList
 })
 
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredPokemon.value.length / itemsPerPage.value)))
@@ -226,6 +241,7 @@ const getCurrentSettings = (): PokedexSettings => ({
   showUncollectedOnly: showUncollectedOnly.value,
   filterQuery: filterQuery.value,
   itemsPerPage: itemsPerPage.value,
+  groupForms: groupForms.value,
 })
 
 const applySettings = (settings: PokedexSettings) => {
@@ -240,6 +256,7 @@ const applySettings = (settings: PokedexSettings) => {
   filterQuery.value = settings.filterQuery
   debouncedQuery.value = settings.filterQuery
   itemsPerPage.value = settings.itemsPerPage
+  groupForms.value = settings.groupForms
 }
 
 const saveSettings = () => {
@@ -254,14 +271,15 @@ const saveSettings = () => {
     showUncollectedOnly: showUncollectedOnly.value,
     filterQuery: filterQuery.value,
     itemsPerPage: itemsPerPage.value,
-  })
+    groupForms: groupForms.value,
+  })  
 }
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
 watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
 
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly],
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly, groupForms],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -276,7 +294,43 @@ watch(showShiny, () => {
 
 const pagedPokemon = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
-  return filteredPokemon.value.slice(start, start + itemsPerPage.value)
+  const items = filteredPokemon.value.slice(start, start + itemsPerPage.value)
+
+  if (!groupForms.value) {
+    return items as (PokemonForm & { pokemonName: string; pokemonId: string; isBaseForm: boolean })[]
+  }
+
+  // In grouped mode, transform species list into carousel objects
+  return items.map((pokemon: any) => {
+    // Get all valid forms for this species based on exclusion and collection settings
+    const validForms = pokemon.forms.filter((f: any, idx: number) => {
+      const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: idx === 0 }
+      if (isFormExcluded(enriched)) return false
+      
+      if (showCollectedOnly.value) {
+        const isC = isCollected(f.id, showShiny.value)
+        if (!isC) return false
+      }
+      if (showUncollectedOnly.value) {
+        const isC = isCollected(f.id, showShiny.value)
+        if (isC) return false
+      }
+      return true
+    })
+
+    const activeFormId = speciesActiveFormId.value[pokemon.id]
+    const activeForm = validForms.find((f: any) => f.id === activeFormId) || validForms[0]
+
+    return {
+      ...activeForm,
+      pokemonName: pokemon.name,
+      pokemonId: pokemon.id,
+      isBaseForm: pokemon.forms[0].id === activeForm.id,
+      isGrouped: true,
+      allFormsCount: validForms.length,
+      currentFormIndex: validForms.indexOf(activeForm)
+    }
+  })
 })
 
 const currentRange = computed(() => {
@@ -367,17 +421,44 @@ const loadPokedexData = async () => {
 }
 
 const prevPage = () => {
-  page.value = Math.max(1, page.value - 1)
+  page.value = page.value <= 1 ? pageCount.value : page.value - 1
   pageDraft.value = page.value
 }
 
 const nextPage = () => {
-  page.value = Math.min(pageCount.value, page.value + 1)
+  page.value = page.value >= pageCount.value ? 1 : page.value + 1
+  pageDraft.value = page.value
+}
+
+const firstPage = () => {
+  page.value = 1
+  pageDraft.value = 1
+}
+
+const lastPage = () => {
+  page.value = pageCount.value
   pageDraft.value = page.value
 }
 
 const selectForm = (form: PokemonForm) => {
   selectedForm.value = form
+}
+
+const cycleForm = (pokemonId: string, direction: number) => {
+  const pokemon = pokemonList.value.find((p) => p.id === pokemonId)
+  if (!pokemon) return
+
+  const availableForms = pokemon.forms.filter((f, index) => {
+    const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: index === 0 }
+    return !isFormExcluded(enriched)
+  })
+
+  const currentId = speciesActiveFormId.value[pokemonId]
+  let index = availableForms.findIndex((f) => f.id === currentId)
+  if (index === -1) index = 0
+
+  index = (index + direction + availableForms.length) % availableForms.length
+  speciesActiveFormId.value[pokemonId] = availableForms[index]?.id ?? "0000"
 }
 
 const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId: string }) => {
@@ -524,7 +605,7 @@ onUnmounted(() => {
         <div class="page-meta-left">
           <span v-if="loading">Loading...</span>
           <span v-else-if="error" class="error">{{ error }}</span>
-          <span v-else>{{ filteredPokemon.length }} form{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
+          <span v-else>{{ filteredPokemon.length }} {{ groupForms ? 'species' : 'form' }}{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
           <label v-if="!loading && !error" class="filter-search">
             <span>Filter</span>
             <input
@@ -731,6 +812,14 @@ onUnmounted(() => {
               />
               <span>Hide all forms</span>
             </label>
+            <!-- Group forms Filter -->
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                v-model="groupForms"
+              />
+              <span>Group forms in carousel</span>
+            </label>
           </div>
 
           <div class="filter-section">
@@ -819,24 +908,39 @@ onUnmounted(() => {
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
           </p> -->
+          <div class="pokemon-card_carousel" v-if="form.isGrouped && form.allFormsCount > 1">
+            <button @click.stop="cycleForm(form.pokemonId, -1)" class="carousel-btn" aria-label="Previous form">&lsaquo;</button>
+            <span class="carousel-dots">
+              {{ form.currentFormIndex + 1 }} / {{ form.allFormsCount }}
+            </span>
+            <button @click.stop="cycleForm(form.pokemonId, 1)" class="carousel-btn" aria-label="Next form">&rsaquo;</button>
+          </div>
           <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
       </article>
     </div>
 
     <div v-if="!loading && !error" class="pagination">
-      <button @click="prevPage" :disabled="page === 1">Previous</button>
-      <div class="pagination-center">
-        <span>Page {{ page }} of {{ pageCount }}</span>
+      <div class="pagination-main">
+        <button @click="firstPage" title="First Page" aria-label="First page">&laquo;</button>
+        <button @click="prevPage" title="Previous Page" aria-label="Previous page">&lsaquo;</button>
+        
+        <span class="pagination-status">
+          {{ page }} / {{ pageCount }}
+        </span>
+        
+        <button @click="nextPage" title="Next Page" aria-label="Next page">&rsaquo;</button>
+        <button @click="lastPage" title="Last Page" aria-label="Last page">&raquo;</button>
       </div>
-      <button @click="nextPage" :disabled="page === pageCount">Next</button>
-      <div class="pagination-center">
+
+      <div class="pagination-input">
         <label>
-          Go to page
+          Jump to
           <input
             type="number"
             v-model.number="pageDraft"
-            aria-label="Select page"
+            min="1"
+            :max="pageCount"
           />
         </label>
       </div>
@@ -1334,63 +1438,96 @@ onUnmounted(() => {
 
 .pagination {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 28px;
+  /* margin-top: 10px; */
+  padding: 10px 0;
 }
 
-.pagination {
+.pagination-main {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 28px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.pagination-center {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: #d1d1d1;
+.pagination-status {
+  min-width: 90px;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
 }
 
-.pagination-center label {
+.pagination-input {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
-  color: #d1d1d1;
+  color: #a6a6a6;
 }
 
-.pagination-center input,
-.pagination-center select {
-  width: 80px;
-  padding: 8px 10px;
-  border-radius: 12px;
+.pagination-input label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-input input {
+  width: 64px;
+  padding: 6px 10px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
+  text-align: center;
+  font-weight: 600;
 }
 
 .pagination button {
   border: none;
   background: #ff4747;
   color: white;
-  padding: 10px 18px;
-  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1;
 }
 
-.pagination button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.pagination button:hover {
+  background: #ff5757;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 71, 71, 0.3);
 }
 
-.pagination span {
-  color: #d1d1d1;
+.pagination button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .pagination-main {
+    gap: 8px;
+  }
+  
+  .pagination button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+  }
+
+  .pagination-status {
+    min-width: 80px;
+    font-size: 1rem;
+  }
 }
 
 .filter-btn {
@@ -1721,6 +1858,43 @@ onUnmounted(() => {
   color: #f7d02c;
   text-shadow: 0 0 8px rgba(247, 208, 44, 0.6);
 }
+
+/* Carousel styles */
+.pokemon-card_carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.carousel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.carousel-dots {
+  font-size: 0.75rem;
+  color: #a6a6a6;
+  min-width: 40px;
+  text-align: center;
+}
 </style>
-
-

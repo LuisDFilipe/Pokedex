@@ -46,6 +46,7 @@ export interface PokedexSettings {
   showUncollectedOnly: boolean
   filterQuery: string
   itemsPerPage: number
+  groupForms: boolean
 }
 
 export interface PokedexSyncPayload {
