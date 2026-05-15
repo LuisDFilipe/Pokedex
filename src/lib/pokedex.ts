@@ -30,6 +30,7 @@ export const defaultSettings: PokedexSettings = {
   showUncollectedOnly: false,
   filterQuery: '',
   itemsPerPage: 10,
+  groupForms: false,
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
@@ -140,5 +141,6 @@ function normalizeSettings(value: unknown): PokedexSettings {
     showUncollectedOnly: isBoolean(settings?.showUncollectedOnly) ? settings.showUncollectedOnly : false,
     filterQuery: isString(settings?.filterQuery) ? settings.filterQuery : '',
     itemsPerPage: isNumber(settings?.itemsPerPage) ? settings.itemsPerPage : defaultSettings.itemsPerPage,
+    groupForms: isBoolean(settings?.groupForms) ? settings.groupForms : false,
   }
 }

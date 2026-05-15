@@ -38,6 +38,8 @@ const showShiny = ref(false)
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
 const syncMessageType = ref<'success' | 'error' | ''>('')
+const groupForms = ref(false)
+const speciesActiveFormId = ref<Record<string, string>>({})
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -151,8 +153,8 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
 const filteredPokemon = computed(() => {
   const query = debouncedQuery.value.trim().toLowerCase()
 
-  // Filter forms first
-  const filteredForms = allFormsFlat.value.filter((form) => {
+  // Filter base forms list first
+  const flatResults = allFormsFlat.value.filter((form) => {
     if (isFormExcluded(form)) return false
 
     // Collection Filters
@@ -188,7 +190,20 @@ const filteredPokemon = computed(() => {
     )
   })
 
-  return filteredForms
+  if (!groupForms.value) return flatResults
+
+  // Group results by species if carousel mode is active
+  // A species is included if at least one of its forms matches the filters
+  const seen = new Set<string>()
+  const speciesList: PokemonEntry[] = []
+  flatResults.forEach((form) => {
+    if (!seen.has(form.pokemonId)) {
+      seen.add(form.pokemonId)
+      const pokemon = pokemonList.value.find((p) => p.id === form.pokemonId)
+      if (pokemon) speciesList.push(pokemon)
+    }
+  })
+  return speciesList
 })
 
 const pageCount = computed(() => Math.max(1, Math.ceil(filteredPokemon.value.length / itemsPerPage.value)))
@@ -226,6 +241,7 @@ const getCurrentSettings = (): PokedexSettings => ({
   showUncollectedOnly: showUncollectedOnly.value,
   filterQuery: filterQuery.value,
   itemsPerPage: itemsPerPage.value,
+  groupForms: groupForms.value,
 })
 
 const applySettings = (settings: PokedexSettings) => {
@@ -240,6 +256,7 @@ const applySettings = (settings: PokedexSettings) => {
   filterQuery.value = settings.filterQuery
   debouncedQuery.value = settings.filterQuery
   itemsPerPage.value = settings.itemsPerPage
+  groupForms.value = settings.groupForms
 }
 
 const saveSettings = () => {
@@ -254,14 +271,15 @@ const saveSettings = () => {
     showUncollectedOnly: showUncollectedOnly.value,
     filterQuery: filterQuery.value,
     itemsPerPage: itemsPerPage.value,
-  })
+    groupForms: groupForms.value,
+  })  
 }
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
 watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
 
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly],
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly, groupForms],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -276,7 +294,43 @@ watch(showShiny, () => {
 
 const pagedPokemon = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
-  return filteredPokemon.value.slice(start, start + itemsPerPage.value)
+  const items = filteredPokemon.value.slice(start, start + itemsPerPage.value)
+
+  if (!groupForms.value) {
+    return items as (PokemonForm & { pokemonName: string; pokemonId: string; isBaseForm: boolean })[]
+  }
+
+  // In grouped mode, transform species list into carousel objects
+  return items.map((pokemon: any) => {
+    // Get all valid forms for this species based on exclusion and collection settings
+    const validForms = pokemon.forms.filter((f: any, idx: number) => {
+      const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: idx === 0 }
+      if (isFormExcluded(enriched)) return false
+      
+      if (showCollectedOnly.value) {
+        const isC = isCollected(f.id, showShiny.value)
+        if (!isC) return false
+      }
+      if (showUncollectedOnly.value) {
+        const isC = isCollected(f.id, showShiny.value)
+        if (isC) return false
+      }
+      return true
+    })
+
+    const activeFormId = speciesActiveFormId.value[pokemon.id]
+    const activeForm = validForms.find((f: any) => f.id === activeFormId) || validForms[0]
+
+    return {
+      ...activeForm,
+      pokemonName: pokemon.name,
+      pokemonId: pokemon.id,
+      isBaseForm: pokemon.forms[0].id === activeForm.id,
+      isGrouped: true,
+      allFormsCount: validForms.length,
+      currentFormIndex: validForms.indexOf(activeForm)
+    }
+  })
 })
 
 const currentRange = computed(() => {
@@ -367,17 +421,44 @@ const loadPokedexData = async () => {
 }
 
 const prevPage = () => {
-  page.value = Math.max(1, page.value - 1)
+  page.value = page.value <= 1 ? pageCount.value : page.value - 1
   pageDraft.value = page.value
 }
 
 const nextPage = () => {
-  page.value = Math.min(pageCount.value, page.value + 1)
+  page.value = page.value >= pageCount.value ? 1 : page.value + 1
+  pageDraft.value = page.value
+}
+
+const firstPage = () => {
+  page.value = 1
+  pageDraft.value = 1
+}
+
+const lastPage = () => {
+  page.value = pageCount.value
   pageDraft.value = page.value
 }
 
 const selectForm = (form: PokemonForm) => {
   selectedForm.value = form
+}
+
+const cycleForm = (pokemonId: string, direction: number) => {
+  const pokemon = pokemonList.value.find((p) => p.id === pokemonId)
+  if (!pokemon) return
+
+  const availableForms = pokemon.forms.filter((f, index) => {
+    const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: index === 0 }
+    return !isFormExcluded(enriched)
+  })
+
+  const currentId = speciesActiveFormId.value[pokemonId]
+  let index = availableForms.findIndex((f) => f.id === currentId)
+  if (index === -1) index = 0
+
+  index = (index + direction + availableForms.length) % availableForms.length
+  speciesActiveFormId.value[pokemonId] = availableForms[index]?.id ?? "0000"
 }
 
 const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId: string }) => {
@@ -515,6 +596,14 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
+
+watch(selectedPokemon, (newVal) => {
+  if (newVal) {
+    document.body.classList.add('no-scroll')
+  } else {
+    document.body.classList.remove('no-scroll')
+  }
+})
 </script>
 
 <template>
@@ -524,7 +613,7 @@ onUnmounted(() => {
         <div class="page-meta-left">
           <span v-if="loading">Loading...</span>
           <span v-else-if="error" class="error">{{ error }}</span>
-          <span v-else>{{ filteredPokemon.length }} form{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
+          <span v-else>{{ filteredPokemon.length }} {{ groupForms ? 'species' : 'form' }}{{ filteredPokemon.length !== 1 ? 's' : '' }} · {{ collectedNormal.length }} normal collected · {{ collectedShiny.length }} shiny collected · Showing {{ currentRange }}</span>
           <label v-if="!loading && !error" class="filter-search">
             <span>Filter</span>
             <input
@@ -561,72 +650,71 @@ onUnmounted(() => {
 
     <div v-if="selectedPokemon" class="pokemon-modal" @click.self="closeDetail">
       <div class="detail-card" role="dialog" aria-modal="true">
-        <button class="detail-close" aria-label="Close details" @click="closeDetail">&times;</button>
-        <div class="detail-badge">#{{ selectedPokemon.id }}</div>
-        <div class="detail-main">
-          <div class="detail-image">
-        <Transition name="sprite-fade" mode="out-in">
-          <img
-            :key="`${activeForm?.sprite || selectedPokemon.id}-${localShowShiny}`"
-            :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id, localShowShiny)"
-            :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
-            @click="localShowShiny = !localShowShiny"
-            :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
-          />
-        </Transition>
-            <div v-if="activeGenderIcons.length" class="gender-overlay">
-              <img
-                v-for="src in activeGenderIcons"
-                :key="src"
-                :src="src"
-                class="gender-icon"
-                :alt="src.includes('male') ? 'Male' : 'Female'"
-              />
+        <div class="detail-header">
+          <button class="detail-close" aria-label="Close details" @click="closeDetail">&#10006;</button>
+          <div class="detail-main">
+            <div class="detail-image">
+              <Transition name="sprite-fade" mode="out-in">
+                <img
+                  :key="`${activeForm?.sprite || selectedPokemon.id}-${localShowShiny}`"
+                  :src="getSpriteUrl(activeForm?.sprite || selectedPokemon.id, localShowShiny)"
+                  :alt="`${selectedPokemon.name} ${activeForm?.name ?? ''}`"
+                  @click="localShowShiny = !localShowShiny"
+                  :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
+                />
+              </Transition>
+              <div v-if="activeGenderIcons.length" class="gender-overlay">
+                <img
+                  v-for="src in activeGenderIcons"
+                  :key="src"
+                  :src="src"
+                  class="gender-icon"
+                  :alt="src.includes('male') ? 'Male' : 'Female'"
+                />
+              </div>
+            </div>
+            <div class="detail-text">
+              <h2>{{ activeForm?.name || selectedPokemon.name }}</h2>
+              <div class="detail-type-pills">
+                <span
+                  v-if="activeForm?.type1"
+                  class="type-pill"
+                  :style="{ background: type_colors[activeForm.type1] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                >
+                  {{ activeForm.type1 }}
+                </span>
+                <span
+                  v-if="activeForm?.type2"
+                  class="type-pill"
+                  :style="{ background: type_colors[activeForm.type2] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                >
+                  {{ activeForm.type2 }}
+                </span>
+              </div>
+              <!-- <p v-if="activeForm?.gen" class="detail-extra"><strong>Gen:</strong> {{ activeForm.gen }}</p>
+              <p v-if="activeForm?.region" class="detail-extra"><strong>Region:</strong> {{ activeForm.region }}</p> -->
             </div>
           </div>
-          <div class="detail-text">
-            <h2>
-              {{ activeForm?.name || selectedPokemon.name }}
-            </h2>
-            <div class="detail-type-pills">
-              <span
-                v-if="activeForm?.type1"
-                class="type-pill"
-                :style="{ background: type_colors[activeForm.type1] || 'rgba(255,255,255,0.18)', color: '#111' }"
-              >
-                {{ activeForm.type1 }}
-              </span>
-              <span
-                v-if="activeForm?.type2"
-                class="type-pill"
-                :style="{ background: type_colors[activeForm.type2] || 'rgba(255,255,255,0.18)', color: '#111' }"
-              >
-                {{ activeForm.type2 }}
-              </span>
-            </div>
-            <p v-if="activeForm?.gen" class="detail-extra"><strong>Gen:</strong> {{ activeForm.gen }}</p>
-            <p v-if="activeForm?.region" class="detail-extra"><strong>Region:</strong> {{ activeForm.region }}</p>
-
-            <div class="collection-toggles" v-if="activeForm">
-              <button 
-                class="collect-btn" 
-                :class="{ collected: isCollected(activeForm.id, false) }"
-                @click="toggleCollection(activeForm.id, false)"
-              >
-                <span class="icon">&bull;</span> Normal
-              </button>
-              <button 
-                class="collect-btn shiny" 
-                :class="{ collected: isCollected(activeForm.id, true) }"
-                @click="toggleCollection(activeForm.id, true)"
-              >
-                <span class="icon">&#9733;</span> Shiny
-              </button>
-            </div>
+          
+          <div class="collection-toggles" v-if="activeForm">
+            <button 
+              class="collect-btn" 
+              :class="{ collected: isCollected(activeForm.id, false) }"
+              @click="toggleCollection(activeForm.id, false)"
+            >
+              <span class="icon">&#9679;</span> Normal
+            </button>
+            <button 
+              class="collect-btn shiny" 
+              :class="{ collected: isCollected(activeForm.id, true) }"
+              @click="toggleCollection(activeForm.id, true)"
+            >
+              <span class="icon">&#9733;</span> Shiny
+            </button>
           </div>
         </div>
 
-        <div>
+        <div class="detail-body">
           <div v-if="activeEvolutionChain.length" class="evolution-chain">
             <h3>Evolution Line</h3>
             <div class="evolution-list">
@@ -649,25 +737,25 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
-        </div>
 
-        <div class="detail-forms-list">
-          <h3>Forms</h3>
-          <ul>
-            <li v-for="form in selectedPokemon.forms" :key="form.id">
-              <button
-                type="button"
-                class="form-option"
-                :class="{ active: activeForm?.id === form.id }"
-                @click="selectForm(form)"
-              >
-                <div>
-                  <strong>{{ form.name }}</strong>
-                  <span>• {{ form.type1 || 'Unknown' }}<span v-if="form.type2"> / {{ form.type2 }}</span></span>
-                </div>
-              </button>
-            </li>
-          </ul>
+          <div class="detail-forms-list">
+            <h3>Forms</h3>
+            <ul>
+              <li v-for="form in selectedPokemon.forms" :key="form.id">
+                <button
+                  type="button"
+                  class="form-option"
+                  :class="{ active: activeForm?.id === form.id }"
+                  @click="selectForm(form)"
+                >
+                  <div>
+                    <strong>{{ form.name }}</strong>
+                    <span>• {{ form.type1 || 'Unknown' }}<span v-if="form.type2"> / {{ form.type2 }}</span></span>
+                  </div>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -720,7 +808,6 @@ onUnmounted(() => {
               <input
                 type="checkbox"
                 v-model="showBoxableOnly"
-                :disabled="showBaseFormOnly"
               />
               <span>Show Only Boxable Forms</span>
             </label>
@@ -731,6 +818,14 @@ onUnmounted(() => {
                 v-model="showBaseFormOnly"
               />
               <span>Hide all forms</span>
+            </label>
+            <!-- Group forms Filter -->
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                v-model="groupForms"
+              />
+              <span>Group forms in carousel</span>
             </label>
           </div>
 
@@ -802,7 +897,7 @@ onUnmounted(() => {
             class="collect-indicator"
             :class="{ active: isCollected(form.id, false) }"
             title="Normal Collected"
-          >&bull;</span>
+          >&#9679;</span>
           <span
             class="collect-indicator shiny"
             :class="{ active: isCollected(form.id, true) }"
@@ -820,24 +915,39 @@ onUnmounted(() => {
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
           </p> -->
+          <div class="pokemon-card_carousel" v-if="form.isGrouped && form.allFormsCount > 1">
+            <button @click.stop="cycleForm(form.pokemonId, -1)" class="carousel-btn" aria-label="Previous form">&lsaquo;</button>
+            <span class="carousel-dots">
+              {{ form.currentFormIndex + 1 }} / {{ form.allFormsCount }}
+            </span>
+            <button @click.stop="cycleForm(form.pokemonId, 1)" class="carousel-btn" aria-label="Next form">&rsaquo;</button>
+          </div>
           <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
       </article>
     </div>
 
     <div v-if="!loading && !error" class="pagination">
-      <button @click="prevPage" :disabled="page === 1">Previous</button>
-      <div class="pagination-center">
-        <span>Page {{ page }} of {{ pageCount }}</span>
+      <div class="pagination-main">
+        <button @click="firstPage" title="First Page" aria-label="First page">&laquo;</button>
+        <button @click="prevPage" title="Previous Page" aria-label="Previous page">&lsaquo;</button>
+        
+        <span class="pagination-status">
+          {{ page }} / {{ pageCount }}
+        </span>
+        
+        <button @click="nextPage" title="Next Page" aria-label="Next page">&rsaquo;</button>
+        <button @click="lastPage" title="Last Page" aria-label="Last page">&raquo;</button>
       </div>
-      <button @click="nextPage" :disabled="page === pageCount">Next</button>
-      <div class="pagination-center">
+
+      <div class="pagination-input">
         <label>
-          Go to page
+          Jump to
           <input
             type="number"
             v-model.number="pageDraft"
-            aria-label="Select page"
+            min="1"
+            :max="pageCount"
           />
         </label>
       </div>
@@ -1055,17 +1165,49 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.75);
   z-index: 9999;
   padding: 24px;
+  overflow: hidden;
 }
 
 .detail-card {
   width: min(980px, 100%);
+  max-height: calc(100vh - 48px);
   background: rgba(15, 15, 15, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 24px;
-  padding: 24px;
   color: #f6f6f6;
   box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-header {
+  flex-shrink: 0;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.95);
+  position: relative;
+  z-index: 5;
+}
+
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 480px) {
+  .pokemon-modal {
+    padding: 10px;
+  }
+  .detail-card {
+    max-height: calc(100vh - 20px);
+  }
+  .detail-header, .detail-body {
+    padding: 16px;
+  }
 }
 
 .detail-close {
@@ -1189,7 +1331,7 @@ onUnmounted(() => {
 }
 
 .detail-forms-list {
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 .detail-forms-list h3 {
@@ -1201,13 +1343,18 @@ onUnmounted(() => {
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .detail-forms-list li {
   display: block;
+}
+
+@media (max-width: 640px) {
+  .detail-forms-list ul {
+    grid-template-columns: 1fr;
+  }
 }
 
 .detail-extra {
@@ -1215,7 +1362,8 @@ onUnmounted(() => {
 }
 
 .evolution-chain {
-  margin-top: 18px;
+  margin-top: 0px;
+  margin-bottom: 6px;
 }
 
 .evolution-chain h3 {
@@ -1284,6 +1432,12 @@ onUnmounted(() => {
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
+@media (max-width: 480px) {
+  .form-option {
+    padding: 10px 12px;
+  }
+}
+
 .form-option:hover {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -1335,63 +1489,96 @@ onUnmounted(() => {
 
 .pagination {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 28px;
+  /* margin-top: 10px; */
+  padding: 10px 0;
 }
 
-.pagination {
+.pagination-main {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 28px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.pagination-center {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: #d1d1d1;
+.pagination-status {
+  min-width: 90px;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
 }
 
-.pagination-center label {
+.pagination-input {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
-  color: #d1d1d1;
+  color: #a6a6a6;
 }
 
-.pagination-center input,
-.pagination-center select {
-  width: 80px;
-  padding: 8px 10px;
-  border-radius: 12px;
+.pagination-input label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-input input {
+  width: 64px;
+  padding: 6px 10px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
+  text-align: center;
+  font-weight: 600;
 }
 
 .pagination button {
   border: none;
   background: #ff4747;
   color: white;
-  padding: 10px 18px;
-  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1;
 }
 
-.pagination button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.pagination button:hover {
+  background: #ff5757;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 71, 71, 0.3);
 }
 
-.pagination span {
-  color: #d1d1d1;
+.pagination button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .pagination-main {
+    gap: 8px;
+  }
+  
+  .pagination button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+  }
+
+  .pagination-status {
+    min-width: 80px;
+    font-size: 1rem;
+  }
 }
 
 .filter-btn {
@@ -1699,7 +1886,7 @@ onUnmounted(() => {
 
 .pokemon-card_collection {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   right: 12px;
   display: flex;
   gap: 6px;
@@ -1722,6 +1909,50 @@ onUnmounted(() => {
   color: #f7d02c;
   text-shadow: 0 0 8px rgba(247, 208, 44, 0.6);
 }
+
+/* Carousel styles */
+.pokemon-card_carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.carousel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.carousel-dots {
+  font-size: 0.75rem;
+  color: #a6a6a6;
+  min-width: 40px;
+  text-align: center;
+}
 </style>
 
-
+<style>
+.no-scroll {
+  overflow: hidden !important;
+  color: red !important;
+}
+</style>

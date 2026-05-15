@@ -72,7 +72,7 @@ body {
   .app-wrapper {
     /* On mobile, the menu is floating/hidden, so no margin needed */
     margin-left: 0; 
-    padding-top: 80px; /* Room for the burger button at the top */
+    /* padding-top: 80px; */ /* Room for the burger button at the top */
   }
 
   .main-title {
