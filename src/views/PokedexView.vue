@@ -150,45 +150,42 @@ const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean =
   return false
 }
 
+const isFormVisible = (form: PokemonForm & { pokemonName: string; pokemonId: string; isBaseForm: boolean }, query: string = ''): boolean => {
+  if (isFormExcluded(form)) return false
+
+  // Collection Filters
+  const normalCollected = collectedNormal.value.includes(form.id)
+  const shinyCollected = collectedShiny.value.includes(form.id)
+
+  if (showCollectedOnly.value) {
+    const isCurrentlyShiny = showShiny.value
+    if (isCurrentlyShiny && !shinyCollected) return false
+    if (!isCurrentlyShiny && !normalCollected) return false
+  }
+
+  if (showUncollectedOnly.value) {
+    const isCurrentlyShiny = showShiny.value
+    if (isCurrentlyShiny && shinyCollected) return false
+    if (!isCurrentlyShiny && normalCollected) return false
+  }
+
+  if (!query) return true
+
+  const q = query.trim().toLowerCase()
+  return (
+    form.id.toLowerCase().includes(q) ||
+    form.name.toLowerCase().includes(q) ||
+    form.pokemonName.toLowerCase().includes(q) ||
+    (form.type1?.toLowerCase() ?? '').includes(q) ||
+    (form.type2?.toLowerCase() ?? '').includes(q)
+  )
+}
+
 const filteredPokemon = computed(() => {
-  const query = debouncedQuery.value.trim().toLowerCase()
+  const query = debouncedQuery.value
 
   // Filter base forms list first
-  const flatResults = allFormsFlat.value.filter((form) => {
-    if (isFormExcluded(form)) return false
-
-    // Collection Filters
-    const normalCollected = collectedNormal.value.includes(form.id)
-    const shinyCollected = collectedShiny.value.includes(form.id)
-
-    if (showCollectedOnly.value) {
-      const isCurrentlyShiny = showShiny.value
-      if (isCurrentlyShiny && !shinyCollected) return false
-      if (!isCurrentlyShiny && !normalCollected) return false
-    }
-
-    if (showUncollectedOnly.value) {
-      const isCurrentlyShiny = showShiny.value
-      if (isCurrentlyShiny && shinyCollected) return false
-      if (!isCurrentlyShiny && normalCollected) return false
-    }
-
-    if (!query) return true
-
-    const id = form.id.toLowerCase()
-    const name = form.name.toLowerCase()
-    const pokemonName = form.pokemonName.toLowerCase()
-    const type1 = form.type1?.toLowerCase() ?? ''
-    const type2 = form.type2?.toLowerCase() ?? ''
-
-    return (
-      id.includes(query) ||
-      name.includes(query) ||
-      pokemonName.includes(query) ||
-      type1.includes(query) ||
-      type2.includes(query)
-    )
-  })
+  const flatResults = allFormsFlat.value.filter((form) => isFormVisible(form, query))
 
   if (!groupForms.value) return flatResults
 
@@ -279,7 +276,7 @@ watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = f
 watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
 
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showShiny, showCollectedOnly, showUncollectedOnly, groupForms],
+  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -289,6 +286,10 @@ watch(
 )
 
 watch(showShiny, () => {
+  if(showCollectedOnly.value == true || showUncollectedOnly.value == true) {
+    page.value = 1
+    pageDraft.value = 1
+  }
   saveSettings()
 })
 
@@ -302,21 +303,9 @@ const pagedPokemon = computed(() => {
 
   // In grouped mode, transform species list into carousel objects
   return items.map((pokemon: any) => {
-    // Get all valid forms for this species based on exclusion and collection settings
-    const validForms = pokemon.forms.filter((f: any, idx: number) => {
-      const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: idx === 0 }
-      if (isFormExcluded(enriched)) return false
-      
-      if (showCollectedOnly.value) {
-        const isC = isCollected(f.id, showShiny.value)
-        if (!isC) return false
-      }
-      if (showUncollectedOnly.value) {
-        const isC = isCollected(f.id, showShiny.value)
-        if (isC) return false
-      }
-      return true
-    })
+    const validForms = pokemon.forms
+      .map((f: any, idx: number) => ({ ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: idx === 0 }))
+      .filter((f: any) => isFormVisible(f, debouncedQuery.value))
 
     const activeFormId = speciesActiveFormId.value[pokemon.id]
     const activeForm = validForms.find((f: any) => f.id === activeFormId) || validForms[0]
@@ -448,10 +437,9 @@ const cycleForm = (pokemonId: string, direction: number) => {
   const pokemon = pokemonList.value.find((p) => p.id === pokemonId)
   if (!pokemon) return
 
-  const availableForms = pokemon.forms.filter((f, index) => {
-    const enriched = { ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: index === 0 }
-    return !isFormExcluded(enriched)
-  })
+  const availableForms = pokemon.forms
+    .map((f, index) => ({ ...f, pokemonName: pokemon.name, pokemonId: pokemon.id, isBaseForm: index === 0 }))
+    .filter((f) => isFormVisible(f, debouncedQuery.value))
 
   const currentId = speciesActiveFormId.value[pokemonId]
   let index = availableForms.findIndex((f) => f.id === currentId)
@@ -915,12 +903,14 @@ watch(selectedPokemon, (newVal) => {
             <span>{{ form.type1 || "Unknown" }}</span>
             <span v-if="form.type2"> / {{ form.type2 }}</span>
           </p> -->
-          <div class="pokemon-card_carousel" v-if="form.isGrouped && form.allFormsCount > 1">
-            <button @click.stop="cycleForm(form.pokemonId, -1)" class="carousel-btn" aria-label="Previous form">&lsaquo;</button>
-            <span class="carousel-dots">
-              {{ form.currentFormIndex + 1 }} / {{ form.allFormsCount }}
-            </span>
-            <button @click.stop="cycleForm(form.pokemonId, 1)" class="carousel-btn" aria-label="Next form">&rsaquo;</button>
+          <div class="carousel-placeholder">
+            <div class="pokemon-card_carousel" v-if="form.isGrouped && form.allFormsCount > 1">
+              <button @click.stop="cycleForm(form.pokemonId, -1)" class="carousel-btn" aria-label="Previous form">&lsaquo;</button>
+              <span class="carousel-dots">
+                {{ form.currentFormIndex + 1 }} / {{ form.allFormsCount }}
+              </span>
+              <button @click.stop="cycleForm(form.pokemonId, 1)" class="carousel-btn" aria-label="Next form">&rsaquo;</button>
+            </div>
           </div>
           <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
         </div>
@@ -930,13 +920,13 @@ watch(selectedPokemon, (newVal) => {
     <div v-if="!loading && !error" class="pagination">
       <div class="pagination-main">
         <button @click="firstPage" title="First Page" aria-label="First page">&laquo;</button>
-        <button @click="prevPage" title="Previous Page" aria-label="Previous page">&lsaquo;</button>
+        <button @click="prevPage" :disabled="page === 1" title="Previous Page" aria-label="Previous page">&lsaquo;</button>
         
         <span class="pagination-status">
           {{ page }} / {{ pageCount }}
         </span>
         
-        <button @click="nextPage" title="Next Page" aria-label="Next page">&rsaquo;</button>
+        <button @click="nextPage" :disabled="page === pageCount" title="Next Page" aria-label="Next page">&rsaquo;</button>
         <button @click="lastPage" title="Last Page" aria-label="Last page">&raquo;</button>
       </div>
 
@@ -1472,7 +1462,7 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .pokemon-card_info h2 {
-  margin: 0 0 8px;
+  margin: 0px;
   font-size: 1.1rem;
 }
 
@@ -1551,6 +1541,10 @@ watch(selectedPokemon, (newVal) => {
   font-size: 1.5rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1;
+}
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .pagination button:hover {
@@ -1886,7 +1880,7 @@ watch(selectedPokemon, (newVal) => {
 
 .pokemon-card_collection {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
   right: 12px;
   display: flex;
   gap: 6px;
@@ -1911,12 +1905,20 @@ watch(selectedPokemon, (newVal) => {
 }
 
 /* Carousel styles */
+.carousel-placeholder {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .pokemon-card_carousel {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 8px 0;
+  margin: 0;
+  width: 100%;
   padding: 4px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
