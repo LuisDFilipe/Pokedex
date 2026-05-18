@@ -582,7 +582,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-m"
+              }
+            ]
           }
         ]
       },
@@ -600,7 +615,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-m"
+              }
+            ]
           }
         ]
       },
@@ -618,7 +648,22 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-m"
+              }
+            ]
           },
           {
             "id": "0012-f",
@@ -630,7 +675,22 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-f"
+              }
+            ]
           },
           {
             "id": "0012-m-gigantamax",
@@ -642,7 +702,22 @@
             "gender": "male",
             "region": null,
             "form": "gigantamax",
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-m"
+              }
+            ]
           },
           {
             "id": "0012-f-gigantamax",
@@ -654,7 +729,22 @@
             "gender": "female",
             "region": null,
             "form": "gigantamax",
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0010"
+              },
+              {
+                "stage": 2,
+                "id": "0011"
+              },
+              {
+                "stage": 3,
+                "id": "0012-f"
+              }
+            ]
           }
         ]
       },
@@ -672,7 +762,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0013"
+              },
+              {
+                "stage": 2,
+                "id": "0014"
+              },
+              {
+                "stage": 3,
+                "id": "0015"
+              }
+            ]
           }
         ]
       },
@@ -690,7 +795,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0013"
+              },
+              {
+                "stage": 2,
+                "id": "0014"
+              },
+              {
+                "stage": 3,
+                "id": "0015"
+              }
+            ]
           }
         ]
       },
@@ -708,7 +828,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0013"
+              },
+              {
+                "stage": 2,
+                "id": "0014"
+              },
+              {
+                "stage": 3,
+                "id": "0015"
+              }
+            ]
           },
           {
             "id": "0015-mega",
@@ -720,7 +855,22 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0013"
+              },
+              {
+                "stage": 2,
+                "id": "0014"
+              },
+              {
+                "stage": 3,
+                "id": "0015"
+              }
+            ]
           }
         ]
       },
@@ -738,7 +888,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0016"
+              },
+              {
+                "stage": 2,
+                "id": "0017"
+              },
+              {
+                "stage": 3,
+                "id": "0018"
+              }
+            ]
           }
         ]
       },
@@ -756,7 +921,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0016"
+              },
+              {
+                "stage": 2,
+                "id": "0017"
+              },
+              {
+                "stage": 3,
+                "id": "0018"
+              }
+            ]
           }
         ]
       },
@@ -774,7 +954,22 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0016"
+              },
+              {
+                "stage": 2,
+                "id": "0017"
+              },
+              {
+                "stage": 3,
+                "id": "0018"
+              }
+            ]
           },
           {
             "id": "0018-mega",
@@ -786,7 +981,22 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "stage": 3,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0016"
+              },
+              {
+                "stage": 2,
+                "id": "0017"
+              },
+              {
+                "stage": 3,
+                "id": "0018"
+              }
+            ]
           }
         ]
       },
@@ -954,7 +1164,18 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0021"
+              },
+              {
+                "stage": 2,
+                "id": "0022"
+              }
+            ]
           }
         ]
       },
@@ -972,7 +1193,18 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0021"
+              },
+              {
+                "stage": 2,
+                "id": "0022"
+              }
+            ]
           }
         ]
       },
@@ -990,7 +1222,18 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0023"
+              },
+              {
+                "stage": 2,
+                "id": "0024"
+              }
+            ]
           }
         ]
       },
@@ -1008,7 +1251,18 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0023"
+              },
+              {
+                "stage": 2,
+                "id": "0024"
+              }
+            ]
           }
         ]
       },
@@ -1026,7 +1280,22 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0025-f",
@@ -1038,7 +1307,22 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 1,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0025-original-cap",
@@ -1176,7 +1460,22 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-f",
@@ -1188,7 +1487,22 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-m-mega-x",
@@ -1200,7 +1514,22 @@
             "gender": "male",
             "region": null,
             "form": "mega-x",
-            "boxable": false
+            "boxable": false,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-f-mega-x",
@@ -1212,7 +1541,22 @@
             "gender": "female",
             "region": null,
             "form": "mega-x",
-            "boxable": false
+            "boxable": false,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-m-mega-y",
@@ -1224,7 +1568,22 @@
             "gender": "male",
             "region": null,
             "form": "mega-y",
-            "boxable": false
+            "boxable": false,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-f-mega-y",
@@ -1236,7 +1595,22 @@
             "gender": "female",
             "region": null,
             "form": "mega-y",
-            "boxable": false
+            "boxable": false,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-f"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           },
           {
             "id": "0026-alolan",
@@ -1248,7 +1622,22 @@
             "gender": null,
             "region": "alola",
             "form": "alolan",
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0025-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-m"
+              },
+              {
+                "stage": 2,
+                "id": "0026-alolan"
+              }
+            ]
           }
         ]
       },

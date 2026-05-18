@@ -1113,7 +1113,7 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .pokemon-card:hover {
-  transform: translateY(-3px);
+  /* transform: translateY(-3px); */
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
 }
@@ -1384,7 +1384,7 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .evolution-item:hover {
-  transform: translateY(-2px);
+  /* transform: translateY(-2px); */
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.08);
 }
@@ -1549,13 +1549,13 @@ watch(selectedPokemon, (newVal) => {
 
 .pagination button:hover {
   background: #ff5757;
-  transform: translateY(-2px);
+  /* transform: translateY(-2px); */
   box-shadow: 0 6px 15px rgba(255, 71, 71, 0.3);
 }
 
-.pagination button:active {
+/* .pagination button:active {
   transform: translateY(0);
-}
+} */
 
 @media (max-width: 480px) {
   .pagination-main {
