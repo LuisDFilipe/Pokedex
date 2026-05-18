@@ -23,6 +23,7 @@ const collectedShiny = ref<string[]>([])
 const showCollectedOnly = ref(false)
 const showUncollectedOnly = ref(false)
 const pokemonList = ref<PokemonEntry[]>([])
+const showEvolutionChain = ref(true) // New ref to control evolution chain visibility
 const loading = ref(true)
 const error = ref('')
 const selectedPokemon = ref<PokemonEntry | null>(null)
@@ -396,6 +397,25 @@ const activeEvolutionChain = computed(() => {
     .sort((left, right) => left.stage - right.stage)
 })
 
+const groupedEvolutionChain = computed(() => {
+  const chain = activeEvolutionChain.value
+  const groups: Record<number, typeof chain> = {}
+
+  chain.forEach((item) => {
+    if (!groups[item.stage]) {
+      groups[item.stage] = []
+    }
+    groups[item.stage]?.push(item)
+  })
+
+  return Object.keys(groups)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((stage) => ({
+      stage: Number(stage),
+      pokemon: groups[Number(stage)],
+    }))
+})
+
 const loadPokedexData = async () => {
   loading.value = true
   error.value = ''
@@ -703,26 +723,37 @@ watch(selectedPokemon, (newVal) => {
         </div>
 
         <div class="detail-body">
-          <div v-if="activeEvolutionChain.length" class="evolution-chain">
-            <h3>Evolution Line</h3>
-            <div class="evolution-list">
-              <button
-                v-for="evolution in activeEvolutionChain"
-                :key="evolution.id"
-                type="button"
-                class="evolution-item"
-                :class="{ current: evolution.isCurrent }"
-                :title="evolution.isCurrent ? 'Currently viewing this Pokemon' : `View ${evolution.label}`"
-                @click="selectEvolutionForm(evolution.id)"
-              >
-                <img
-                  :src="getSpriteUrl(evolution.sprite, localShowShiny)"
-                  :alt="evolution.label"
-                  loading="lazy"
-                />
-                <span class="evolution-stage">Stage {{ evolution.stage }}</span>
-                <strong>{{ evolution.label }}</strong>
-              </button>
+          <div v-if="groupedEvolutionChain.length" class="evolution-chain-container">
+            <button class="evolution-chain-toggle" @click="showEvolutionChain = !showEvolutionChain">
+              <h3>Evolution Line</h3>
+              <span class="toggle-arrow">{{ showEvolutionChain ? '&#x25BC;' : '&#x25B6;' }}</span>
+            </button>
+            <div v-if="showEvolutionChain" class="evolution-list">
+              <template v-for="(group, gIndex) in groupedEvolutionChain" :key="group.stage">
+                <div v-if="gIndex > 0" class="evolution-arrow" aria-hidden="true">
+                  <span class="arrow-horizontal">→</span>
+                  <span class="arrow-vertical">↓</span>
+                </div>
+                <div class="evolution-stage-group">
+                  <button
+                    v-for="evolution in group.pokemon"
+                    :key="evolution.id"
+                    type="button"
+                    class="evolution-item"
+                    :class="{ current: evolution.isCurrent }"
+                    :title="evolution.isCurrent ? 'Currently viewing this Pokemon' : `View ${evolution.label}`"
+                    @click="selectEvolutionForm(evolution.id)"
+                  >
+                    <img
+                      :src="getSpriteUrl(evolution.sprite, localShowShiny)"
+                      :alt="evolution.label"
+                      loading="lazy"
+                    />
+                    <span class="evolution-stage">Stage {{ evolution.stage }}</span>
+                    <strong>{{ evolution.label }}</strong>
+                  </button>
+                </div>
+              </template>
             </div>
           </div>
 
@@ -1351,6 +1382,35 @@ watch(selectedPokemon, (newVal) => {
   margin-top: 16px;
 }
 
+/* .toggle-arrow {
+  font-size: 1.2rem;
+  transition: transform 0.2s ease;
+} */
+
+.toggle-evolution-btn {
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.evolution-chain-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.evolution-chain-toggle h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
 .evolution-chain {
   margin-top: 0px;
   margin-bottom: 6px;
@@ -1363,9 +1423,18 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .evolution-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.evolution-stage-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
 }
 
 .evolution-item {
@@ -1373,7 +1442,7 @@ watch(selectedPokemon, (newVal) => {
   justify-items: center;
   gap: 6px;
   padding: 10px 8px;
-  width: 100%;
+  min-width: 110px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1397,6 +1466,39 @@ watch(selectedPokemon, (newVal) => {
 .evolution-item.current {
   border-color: rgba(255, 71, 71, 0.7);
   background: rgba(255, 71, 71, 0.12);
+}
+
+.evolution-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 1.6rem;
+  font-weight: bold;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.evolution-arrow .arrow-vertical {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .evolution-list {
+    flex-direction: column;
+  }
+
+  .evolution-arrow .arrow-horizontal {
+    display: none;
+  }
+
+  .evolution-arrow .arrow-vertical {
+    display: block;
+  }
+
+  .evolution-stage-group {
+    width: 100%;
+  }
 }
 
 .evolution-item img {
