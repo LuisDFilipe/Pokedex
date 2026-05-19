@@ -1,12 +1,13 @@
 import type {
   CollectionState,
+  NamedCollection,
   PokedexJson,
   PokedexSettings,
   PokedexSyncPayload,
   PokemonEntry,
 } from '@/types/pokedex'
 
-export const COLLECTION_STORAGE_KEY = 'pokedex-collection'
+export const COLLECTIONS_STORAGE_KEY = 'pokedex-collections'
 export const SETTINGS_STORAGE_KEY = 'pokedex-settings'
 
 const isStringArray = (value: unknown): value is string[] =>
@@ -20,17 +21,30 @@ const isNumber = (value: unknown): value is number => typeof value === 'number' 
 const isString = (value: unknown): value is string => typeof value === 'string'
 
 export const defaultSettings: PokedexSettings = {
-  selectedGenerations: [],
-  excludeGigantamax: false,
-  excludeMegas: false,
-  showBoxableOnly: false,
-  showBaseFormOnly: false,
+  filterQuery: '',
   showShiny: false,
+  itemsPerPage: 12,
+
+  activeCollectionId: 'default',
+
+  selectedGenerations: [],
+
+  excludeGigantamax: false,
+  showOnlyGigantamax: false,
+
+  excludeMegas: false,
+  showOnlyMegas: false,
+
+  excludeBoxable: false,
+  showBoxableOnly: false,
+
+  showBaseFormOnly: false,
+  excludeBaseForm: false,
+
+  groupForms: true,
+
   showCollectedOnly: false,
   showUncollectedOnly: false,
-  filterQuery: '',
-  itemsPerPage: 12,
-  groupForms: true,
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
@@ -44,26 +58,45 @@ export async function loadPokedex(): Promise<PokemonEntry[]> {
   return data.pokedex.pokemon
 }
 
-export function readCollection(): CollectionState {
+export function readCollections(): NamedCollection[] {
   if (typeof window === 'undefined') {
-    return { normal: [], shiny: [] }
+    return []
   }
 
-  const rawValue = localStorage.getItem(COLLECTION_STORAGE_KEY)
+  const rawValue = localStorage.getItem(COLLECTIONS_STORAGE_KEY)
   if (!rawValue) {
-    return { normal: [], shiny: [] }
+    // Migration: try to read from old single collection key
+    const oldKey = 'pokedex-collection'
+    const oldRaw = localStorage.getItem(oldKey)
+    const initialState = oldRaw ? normalizeCollection(JSON.parse(oldRaw)) : { normal: [], shiny: [] }
+    return [{ id: 'default', name: 'Main Collection', state: initialState }]
   }
 
   try {
-    const parsed = JSON.parse(rawValue) as Partial<CollectionState>
-    return normalizeCollection(parsed)
+    const parsed = JSON.parse(rawValue) as any[]
+    return parsed.map((item) => ({
+      id: isString(item.id) ? item.id : String(Date.now() + Math.random()),
+      name: isString(item.name) ? item.name : 'Unnamed Collection',
+      state: normalizeCollection(item.state),
+    }))
   } catch {
-    return { normal: [], shiny: [] }
+    return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [] } }]
   }
 }
 
-export function writeCollection(collection: CollectionState) {
-  localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(normalizeCollection(collection)))
+export function writeCollections(collections: NamedCollection[]) {
+  const normalized = collections.map((c) => ({
+    ...c,
+    state: normalizeCollection(c.state),
+  }))
+  localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(normalized))
+}
+
+export function readActiveCollectionState(): CollectionState {
+  const settings = readSettings()
+  const collections = readCollections()
+  const active = collections.find((c) => c.id === settings.activeCollectionId) || collections[0]
+  return active?.state || { normal: [], shiny: [] }
 }
 
 export function readSettings(): PokedexSettings {
@@ -131,16 +164,21 @@ function normalizeSettings(value: unknown): PokedexSettings {
   const settings = value as Partial<PokedexSettings> | undefined
 
   return {
-    selectedGenerations: isNumberArray(settings?.selectedGenerations) ? settings.selectedGenerations : [],
+    filterQuery: isString(settings?.filterQuery) ? settings.filterQuery : '',
+    showShiny: isBoolean(settings?.showShiny) ? settings.showShiny : false,
+    itemsPerPage: isNumber(settings?.itemsPerPage) ? settings.itemsPerPage : defaultSettings.itemsPerPage,
+    activeCollectionId: isString(settings?.activeCollectionId) ? settings.activeCollectionId : 'default',
+    selectedGenerations: [], //isNumberArray(settings?.selectedGenerations) ? settings.selectedGenerations : [],
     excludeGigantamax: isBoolean(settings?.excludeGigantamax) ? settings.excludeGigantamax : false,
+    showOnlyGigantamax: isBoolean(settings?.showOnlyGigantamax) ? settings.showOnlyGigantamax : false,
     excludeMegas: isBoolean(settings?.excludeMegas) ? settings.excludeMegas : false,
+    showOnlyMegas: isBoolean(settings?.showOnlyMegas) ? settings.showOnlyMegas : false,
+    excludeBoxable: isBoolean(settings?.excludeBoxable) ? settings.excludeBoxable : false,
     showBoxableOnly: isBoolean(settings?.showBoxableOnly) ? settings.showBoxableOnly : false,
     showBaseFormOnly: isBoolean(settings?.showBaseFormOnly) ? settings.showBaseFormOnly : false,
-    showShiny: isBoolean(settings?.showShiny) ? settings.showShiny : false,
+    excludeBaseForm: isBoolean(settings?.excludeBaseForm) ? settings.excludeBaseForm : false,
+    groupForms: isBoolean(settings?.groupForms) ? settings.groupForms : false,
     showCollectedOnly: isBoolean(settings?.showCollectedOnly) ? settings.showCollectedOnly : false,
     showUncollectedOnly: isBoolean(settings?.showUncollectedOnly) ? settings.showUncollectedOnly : false,
-    filterQuery: isString(settings?.filterQuery) ? settings.filterQuery : '',
-    itemsPerPage: isNumber(settings?.itemsPerPage) ? settings.itemsPerPage : defaultSettings.itemsPerPage,
-    groupForms: isBoolean(settings?.groupForms) ? settings.groupForms : false,
   }
 }

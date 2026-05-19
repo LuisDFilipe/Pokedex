@@ -1494,7 +1494,18 @@
             "gender": "male",
             "region": null,
             "form": "gigantamax",
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0172"
+              },
+              {
+                "stage": 2,
+                "id": "0025-m"
+              }
+            ]
           },
           {
             "id": "0025-f-gigantamax",
@@ -1506,7 +1517,18 @@
             "gender": "female",
             "region": null,
             "form": "gigantamax",
-            "boxable": true
+            "boxable": true,
+            "stage": 2,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0172"
+              },
+              {
+                "stage": 2,
+                "id": "0025-f"
+              }
+            ]
           }
         ]
       },

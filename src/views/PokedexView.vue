@@ -5,12 +5,12 @@ import {
   defaultSettings,
   loadPokedex,
   parseSyncPayload,
-  readCollection,
+  readCollections,
   readSettings,
-  writeCollection,
+  writeCollections,
   writeSettings,
 } from '@/lib/pokedex'
-import type { PokedexSettings, PokemonEntry, PokemonForm } from '@/types/pokedex'
+import type { NamedCollection, PokedexSettings, PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 const itemsPerPage = ref(10)
 const pageSizeOptions = [5, 6, 10, 12, 18, 20, 24, 30, 50, 60, 100]
@@ -18,10 +18,6 @@ const page = ref(1)
 const pageDraft = ref(1)
 const filterQuery = ref('')
 const debouncedQuery = ref('')
-const collectedNormal = ref<string[]>([])
-const collectedShiny = ref<string[]>([])
-const showCollectedOnly = ref(false)
-const showUncollectedOnly = ref(false)
 const pokemonList = ref<PokemonEntry[]>([])
 const showEvolutionChain = ref(true) // New ref to control evolution chain visibility
 const loading = ref(true)
@@ -30,17 +26,40 @@ const selectedPokemon = ref<PokemonEntry | null>(null)
 const selectedForm = ref<PokemonForm | null>(null)
 const localShowShiny = ref(false)
 const showFilterModal = ref(false)
+
 const selectedGenerations = ref<number[]>([])
+
+//Special Forms
 const excludeGigantamax = ref(false)
+const showOnlyGigantamax = ref(false)
+
 const excludeMegas = ref(false)
+const showOnlyMegas = ref(false)
+
+const excludeBoxable = ref(false)
 const showBoxableOnly = ref(false)
+
 const showBaseFormOnly = ref(false)
+const excludeBaseForm = ref(false)
+
+const groupForms = ref(false)
+
 const showShiny = ref(false)
+
+const collectedNormal = ref<string[]>([])
+const collectedShiny = ref<string[]>([])
+//Collection Status
+const showCollectedOnly = ref(false)
+const showUncollectedOnly = ref(false)
+
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
 const syncMessageType = ref<'success' | 'error' | ''>('')
-const groupForms = ref(false)
+
 const speciesActiveFormId = ref<Record<string, string>>({})
+
+const allCollections = ref<NamedCollection[]>([])
+const activeCollectionId = ref('default')
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -128,23 +147,27 @@ const toggleCollection = (id: string, isShiny: boolean) => {
   } else {
     list.push(id)
   }
-  saveCollection()
+  saveCollections()
   saveSettings()
 }
 
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
-  if (excludeGigantamax.value && form.form?.toLowerCase().includes('gigantamax')) {
-    return true
-  }
-  if (excludeMegas.value && (form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal'))) {
-    return true
-  }
-  if (showBoxableOnly.value && !form.boxable) { 
-    return true
-  }
-  if (showBaseFormOnly.value && !form.isBaseForm) {
-    return true
-  }
+  const isGmax = form.form?.toLowerCase().includes('gigantamax')
+  const isMega = form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal')
+  const isSingleStage = !(form.evolutions && form.evolutions.length > 1)
+
+  if (excludeGigantamax.value && isGmax) return true
+  if (showOnlyGigantamax.value && !isGmax) return true
+
+  if (excludeMegas.value && isMega) return true
+  if (showOnlyMegas.value && !isMega) return true
+
+  if (excludeBoxable.value && form.boxable) return true
+  if (showBoxableOnly.value && !form.boxable) return true
+
+  if (showBaseFormOnly.value && !form.isBaseForm) return true
+  if (excludeBaseForm.value && form.isBaseForm) return true
+
   if (selectedGenerations.value.length > 0 && !selectedGenerations.value.includes(form.gen)) {
     return true
   }
@@ -221,63 +244,138 @@ watch(filterQuery, (newVal) => {
   }, 300)
 })
 
-const saveCollection = () => {
-  writeCollection({
-    normal: collectedNormal.value,
-    shiny: collectedShiny.value,
-  })
+const saveCollections = () => {
+  const index = allCollections.value.findIndex((c) => c.id === activeCollectionId.value)
+  if (index !== -1 && allCollections.value[index]) {
+    allCollections.value[index].state = {
+      normal: [...collectedNormal.value],
+      shiny: [...collectedShiny.value],
+    }
+  }
+  writeCollections(allCollections.value)
 }
 
+const createNewCollection = () => {
+  const name = prompt('Enter a name for the new collection:')
+  if (!name) return
+  const newId = String(Date.now())
+  allCollections.value.push({
+    id: newId,
+    name: name,
+    state: { normal: [], shiny: [] },
+  })
+  activeCollectionId.value = newId
+  saveCollections()
+  saveSettings()
+}
+
+const renameCollection = (id: string) => {
+  const collection = allCollections.value.find((c) => c.id === id)
+  if (!collection) return
+  const newName = prompt('Enter new name:', collection.name)
+  if (newName && newName !== collection.name) {
+    collection.name = newName
+    saveCollections()
+  }
+}
+
+const deleteCollection = (id: string) => {
+  if (allCollections.value.length <= 1) return
+  if (!confirm('Are you sure you want to delete this collection?')) return
+  
+  allCollections.value = allCollections.value.filter((c) => c.id !== id)
+  if (activeCollectionId.value === id && allCollections.value[0]) {
+    activeCollectionId.value = allCollections.value[0].id
+  }
+  saveCollections()
+  saveSettings()
+}
+
+watch(activeCollectionId, (newId) => {
+  const collection = allCollections.value.find((c) => c.id === newId)
+  if (collection) {
+    collectedNormal.value = [...collection.state.normal]
+    collectedShiny.value = [...collection.state.shiny]
+  }
+})
+
 const getCurrentSettings = (): PokedexSettings => ({
+  filterQuery: filterQuery.value,
+  showShiny: showShiny.value,
+  itemsPerPage: itemsPerPage.value,
+  activeCollectionId: activeCollectionId.value,
   selectedGenerations: selectedGenerations.value,
   excludeGigantamax: excludeGigantamax.value,
+  showOnlyGigantamax: showOnlyGigantamax.value,
   excludeMegas: excludeMegas.value,
+  showOnlyMegas: showOnlyMegas.value,
+  excludeBoxable: excludeBoxable.value,
   showBoxableOnly: showBoxableOnly.value,
   showBaseFormOnly: showBaseFormOnly.value,
-  showShiny: showShiny.value,
+  excludeBaseForm: excludeBaseForm.value,
+  groupForms: groupForms.value,
   showCollectedOnly: showCollectedOnly.value,
   showUncollectedOnly: showUncollectedOnly.value,
-  filterQuery: filterQuery.value,
-  itemsPerPage: itemsPerPage.value,
-  groupForms: groupForms.value,
 })
 
 const applySettings = (settings: PokedexSettings) => {
-  selectedGenerations.value = settings.selectedGenerations
-  excludeGigantamax.value = settings.excludeGigantamax
-  excludeMegas.value = settings.excludeMegas
-  showBoxableOnly.value = settings.showBoxableOnly
-  showBaseFormOnly.value = settings.showBaseFormOnly
-  showShiny.value = settings.showShiny
-  showCollectedOnly.value = settings.showCollectedOnly
-  showUncollectedOnly.value = settings.showUncollectedOnly
   filterQuery.value = settings.filterQuery
   debouncedQuery.value = settings.filterQuery
+  showShiny.value = settings.showShiny
   itemsPerPage.value = settings.itemsPerPage
+  activeCollectionId.value = settings.activeCollectionId
+  selectedGenerations.value = settings.selectedGenerations
+  excludeGigantamax.value = settings.excludeGigantamax
+  showOnlyGigantamax.value = settings.showOnlyGigantamax
+  excludeMegas.value = settings.excludeMegas
+  showOnlyMegas.value = settings.showOnlyMegas
+  excludeBoxable.value = settings.excludeBoxable
+  showBoxableOnly.value = settings.showBoxableOnly
+  showBaseFormOnly.value = settings.showBaseFormOnly
+  excludeBaseForm.value = settings.excludeBaseForm
   groupForms.value = settings.groupForms
+  showCollectedOnly.value = settings.showCollectedOnly
+  showUncollectedOnly.value = settings.showUncollectedOnly
 }
 
 const saveSettings = () => {
   writeSettings({
+    filterQuery: filterQuery.value,
+    showShiny: showShiny.value,
+    itemsPerPage: itemsPerPage.value,
+    activeCollectionId: activeCollectionId.value,
     selectedGenerations: selectedGenerations.value,
     excludeGigantamax: excludeGigantamax.value,
+    showOnlyGigantamax: showOnlyGigantamax.value,
     excludeMegas: excludeMegas.value,
+    showOnlyMegas: showOnlyMegas.value,
+    excludeBoxable: excludeBoxable.value,
     showBoxableOnly: showBoxableOnly.value,
     showBaseFormOnly: showBaseFormOnly.value,
-    showShiny: showShiny.value,
+    excludeBaseForm: excludeBaseForm.value,
+    groupForms: groupForms.value,
     showCollectedOnly: showCollectedOnly.value,
     showUncollectedOnly: showUncollectedOnly.value,
-    filterQuery: filterQuery.value,
-    itemsPerPage: itemsPerPage.value,
-    groupForms: groupForms.value,
   })  
 }
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
 watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
 
+// Mutual exclusion for Special Forms
+watch(showBaseFormOnly, (val) => { if (val) {excludeBaseForm.value = false; excludeGigantamax.value = false; showOnlyGigantamax.value = false; excludeMegas.value = false; showOnlyMegas.value = false} })
+watch(excludeBaseForm, (val) => { if (val) {showBaseFormOnly.value = false} })
+
+watch(excludeGigantamax, (val) => { if (val) {showOnlyGigantamax.value = false; showOnlyMegas.value = false} })
+watch(showOnlyGigantamax, (val) => { if (val) {excludeGigantamax.value = false; excludeMegas.value = false; showOnlyMegas.value = false} })
+watch(excludeMegas, (val) => { if (val) {showOnlyMegas.value = false; showOnlyGigantamax.value = false} })
+watch(showOnlyMegas, (val) => { if (val) {excludeMegas.value = false; excludeGigantamax.value = false; showOnlyGigantamax.value = false} })
+
+watch(excludeBoxable, (val) => { if (val) {showBoxableOnly.value = false} })
+watch(showBoxableOnly, (val) => { if (val) {excludeBoxable.value = false} })
+
 watch(
-  [selectedGenerations, excludeGigantamax, excludeMegas, showBoxableOnly, showBaseFormOnly, filterQuery, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms],
+  [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms, activeCollectionId],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -293,6 +391,10 @@ watch(showShiny, () => {
   }
   saveSettings()
 })
+
+watch([collectedNormal, collectedShiny], () => {
+  saveCollections()
+}, { deep: true })
 
 const pagedPokemon = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
@@ -569,7 +671,7 @@ const handleFileImport = async (event: Event) => {
     page.value = 1
     pageDraft.value = 1
 
-    saveCollection()
+    saveCollections()
     saveSettings()
 
     setSyncMessage(`Imported sync file from ${new Date(payload.exportedAt).toLocaleString()}.`, 'success')
@@ -593,11 +695,16 @@ const handleKeyDown = (event: KeyboardEvent) => {
 onMounted(async () => {
   await loadPokedexData()
 
-  const savedCollection = readCollection()
-  collectedNormal.value = savedCollection.normal
-  collectedShiny.value = savedCollection.shiny
+  allCollections.value = readCollections()
 
   applySettings(readSettings())
+
+  // Initialize collected refs from active collection
+  const active = allCollections.value.find(c => c.id === activeCollectionId.value) || allCollections.value[0]
+  if (active) {
+    collectedNormal.value = [...active.state.normal]
+    collectedShiny.value = [...active.state.shiny]
+  }
   window.addEventListener('keydown', handleKeyDown)
 })
 
@@ -671,6 +778,7 @@ watch(selectedPokemon, (newVal) => {
                   :title="localShowShiny ? 'Click to show normal version' : 'Click to show shiny version'"
                 />
               </Transition>
+              <div class="pokemon-card_badge">#{{ selectedPokemon.id }}</div>
               <div v-if="activeGenderIcons.length" class="gender-overlay">
                 <img
                   v-for="src in activeGenderIcons"
@@ -757,21 +865,44 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
 
-          <div class="detail-forms-list">
+          <div class="detail-forms-list" v-if="selectedPokemon.forms.length > 1">
             <h3>Forms</h3>
             <ul>
-              <li v-for="form in selectedPokemon.forms" :key="form.id">
-                <button
-                  type="button"
-                  class="form-option"
+              <li v-for="form in selectedPokemon.forms" :key="form.id" class="form-item">
+                <article 
+                  class="pokemon-card small" 
                   :class="{ active: activeForm?.id === form.id }"
                   @click="selectForm(form)"
+                  :style="{ background: form.type2
+                    ? `linear-gradient(to right, ${type_colors[form.type1] || 'rgba(255,255,255,0.08)'} 0%, ${type_colors[form.type1] || 'rgba(255,255,255,0.08)'} 50%, ${type_colors[form.type2] || 'rgba(255,255,255,0.08)'} 50%, ${type_colors[form.type2] || 'rgba(255,255,255,0.08)'} 100%)`
+                    : type_colors[form.type1] || 'rgba(255,255,255,0.08)' }"
                 >
-                  <div>
-                    <strong>{{ form.name }}</strong>
-                    <span>• {{ form.type1 || 'Unknown' }}<span v-if="form.type2"> / {{ form.type2 }}</span></span>
+                  <div class="pokemon-card_badge">#{{ selectedPokemon.id }}</div>
+                  <div class="pokemon-card_gender" v-if="getGenderIcons(form.gender).length">
+                    <img
+                      v-for="src in getGenderIcons(form.gender)"
+                      :key="src"
+                      :src="src"
+                      :alt="src.includes('female') ? 'Female' : 'Male'"
+                    />
                   </div>
-                </button>
+                  <div class="pokemon-card_collection">
+                    <span
+                      class="collect-indicator"
+                      :class="{ active: isCollected(form.id, false) }"
+                    >&#9679;</span>
+                    <span
+                      class="collect-indicator shiny"
+                      :class="{ active: isCollected(form.id, true) }"
+                    >&#9733;</span>
+                  </div>
+                  <div class="pokemon-card_image">
+                    <img :src="getSpriteUrl(form.sprite || form.id, localShowShiny)" :alt="form.name" loading="lazy" />
+                  </div>
+                  <div class="pokemon-card_info">
+                    <p class="form-label">{{ form.name }}</p>
+                  </div>
+                </article>
               </li>
             </ul>
           </div>
@@ -789,6 +920,27 @@ watch(selectedPokemon, (newVal) => {
         <div class="filter-content">
           <!-- Generation Filter -->
           <div class="filter-section">
+            <h3>Collection Management</h3>
+            <div class="collection-manager">
+              <select v-model="activeCollectionId" class="collection-select">
+                <option v-for="col in allCollections" :key="col.id" :value="col.id">
+                  {{ col.name }}
+                </option>
+              </select>
+              <div class="collection-manager-actions">
+                <button type="button" class="btn-manage" @click="createNewCollection">New</button>
+                <button type="button" class="btn-manage" @click="renameCollection(activeCollectionId)">Rename</button>
+                <button 
+                  type="button" 
+                  class="btn-manage" 
+                  @click="deleteCollection(activeCollectionId)" 
+                  :disabled="allCollections.length <= 1"
+                >Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- <div class="filter-section">
             <h3>Generation</h3>
             <div class="filter-options">
               <label v-for="gen in allGenerations" :key="gen" class="filter-checkbox">
@@ -800,51 +952,52 @@ watch(selectedPokemon, (newVal) => {
                 <span>Gen {{ gen }}</span>
               </label>
             </div>
-          </div>
+          </div> -->
 
           <div class="filter-section">
-            <h3>Special Forms</h3>
-            <!-- Gigantamax Filter -->
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                v-model="excludeGigantamax"
-                :disabled="showBaseFormOnly"
-              />
-              <span>Exclude Gigantamax</span>
-            </label>
-            <!-- Mega Filter -->
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                v-model="excludeMegas"
-                :disabled="showBaseFormOnly"
-              />
-              <span>Exclude Megas</span>
-            </label>
-            <!-- Boxable Filter -->
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                v-model="showBoxableOnly"
-              />
-              <span>Show Only Boxable Forms</span>
-            </label>
-            <!-- All Forms Filter -->
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                v-model="showBaseFormOnly"
-              />
-              <span>Hide all forms</span>
-            </label>
-            <!-- Group forms Filter -->
             <label class="filter-checkbox">
               <input
                 type="checkbox"
                 v-model="groupForms"
               />
               <span>Group forms in carousel</span>
+            </label>
+            <h3>Special Forms</h3>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showBaseFormOnly" />
+              <span>Hide All Forms</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="excludeBaseForm" />
+              <span>Show Only Extra Forms</span>
+            </label>
+
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="excludeGigantamax" :disabled="showBaseFormOnly" />
+              <span>Exclude Gigantamax</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showOnlyGigantamax" :disabled="showBaseFormOnly" />
+              <span>Show Only Gigantamax</span>
+            </label>
+
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="excludeMegas" :disabled="showBaseFormOnly" />
+              <span>Exclude Megas</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showOnlyMegas" :disabled="showBaseFormOnly" />
+              <span>Show Only Megas</span>
+            </label>
+
+            <h3>Boxable</h3>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="excludeBoxable" />
+              <span>Exclude Boxable Forms</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showBoxableOnly" />
+              <span>Show Only Boxable Forms</span>
             </label>
           </div>
 
@@ -1364,12 +1517,25 @@ watch(selectedPokemon, (newVal) => {
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 .detail-forms-list li {
   display: block;
+}
+
+.pokemon-card.active {
+  outline: 3px solid #ff4747;
+  outline-offset: 2px;
+}
+
+.pokemon-card.small {
+  padding: 8px;
+}
+
+.pokemon-card.small .pokemon-card_image img {
+  max-height: 80px;
 }
 
 @media (max-width: 640px) {
@@ -1783,7 +1949,7 @@ watch(selectedPokemon, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
+  padding: 10px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1815,7 +1981,7 @@ watch(selectedPokemon, (newVal) => {
 .filter-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 10px 24px;
   display: grid;
   gap: 24px;
 }
@@ -2051,6 +2217,33 @@ watch(selectedPokemon, (newVal) => {
   color: #a6a6a6;
   min-width: 40px;
   text-align: center;
+}
+
+.collection-manager {
+  display: grid;
+  gap: 10px;
+}
+.collection-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.collection-manager-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-manage {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
 }
 </style>
 

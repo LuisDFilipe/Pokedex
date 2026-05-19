@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
+﻿﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { loadPokedex, readCollection } from '@/lib/pokedex'
+import { loadPokedex, readActiveCollectionState } from '@/lib/pokedex'
 import type { PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 type FormWithPokemon = PokemonForm & {
@@ -134,7 +134,7 @@ const collectionNotes = computed(() => [
 onMounted(async () => {
   try {
     pokemon.value = await loadPokedex()
-    const collection = readCollection()
+    const collection = readActiveCollectionState()
     collectedNormal.value = collection.normal
     collectedShiny.value = collection.shiny
   } catch (err) {
@@ -465,4 +465,3 @@ onMounted(async () => {
   }
 }
 </style>
-
