@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
   createSyncPayload,
-  defaultSettings,
+  defaultCollectionFilters,
   loadPokedex,
   parseSyncPayload,
   readCollections,
@@ -10,13 +10,14 @@ import {
   writeCollections,
   writeSettings,
 } from '@/lib/pokedex'
-import type { NamedCollection, PokedexSettings, PokemonEntry, PokemonForm } from '@/types/pokedex'
+import type { CollectionFilters, NamedCollection, PokedexSettings, PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 const itemsPerPage = ref(10)
 const pageSizeOptions = [5, 6, 10, 12, 18, 20, 24, 30, 50, 60, 100]
 const page = ref(1)
 const pageDraft = ref(1)
 const filterQuery = ref('')
+const randomOrder = ref(false)
 const debouncedQuery = ref('')
 const pokemonList = ref<PokemonEntry[]>([])
 const showEvolutionChain = ref(true) // New ref to control evolution chain visibility
@@ -60,6 +61,7 @@ const speciesActiveFormId = ref<Record<string, string>>({})
 
 const allCollections = ref<NamedCollection[]>([])
 const activeCollectionId = ref('default')
+let isLoadingCollections = true
 
 const type_colors: Record<string, string> = {
   Normal: '#A8A77ABE',
@@ -209,7 +211,12 @@ const filteredPokemon = computed(() => {
   const query = debouncedQuery.value
 
   // Filter base forms list first
-  const flatResults = allFormsFlat.value.filter((form) => isFormVisible(form, query))
+  let flatResults = allFormsFlat.value.filter((form) => isFormVisible(form, query))
+
+  if (randomOrder.value) {
+    // Shallow copy and randomize the order
+    flatResults = [...flatResults].sort(() => Math.random() - 0.5)
+  }
 
   if (!groupForms.value) return flatResults
 
@@ -251,21 +258,47 @@ const saveCollections = () => {
       normal: [...collectedNormal.value],
       shiny: [...collectedShiny.value],
     }
+    allCollections.value[index].filters = getCurrentCollectionFilters()
   }
   writeCollections(allCollections.value)
+}
+
+const saveCollectionSnapshot = (id: string) => {
+  const index = allCollections.value.findIndex((c) => c.id === id)
+  if (index !== -1 && allCollections.value[index]) {
+    allCollections.value[index].state = {
+      normal: [...collectedNormal.value],
+      shiny: [...collectedShiny.value],
+    }
+    allCollections.value[index].filters = getCurrentCollectionFilters()
+    writeCollections(allCollections.value)
+  }
+}
+
+const loadCollectionSnapshot = (id: string) => {
+  const collection = allCollections.value.find((c) => c.id === id)
+  if (collection) {
+    collectedNormal.value = [...collection.state.normal]
+    collectedShiny.value = [...collection.state.shiny]
+    applyCollectionFilters(collection.filters)
+  }
 }
 
 const createNewCollection = () => {
   const name = prompt('Enter a name for the new collection:')
   if (!name) return
+  saveCollectionSnapshot(activeCollectionId.value)
+
   const newId = String(Date.now())
   allCollections.value.push({
     id: newId,
     name: name,
     state: { normal: [], shiny: [] },
+    filters: { ...defaultCollectionFilters },
   })
+  writeCollections(allCollections.value)
   activeCollectionId.value = newId
-  saveCollections()
+
   saveSettings()
 }
 
@@ -282,28 +315,35 @@ const renameCollection = (id: string) => {
 const deleteCollection = (id: string) => {
   if (allCollections.value.length <= 1) return
   if (!confirm('Are you sure you want to delete this collection?')) return
-  
+
+  if (activeCollectionId.value !== id) {
+    saveCollectionSnapshot(activeCollectionId.value)
+  }
+
   allCollections.value = allCollections.value.filter((c) => c.id !== id)
   if (activeCollectionId.value === id && allCollections.value[0]) {
     activeCollectionId.value = allCollections.value[0].id
   }
-  saveCollections()
+  writeCollections(allCollections.value)
   saveSettings()
 }
 
-watch(activeCollectionId, (newId) => {
-  const collection = allCollections.value.find((c) => c.id === newId)
-  if (collection) {
-    collectedNormal.value = [...collection.state.normal]
-    collectedShiny.value = [...collection.state.shiny]
-  }
-})
+watch(
+  activeCollectionId,
+  (newId, oldId) => {
+    if (!isLoadingCollections && oldId) {
+      saveCollectionSnapshot(oldId)
+    }
+    loadCollectionSnapshot(newId)
+  },
+  { flush: 'sync' },
+)
 
-const getCurrentSettings = (): PokedexSettings => ({
+const getCurrentCollectionFilters = (): CollectionFilters => ({
   filterQuery: filterQuery.value,
+  randomOrder: randomOrder.value,
   showShiny: showShiny.value,
   itemsPerPage: itemsPerPage.value,
-  activeCollectionId: activeCollectionId.value,
   selectedGenerations: selectedGenerations.value,
   excludeGigantamax: excludeGigantamax.value,
   showOnlyGigantamax: showOnlyGigantamax.value,
@@ -318,45 +358,38 @@ const getCurrentSettings = (): PokedexSettings => ({
   showUncollectedOnly: showUncollectedOnly.value,
 })
 
+const getCurrentSettings = (): PokedexSettings => ({
+  ...getCurrentCollectionFilters(),
+  activeCollectionId: activeCollectionId.value,
+})
+
+const applyCollectionFilters = (filters: CollectionFilters) => {
+  filterQuery.value = filters.filterQuery
+  debouncedQuery.value = filters.filterQuery
+  randomOrder.value = filters.randomOrder
+  showShiny.value = filters.showShiny
+  itemsPerPage.value = filters.itemsPerPage
+  selectedGenerations.value = [...filters.selectedGenerations]
+  excludeGigantamax.value = filters.excludeGigantamax
+  showOnlyGigantamax.value = filters.showOnlyGigantamax
+  excludeMegas.value = filters.excludeMegas
+  showOnlyMegas.value = filters.showOnlyMegas
+  excludeBoxable.value = filters.excludeBoxable
+  showBoxableOnly.value = filters.showBoxableOnly
+  showBaseFormOnly.value = filters.showBaseFormOnly
+  excludeBaseForm.value = filters.excludeBaseForm
+  groupForms.value = filters.groupForms
+  showCollectedOnly.value = filters.showCollectedOnly
+  showUncollectedOnly.value = filters.showUncollectedOnly
+}
+
 const applySettings = (settings: PokedexSettings) => {
-  filterQuery.value = settings.filterQuery
-  debouncedQuery.value = settings.filterQuery
-  showShiny.value = settings.showShiny
-  itemsPerPage.value = settings.itemsPerPage
   activeCollectionId.value = settings.activeCollectionId
-  selectedGenerations.value = settings.selectedGenerations
-  excludeGigantamax.value = settings.excludeGigantamax
-  showOnlyGigantamax.value = settings.showOnlyGigantamax
-  excludeMegas.value = settings.excludeMegas
-  showOnlyMegas.value = settings.showOnlyMegas
-  excludeBoxable.value = settings.excludeBoxable
-  showBoxableOnly.value = settings.showBoxableOnly
-  showBaseFormOnly.value = settings.showBaseFormOnly
-  excludeBaseForm.value = settings.excludeBaseForm
-  groupForms.value = settings.groupForms
-  showCollectedOnly.value = settings.showCollectedOnly
-  showUncollectedOnly.value = settings.showUncollectedOnly
+  applyCollectionFilters(settings)
 }
 
 const saveSettings = () => {
-  writeSettings({
-    filterQuery: filterQuery.value,
-    showShiny: showShiny.value,
-    itemsPerPage: itemsPerPage.value,
-    activeCollectionId: activeCollectionId.value,
-    selectedGenerations: selectedGenerations.value,
-    excludeGigantamax: excludeGigantamax.value,
-    showOnlyGigantamax: showOnlyGigantamax.value,
-    excludeMegas: excludeMegas.value,
-    showOnlyMegas: showOnlyMegas.value,
-    excludeBoxable: excludeBoxable.value,
-    showBoxableOnly: showBoxableOnly.value,
-    showBaseFormOnly: showBaseFormOnly.value,
-    excludeBaseForm: excludeBaseForm.value,
-    groupForms: groupForms.value,
-    showCollectedOnly: showCollectedOnly.value,
-    showUncollectedOnly: showUncollectedOnly.value,
-  })  
+  writeSettings(getCurrentSettings())
 }
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
@@ -375,11 +408,14 @@ watch(excludeBoxable, (val) => { if (val) {showBoxableOnly.value = false} })
 watch(showBoxableOnly, (val) => { if (val) {excludeBoxable.value = false} })
 
 watch(
-  [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms, activeCollectionId],
+  [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, randomOrder, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms, activeCollectionId],
   () => {
     page.value = 1
     pageDraft.value = 1
     saveSettings()
+    if (!isLoadingCollections) {
+      saveCollectionSnapshot(activeCollectionId.value)
+    }
   },
   { deep: true }
 )
@@ -390,6 +426,9 @@ watch(showShiny, () => {
     pageDraft.value = 1
   }
   saveSettings()
+  if (!isLoadingCollections) {
+    saveCollectionSnapshot(activeCollectionId.value)
+  }
 })
 
 watch([collectedNormal, collectedShiny], () => {
@@ -619,7 +658,7 @@ const isGenerationSelected = (gen: number) => {
 }
 
 const clearFilters = () => {
-  applySettings(defaultSettings)
+  applyCollectionFilters(defaultCollectionFilters)
 }
 
 const setSyncMessage = (message: string, type: 'success' | 'error') => {
@@ -665,9 +704,9 @@ const handleFileImport = async (event: Event) => {
     const rawValue = await file.text()
     const payload = parseSyncPayload(rawValue)
 
+    applySettings(payload.settings)
     collectedNormal.value = payload.collection.normal
     collectedShiny.value = payload.collection.shiny
-    applySettings(payload.settings)
     page.value = 1
     pageDraft.value = 1
 
@@ -696,15 +735,17 @@ onMounted(async () => {
   await loadPokedexData()
 
   allCollections.value = readCollections()
+  const settings = readSettings()
+  const active = allCollections.value.find(c => c.id === settings.activeCollectionId) || allCollections.value[0]
 
-  applySettings(readSettings())
-
-  // Initialize collected refs from active collection
-  const active = allCollections.value.find(c => c.id === activeCollectionId.value) || allCollections.value[0]
   if (active) {
-    collectedNormal.value = [...active.state.normal]
-    collectedShiny.value = [...active.state.shiny]
+    activeCollectionId.value = active.id
+    loadCollectionSnapshot(active.id)
+  } else {
+    applyCollectionFilters(defaultCollectionFilters)
   }
+  isLoadingCollections = false
+
   window.addEventListener('keydown', handleKeyDown)
 })
 
@@ -961,6 +1002,13 @@ watch(selectedPokemon, (newVal) => {
                 v-model="groupForms"
               />
               <span>Group forms in carousel</span>
+            </label>
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                v-model="randomOrder"
+              />
+              <span>Randomize Pokémon Order</span>
             </label>
             <h3>Special Forms</h3>
             <label class="filter-checkbox">

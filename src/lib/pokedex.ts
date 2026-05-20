@@ -1,4 +1,5 @@
 import type {
+  CollectionFilters,
   CollectionState,
   NamedCollection,
   PokedexJson,
@@ -22,6 +23,7 @@ const isString = (value: unknown): value is string => typeof value === 'string'
 
 export const defaultSettings: PokedexSettings = {
   filterQuery: '',
+  randomOrder: false,
   showShiny: false,
   itemsPerPage: 12,
 
@@ -47,6 +49,25 @@ export const defaultSettings: PokedexSettings = {
   showUncollectedOnly: false,
 }
 
+export const defaultCollectionFilters: CollectionFilters = {
+  filterQuery: defaultSettings.filterQuery,
+  randomOrder: defaultSettings.randomOrder,
+  showShiny: defaultSettings.showShiny,
+  itemsPerPage: defaultSettings.itemsPerPage,
+  selectedGenerations: defaultSettings.selectedGenerations,
+  excludeGigantamax: defaultSettings.excludeGigantamax,
+  showOnlyGigantamax: defaultSettings.showOnlyGigantamax,
+  excludeMegas: defaultSettings.excludeMegas,
+  showOnlyMegas: defaultSettings.showOnlyMegas,
+  excludeBoxable: defaultSettings.excludeBoxable,
+  showBoxableOnly: defaultSettings.showBoxableOnly,
+  showBaseFormOnly: defaultSettings.showBaseFormOnly,
+  excludeBaseForm: defaultSettings.excludeBaseForm,
+  groupForms: defaultSettings.groupForms,
+  showCollectedOnly: defaultSettings.showCollectedOnly,
+  showUncollectedOnly: defaultSettings.showUncollectedOnly,
+}
+
 export async function loadPokedex(): Promise<PokemonEntry[]> {
   const response = await fetch('/pokedex.json')
 
@@ -69,18 +90,20 @@ export function readCollections(): NamedCollection[] {
     const oldKey = 'pokedex-collection'
     const oldRaw = localStorage.getItem(oldKey)
     const initialState = oldRaw ? normalizeCollection(JSON.parse(oldRaw)) : { normal: [], shiny: [] }
-    return [{ id: 'default', name: 'Main Collection', state: initialState }]
+    return [{ id: 'default', name: 'Main Collection', state: initialState, filters: normalizeCollectionFilters(readSettings()) }]
   }
 
   try {
     const parsed = JSON.parse(rawValue) as any[]
+    const settings = readSettings()
     return parsed.map((item) => ({
       id: isString(item.id) ? item.id : String(Date.now() + Math.random()),
       name: isString(item.name) ? item.name : 'Unnamed Collection',
       state: normalizeCollection(item.state),
+      filters: normalizeCollectionFilters(item.filters ?? (item.id === settings.activeCollectionId ? settings : undefined)),
     }))
   } catch {
-    return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [] } }]
+    return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [] }, filters: normalizeCollectionFilters(readSettings()) }]
   }
 }
 
@@ -88,6 +111,7 @@ export function writeCollections(collections: NamedCollection[]) {
   const normalized = collections.map((c) => ({
     ...c,
     state: normalizeCollection(c.state),
+    filters: normalizeCollectionFilters(c.filters),
   }))
   localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(normalized))
 }
@@ -160,15 +184,23 @@ function normalizeCollection(value: unknown): CollectionState {
   }
 }
 
+function normalizeCollectionFilters(value: unknown): CollectionFilters {
+  const settings = normalizeSettings(value)
+  const { activeCollectionId, ...filters } = settings
+
+  return filters
+}
+
 function normalizeSettings(value: unknown): PokedexSettings {
   const settings = value as Partial<PokedexSettings> | undefined
 
   return {
     filterQuery: isString(settings?.filterQuery) ? settings.filterQuery : '',
+    randomOrder: isBoolean(settings?.randomOrder) ? settings.randomOrder : false,
     showShiny: isBoolean(settings?.showShiny) ? settings.showShiny : false,
     itemsPerPage: isNumber(settings?.itemsPerPage) ? settings.itemsPerPage : defaultSettings.itemsPerPage,
     activeCollectionId: isString(settings?.activeCollectionId) ? settings.activeCollectionId : 'default',
-    selectedGenerations: [], //isNumberArray(settings?.selectedGenerations) ? settings.selectedGenerations : [],
+    selectedGenerations: isNumberArray(settings?.selectedGenerations) ? settings.selectedGenerations : [],
     excludeGigantamax: isBoolean(settings?.excludeGigantamax) ? settings.excludeGigantamax : false,
     showOnlyGigantamax: isBoolean(settings?.showOnlyGigantamax) ? settings.showOnlyGigantamax : false,
     excludeMegas: isBoolean(settings?.excludeMegas) ? settings.excludeMegas : false,

@@ -39,10 +39,12 @@ export interface NamedCollection {
   id: string
   name: string
   state: CollectionState
+  filters: CollectionFilters
 }
 
 export interface PokedexSettings {
   filterQuery: string
+  randomOrder: boolean
   showShiny: boolean
   itemsPerPage: number
   
@@ -67,6 +69,8 @@ export interface PokedexSettings {
   showCollectedOnly: boolean
   showUncollectedOnly: boolean
 }
+
+export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>
 
 export interface PokedexSyncPayload {
   version: 1
