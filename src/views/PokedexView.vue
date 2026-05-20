@@ -662,6 +662,9 @@ const lastPage = () => {
 }
 
 const selectForm = (form: PokemonForm) => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(form.id)
+  }
   selectedForm.value = form
 }
 
@@ -682,6 +685,9 @@ const cycleForm = (pokemonId: string, direction: number) => {
 }
 
 const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId: string }) => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(form.id)
+  }
   // Find the pokemon entry that contains this form
   const pokemon = pokemonList.value.find((p) => p.id === form.pokemonId)
   if (pokemon) {
