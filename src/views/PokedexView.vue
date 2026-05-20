@@ -21,6 +21,8 @@ const randomOrder = ref(false)
 const debouncedQuery = ref('')
 const pokemonList = ref<PokemonEntry[]>([])
 const showEvolutionChain = ref(true) // New ref to control evolution chain visibility
+const showTypeMatchups = ref(true)
+const showForms = ref(true)
 const loading = ref(true)
 const error = ref('')
 const selectedPokemon = ref<PokemonEntry | null>(null)
@@ -82,6 +84,27 @@ const type_colors: Record<string, string> = {
   Dark: '#705746BE',
   Steel: '#B7B7CEBE',
   Fairy: '#D685ADBE',
+}
+
+const typeEffectiveness: Record<string, Partial<Record<string, number>>> = {
+  Normal: { Rock: 0.5, Ghost: 0, Steel: 0.5 },
+  Fire: { Fire: 0.5, Water: 0.5, Grass: 2, Ice: 2, Bug: 2, Rock: 0.5, Dragon: 0.5, Steel: 2 },
+  Water: { Fire: 2, Water: 0.5, Grass: 0.5, Ground: 2, Rock: 2, Dragon: 0.5 },
+  Electric: { Water: 2, Electric: 0.5, Grass: 0.5, Ground: 0, Flying: 2, Dragon: 0.5 },
+  Grass: { Fire: 0.5, Water: 2, Grass: 0.5, Poison: 0.5, Ground: 2, Flying: 0.5, Bug: 0.5, Rock: 2, Dragon: 0.5, Steel: 0.5 },
+  Ice: { Fire: 0.5, Water: 0.5, Grass: 2, Ice: 0.5, Ground: 2, Flying: 2, Dragon: 2, Steel: 0.5 },
+  Fighting: { Normal: 2, Ice: 2, Poison: 0.5, Flying: 0.5, Psychic: 0.5, Bug: 0.5, Rock: 2, Ghost: 0, Dark: 2, Steel: 2, Fairy: 0.5 },
+  Poison: { Grass: 2, Poison: 0.5, Ground: 0.5, Rock: 0.5, Ghost: 0.5, Steel: 0, Fairy: 2 },
+  Ground: { Fire: 2, Electric: 2, Grass: 0.5, Poison: 2, Flying: 0, Bug: 0.5, Rock: 2, Steel: 2 },
+  Flying: { Electric: 0.5, Grass: 2, Fighting: 2, Bug: 2, Rock: 0.5, Steel: 0.5 },
+  Psychic: { Fighting: 2, Poison: 2, Psychic: 0.5, Dark: 0, Steel: 0.5 },
+  Bug: { Fire: 0.5, Grass: 2, Fighting: 0.5, Poison: 0.5, Flying: 0.5, Psychic: 2, Ghost: 0.5, Dark: 2, Steel: 0.5, Fairy: 0.5 },
+  Rock: { Fire: 2, Ice: 2, Fighting: 0.5, Ground: 0.5, Flying: 2, Bug: 2, Steel: 0.5 },
+  Ghost: { Normal: 0, Psychic: 2, Ghost: 2, Dark: 0.5 },
+  Dragon: { Dragon: 2, Steel: 0.5, Fairy: 0 },
+  Dark: { Fighting: 0.5, Psychic: 2, Ghost: 2, Dark: 0.5, Fairy: 0.5 },
+  Steel: { Fire: 0.5, Water: 0.5, Electric: 0.5, Ice: 2, Rock: 2, Steel: 0.5, Fairy: 2 },
+  Fairy: { Fire: 0.5, Fighting: 2, Poison: 0.5, Dragon: 2, Dark: 2, Steel: 0.5 },
 }
 
 const normalSprites = import.meta.glob('../../sprites/pokemon/normal/*.png', {
@@ -500,6 +523,54 @@ const activeGenderIcons = computed(() => {
   return getGenderIcons(activeForm.value?.gender ?? null)
 })
 
+const pokemonTypes = computed(() => {
+  const types = [activeForm.value?.type1, activeForm.value?.type2].filter((type): type is string => Boolean(type))
+  return [...new Set(types)]
+})
+
+const matchupTypes = Object.keys(type_colors)
+
+const getTypeMultiplier = (attackType: string, defenseType: string) => {
+  return typeEffectiveness[attackType]?.[defenseType] ?? 1
+}
+
+const formatMultiplier = (value: number) => `${value}x`
+
+const sortMatchups = (left: { multiplier: number; type: string }, right: { multiplier: number; type: string }) => {
+  if (right.multiplier !== left.multiplier) return right.multiplier - left.multiplier
+  return left.type.localeCompare(right.type)
+}
+
+const attackingStrongAgainst = computed(() => {
+  if (pokemonTypes.value.length === 0) return []
+
+  return matchupTypes
+    .map((type) => ({
+      type,
+      multiplier: Math.max(...pokemonTypes.value.map((pokemonType) => getTypeMultiplier(pokemonType, type))),
+    }))
+    .filter((matchup) => matchup.multiplier > 1)
+    .sort(sortMatchups)
+})
+
+const defensiveTypeMatchups = computed(() => {
+  if (pokemonTypes.value.length === 0) return []
+
+  return matchupTypes
+    .map((type) => ({
+      type,
+      multiplier: pokemonTypes.value.reduce(
+        (total, pokemonType) => total * getTypeMultiplier(type, pokemonType),
+        1,
+      ),
+    }))
+    .sort(sortMatchups)
+})
+
+const defensiveWeaknesses = computed(() => defensiveTypeMatchups.value.filter((matchup) => matchup.multiplier > 1))
+const defensiveResistances = computed(() => defensiveTypeMatchups.value.filter((matchup) => matchup.multiplier > 0 && matchup.multiplier < 1))
+const defensiveImmunities = computed(() => defensiveTypeMatchups.value.filter((matchup) => matchup.multiplier === 0))
+
 const pokemonFormMap = computed(() => {
   const entries: Array<[string, PokemonForm & { pokemonName: string; pokemonId: string }]> = []
 
@@ -906,9 +977,80 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
 
+          <div v-if="activeForm" class="type-matchups-container">
+            <button class="evolution-chain-toggle" @click="showTypeMatchups = !showTypeMatchups">
+              <h3>Type Matchups</h3>
+              <span class="toggle-arrow">{{ showTypeMatchups ? '&#x25BC;' : '&#x25B6;' }}</span>
+            </button>
+            <div v-if="showTypeMatchups" class="type-matchups">
+              <!-- <div class="matchup-group">
+                <h4>Strong Against</h4>
+                <div class="matchup-pills">
+                  <span
+                    v-for="matchup in attackingStrongAgainst"
+                    :key="`strong-${matchup.type}`"
+                    class="matchup-pill"
+                    :style="{ background: type_colors[matchup.type] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                  >
+                    {{ matchup.type }} {{ formatMultiplier(matchup.multiplier) }}
+                  </span>
+                  <span v-if="attackingStrongAgainst.length === 0" class="matchup-empty">None</span>
+                </div>
+              </div> -->
+
+              <div class="matchup-group">
+                <h4>Weaknesses</h4>
+                <div class="matchup-pills">
+                  <span
+                    v-for="matchup in defensiveWeaknesses"
+                    :key="`weak-${matchup.type}`"
+                    class="matchup-pill"
+                    :style="{ background: type_colors[matchup.type] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                  >
+                    {{ matchup.type }} {{ formatMultiplier(matchup.multiplier) }}
+                  </span>
+                  <span v-if="defensiveWeaknesses.length === 0" class="matchup-empty">None</span>
+                </div>
+              </div>
+
+              <div class="matchup-group">
+                <h4>Resistances</h4>
+                <div class="matchup-pills">
+                  <span
+                    v-for="matchup in defensiveResistances"
+                    :key="`resist-${matchup.type}`"
+                    class="matchup-pill"
+                    :style="{ background: type_colors[matchup.type] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                  >
+                    {{ matchup.type }} {{ formatMultiplier(matchup.multiplier) }}
+                  </span>
+                  <span v-if="defensiveResistances.length === 0" class="matchup-empty">None</span>
+                </div>
+              </div>
+
+              <div class="matchup-group">
+                <h4>Immunities</h4>
+                <div class="matchup-pills">
+                  <span
+                    v-for="matchup in defensiveImmunities"
+                    :key="`immune-${matchup.type}`"
+                    class="matchup-pill"
+                    :style="{ background: type_colors[matchup.type] || 'rgba(255,255,255,0.18)', color: '#111' }"
+                  >
+                    {{ matchup.type }}
+                  </span>
+                  <span v-if="defensiveImmunities.length === 0" class="matchup-empty">None</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="detail-forms-list" v-if="selectedPokemon.forms.length > 1">
-            <h3>Forms</h3>
-            <ul>
+            <button class="evolution-chain-toggle" @click="showForms = !showForms">
+              <h3>Forms</h3>
+              <span class="toggle-arrow">{{ showForms ? '&#x25BC;' : '&#x25B6;' }}</span>
+            </button>
+            <ul v-if="showForms">
               <li v-for="form in selectedPokemon.forms" :key="form.id" class="form-item">
                 <article 
                   class="pokemon-card small" 
@@ -1725,6 +1867,52 @@ watch(selectedPokemon, (newVal) => {
 .evolution-stage {
   font-size: 0.78rem;
   color: #bdbdbd;
+}
+
+.type-matchups-container {
+  margin-top: 8px;
+}
+
+.type-matchups {
+  display: grid;
+  gap: 14px;
+  padding: 8px 0 16px;
+}
+
+.matchup-group {
+  display: grid;
+  gap: 8px;
+}
+
+.matchup-group h4 {
+  margin: 0;
+  color: #f0f0f0;
+  font-size: 0.92rem;
+}
+
+.matchup-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.matchup-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #111;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+.matchup-empty {
+  color: #9a9a9a;
+  font-size: 0.9rem;
 }
 .form-option {
   width: 100%;
