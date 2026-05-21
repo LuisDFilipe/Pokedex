@@ -179,7 +179,6 @@ const toggleCollection = (id: string, isShiny: boolean) => {
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
   const isGmax = form.form?.toLowerCase().includes('gigantamax')
   const isMega = form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal')
-  const isSingleStage = !(form.evolutions && form.evolutions.length > 1)
 
   if (excludeGigantamax.value && isGmax) return true
   if (showOnlyGigantamax.value && !isGmax) return true
@@ -662,9 +661,6 @@ const lastPage = () => {
 }
 
 const selectForm = (form: PokemonForm) => {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(form.id)
-  }
   selectedForm.value = form
 }
 
@@ -685,9 +681,6 @@ const cycleForm = (pokemonId: string, direction: number) => {
 }
 
 const selectFormFromGrid = (form: PokemonForm & { pokemonName: string; pokemonId: string }) => {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(form.id)
-  }
   // Find the pokemon entry that contains this form
   const pokemon = pokemonList.value.find((p) => p.id === form.pokemonId)
   if (pokemon) {
@@ -2001,6 +1994,11 @@ watch(selectedPokemon, (newVal) => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+
+.pagination-main button {
+  user-select: none;
 }
 
 .pagination-status {
