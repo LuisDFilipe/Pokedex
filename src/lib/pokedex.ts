@@ -54,7 +54,7 @@ export const defaultCollectionFilters: CollectionFilters = {
   randomOrder: defaultSettings.randomOrder,
   showShiny: defaultSettings.showShiny,
   itemsPerPage: defaultSettings.itemsPerPage,
-  selectedGenerations: defaultSettings.selectedGenerations,
+  selectedGenerations: [...defaultSettings.selectedGenerations],
   excludeGigantamax: defaultSettings.excludeGigantamax,
   showOnlyGigantamax: defaultSettings.showOnlyGigantamax,
   excludeMegas: defaultSettings.excludeMegas,
@@ -94,25 +94,24 @@ export function readCollections(): NamedCollection[] {
   }
 
   try {
-    const parsed = JSON.parse(rawValue) as any[]
+    const parsed = JSON.parse(rawValue) as Array<Partial<NamedCollection>>
     const settings = readSettings()
-    return parsed.map((item) => ({
-      id: isString(item.id) ? item.id : String(Date.now() + Math.random()),
-      name: isString(item.name) ? item.name : 'Unnamed Collection',
-      state: normalizeCollection(item.state),
-      filters: normalizeCollectionFilters(item.filters ?? (item.id === settings.activeCollectionId ? settings : undefined)),
-    }))
+    return parsed.map((item, index) =>
+      normalizeNamedCollection(
+        {
+          ...item,
+          filters: item.filters ?? (item.id === settings.activeCollectionId ? settings : undefined),
+        },
+        `collection-${index + 1}`,
+      ),
+    )
   } catch {
     return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [] }, filters: normalizeCollectionFilters(readSettings()) }]
   }
 }
 
 export function writeCollections(collections: NamedCollection[]) {
-  const normalized = collections.map((c) => ({
-    ...c,
-    state: normalizeCollection(c.state),
-    filters: normalizeCollectionFilters(c.filters),
-  }))
+  const normalized = collections.map((collection) => normalizeNamedCollection(collection))
   localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(normalized))
 }
 
@@ -145,13 +144,13 @@ export function writeSettings(settings: PokedexSettings) {
 }
 
 export function createSyncPayload(
-  collection: CollectionState,
+  collections: NamedCollection[],
   settings: PokedexSettings,
 ): PokedexSyncPayload {
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    collection: normalizeCollection(collection),
+    collections: normalizeCollections(collections),
     settings: normalizeSettings(settings),
   }
 }
@@ -159,7 +158,7 @@ export function createSyncPayload(
 export function parseSyncPayload(rawValue: string): PokedexSyncPayload {
   const parsed = JSON.parse(rawValue) as Partial<PokedexSyncPayload>
 
-  if (parsed.version !== 1) {
+  if (parsed.version !== 1 && parsed.version !== 2) {
     throw new Error('Unsupported sync file version.')
   }
 
@@ -168,10 +167,53 @@ export function parseSyncPayload(rawValue: string): PokedexSyncPayload {
   }
 
   return {
-    version: 1,
+    version: parsed.version,
     exportedAt: parsed.exportedAt,
-    collection: normalizeCollection(parsed.collection),
+    collection: parsed.collection ? normalizeCollection(parsed.collection) : undefined,
+    collections:
+      parsed.version === 2
+        ? normalizeCollections(parsed.collections)
+        : [
+            {
+              id: 'default',
+              name: 'Main Collection',
+              state: normalizeCollection(parsed.collection),
+              filters: normalizeCollectionFilters(parsed.settings),
+            },
+          ],
     settings: normalizeSettings(parsed.settings),
+  }
+}
+
+function normalizeCollections(value: unknown): NamedCollection[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const usedIds = new Set<string>()
+  return value.map((item, index) => {
+    const collection = normalizeNamedCollection(item, `collection-${index + 1}`)
+    let id = collection.id
+    while (usedIds.has(id)) {
+      id = `${collection.id}-${usedIds.size + 1}`
+    }
+    usedIds.add(id)
+
+    return {
+      ...collection,
+      id,
+    }
+  })
+}
+
+function normalizeNamedCollection(value: unknown, fallbackId = 'default'): NamedCollection {
+  const collection = value as Partial<NamedCollection> | undefined
+
+  return {
+    id: isString(collection?.id) && collection.id.trim() ? collection.id : fallbackId,
+    name: isString(collection?.name) && collection.name.trim() ? collection.name : 'Unnamed Collection',
+    state: normalizeCollection(collection?.state),
+    filters: normalizeCollectionFilters(collection?.filters),
   }
 }
 
