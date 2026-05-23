@@ -737,13 +737,9 @@ const setSyncMessage = (message: string, type: 'success' | 'error') => {
 }
 
 const exportCollection = () => {
-  const payload = createSyncPayload(
-    {
-      normal: collectedNormal.value,
-      shiny: collectedShiny.value,
-    },
-    getCurrentSettings(),
-  )
+  saveCollectionSnapshot(activeCollectionId.value)
+
+  const payload = createSyncPayload(allCollections.value, getCurrentSettings())
 
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -755,7 +751,7 @@ const exportCollection = () => {
   link.click()
   URL.revokeObjectURL(url)
 
-  setSyncMessage('Sync file downloaded. Import it on your other device to restore your collection.', 'success')
+  setSyncMessage('Sync file downloaded. Import it on your other device to restore your collections.', 'success')
 }
 
 const importCollection = () => {
@@ -773,18 +769,44 @@ const handleFileImport = async (event: Event) => {
   try {
     const rawValue = await file.text()
     const payload = parseSyncPayload(rawValue)
+    const importedCollections = payload.collections.length
+      ? payload.collections
+      : [
+          {
+            id: payload.settings.activeCollectionId,
+            name: 'Main Collection',
+            state: payload.collection ?? { normal: [], shiny: [] },
+            filters: defaultCollectionFilters,
+          },
+        ]
+    const active = importedCollections.find((collection) => collection.id === payload.settings.activeCollectionId)
+      ?? importedCollections[0]
 
-    applySettings(payload.settings)
-    collectedNormal.value = payload.collection.normal
-    collectedShiny.value = payload.collection.shiny
+    isLoadingCollections = true
+    allCollections.value = importedCollections
+
+    if (active) {
+      activeCollectionId.value = active.id
+      loadCollectionSnapshot(active.id)
+      applySettings({
+        ...payload.settings,
+        activeCollectionId: active.id,
+      })
+    } else {
+      applyCollectionFilters(defaultCollectionFilters)
+      collectedNormal.value = []
+      collectedShiny.value = []
+    }
     page.value = 1
     pageDraft.value = 1
 
+    isLoadingCollections = false
     saveCollections()
     saveSettings()
 
-    setSyncMessage(`Imported sync file from ${new Date(payload.exportedAt).toLocaleString()}.`, 'success')
+    setSyncMessage(`Imported ${importedCollections.length} collection${importedCollections.length === 1 ? '' : 's'} from ${new Date(payload.exportedAt).toLocaleString()}.`, 'success')
   } catch (err) {
+    isLoadingCollections = false
     const message = err instanceof Error ? err.message : 'Failed to import sync file.'
     setSyncMessage(message, 'error')
   } finally {

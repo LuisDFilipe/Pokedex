@@ -73,8 +73,9 @@ export interface PokedexSettings {
 export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>
 
 export interface PokedexSyncPayload {
-  version: 1
+  version: 1 | 2
   exportedAt: string
-  collection: CollectionState
+  collection?: CollectionState
+  collections: NamedCollection[]
   settings: PokedexSettings
 }

@@ -81,17 +81,11 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.gj6lr8t8u18"
+    "revision": "0.m845e5p1hu8"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
-
-  // Explicitly handle Pokémon sprite requests to silence "No route found" logs
-  workbox.registerRoute(
-    ({ url }) => url.pathname.includes('/sprites/pokemon/'),
-    ({ request }) => fetch(request)
-  );
 
 }));
