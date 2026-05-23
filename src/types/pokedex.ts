@@ -35,19 +35,42 @@ export interface CollectionState {
   shiny: string[]
 }
 
+export interface NamedCollection {
+  id: string
+  name: string
+  state: CollectionState
+  filters: CollectionFilters
+}
+
 export interface PokedexSettings {
-  selectedGenerations: number[]
-  excludeGigantamax: boolean
-  excludeMegas: boolean
-  showBoxableOnly: boolean
-  showBaseFormOnly: boolean
+  filterQuery: string
+  randomOrder: boolean
   showShiny: boolean
+  itemsPerPage: number
+  
+  activeCollectionId: string
+
+  selectedGenerations: number[]
+
+  excludeGigantamax: boolean
+  showOnlyGigantamax: boolean
+
+  excludeMegas: boolean
+  showOnlyMegas: boolean
+
+  excludeBoxable: boolean
+  showBoxableOnly: boolean
+
+  showBaseFormOnly: boolean
+  excludeBaseForm: boolean
+
+  groupForms: boolean
+
   showCollectedOnly: boolean
   showUncollectedOnly: boolean
-  filterQuery: string
-  itemsPerPage: number
-  groupForms: boolean
 }
+
+export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>
 
 export interface PokedexSyncPayload {
   version: 1
