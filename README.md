@@ -1,6 +1,6 @@
 # Pokedex
 
-A Vue 3 + TypeScript Pokedex focused on form browsing, collection tracking, and trainer-friendly progress stats.
+A Vue 3 + TypeScript Pokédex focused on form browsing, collection tracking, and trainer-friendly progress stats.
 
 ## Live Links
 

@@ -376,6 +376,9 @@ const getCurrentCollectionFilters = (): CollectionFilters => ({
   showBaseFormOnly: showBaseFormOnly.value,
   excludeBaseForm: excludeBaseForm.value,
   groupForms: groupForms.value,
+  showEvolutionChain: showEvolutionChain.value,
+  showTypeMatchups: showTypeMatchups.value,
+  showForms: showForms.value,
   showCollectedOnly: showCollectedOnly.value,
   showUncollectedOnly: showUncollectedOnly.value,
 })
@@ -401,6 +404,9 @@ const applyCollectionFilters = (filters: CollectionFilters) => {
   showBaseFormOnly.value = filters.showBaseFormOnly
   excludeBaseForm.value = filters.excludeBaseForm
   groupForms.value = filters.groupForms
+  showEvolutionChain.value = filters.showEvolutionChain
+  showTypeMatchups.value = filters.showTypeMatchups
+  showForms.value = filters.showForms
   showCollectedOnly.value = filters.showCollectedOnly
   showUncollectedOnly.value = filters.showUncollectedOnly
 }
@@ -428,6 +434,13 @@ watch(showOnlyMegas, (val) => { if (val) {excludeMegas.value = false; excludeGig
 
 watch(excludeBoxable, (val) => { if (val) {showBoxableOnly.value = false} })
 watch(showBoxableOnly, (val) => { if (val) {excludeBoxable.value = false} })
+
+watch([showEvolutionChain, showTypeMatchups, showForms], () => {
+  saveSettings()
+  if (!isLoadingCollections) {
+    saveCollectionSnapshot(activeCollectionId.value)
+  }
+})
 
 watch(
   [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, randomOrder, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms, activeCollectionId],
@@ -486,11 +499,38 @@ const pagedPokemon = computed(() => {
   })
 })
 
-const currentRange = computed(() => {
+const detailNavigationItems = computed(() => {
+  if (groupForms.value) {
+    return (filteredPokemon.value as PokemonEntry[]).map((pokemon) => {
+      const visibleForms = pokemon.forms
+        .map((form, index) => ({
+          ...form,
+          pokemonName: pokemon.name,
+          pokemonId: pokemon.id,
+          isBaseForm: index === 0,
+        }))
+        .filter((form) => isFormVisible(form, debouncedQuery.value))
+      const activeFormId = speciesActiveFormId.value[pokemon.id]
+      const form = visibleForms.find((item) => item.id === activeFormId) ?? visibleForms[0]
+
+      return {
+        pokemonId: pokemon.id,
+        formId: form?.id ?? pokemon.forms[0]?.id ?? pokemon.id,
+      }
+    })
+  }
+
+  return (filteredPokemon.value as Array<PokemonForm & { pokemonId: string }>).map((form) => ({
+    pokemonId: form.pokemonId,
+    formId: form.id,
+  }))
+})
+
+/* const currentRange = computed(() => {
   const start = filteredPokemon.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
   const end = Math.min(page.value * itemsPerPage.value, filteredPokemon.value.length)
   return `${start}-${end}`
-})
+}) */
 
 const getSpriteUrl = (id: string, isShiny: boolean = showShiny.value) => {
   if (isShiny) {
@@ -516,6 +556,20 @@ const getGenderIcons = (gender: string | null) => {
 
 const activeForm = computed(() => {
   return selectedForm.value ?? selectedPokemon.value?.forms[0] ?? null
+})
+
+const activeDetailIndex = computed(() => {
+  if (!selectedPokemon.value) return -1
+
+  const activeId = activeForm.value?.id
+
+  return detailNavigationItems.value.findIndex((item) => {
+    if (groupForms.value) {
+      return item.pokemonId === selectedPokemon.value?.id
+    }
+
+    return item.pokemonId === selectedPokemon.value?.id && item.formId === activeId
+  })
 })
 
 const activeGenderIcons = computed(() => {
@@ -707,12 +761,36 @@ const selectEvolutionForm = (evolutionId: string) => {
   selectedForm.value = matchedForm
 }
 
+const navigateDetail = (direction: number) => {
+  if (detailNavigationItems.value.length <= 1) return
+
+  const currentIndex = activeDetailIndex.value === -1 ? 0 : activeDetailIndex.value
+  const nextIndex = (currentIndex + direction + detailNavigationItems.value.length) % detailNavigationItems.value.length
+  const nextItem = detailNavigationItems.value[nextIndex]
+
+  if (!nextItem) return
+
+  const pokemon = pokemonList.value.find((entry) => entry.id === nextItem.pokemonId)
+  if (!pokemon) return
+
+  const form = pokemon.forms.find((item) => item.id === nextItem.formId) ?? pokemon.forms[0] ?? null
+
+  selectedPokemon.value = pokemon
+  selectedForm.value = form
+  if (groupForms.value && form) {
+    speciesActiveFormId.value[pokemon.id] = form.id
+  }
+
+  page.value = Math.floor(nextIndex / itemsPerPage.value) + 1
+  pageDraft.value = page.value
+}
+
 const closeDetail = () => {
   selectedPokemon.value = null
   selectedForm.value = null
 }
 
-const toggleGenerationFilter = (gen: number) => {
+/* const toggleGenerationFilter = (gen: number) => {
   const index = selectedGenerations.value.indexOf(gen)
   if (index > -1) {
     selectedGenerations.value.splice(index, 1)
@@ -721,11 +799,11 @@ const toggleGenerationFilter = (gen: number) => {
   }
   page.value = 1
   pageDraft.value = 1
-}
+} */
 
-const isGenerationSelected = (gen: number) => {
+/* const isGenerationSelected = (gen: number) => {
   return selectedGenerations.value.includes(gen)
-}
+} */
 
 const clearFilters = () => {
   applyCollectionFilters(defaultCollectionFilters)
@@ -818,6 +896,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && selectedPokemon.value) {
     closeDetail()
   }
+  if (event.key === 'ArrowLeft' && selectedPokemon.value) {
+    navigateDetail(-1)
+  }
+  if (event.key === 'ArrowRight' && selectedPokemon.value) {
+    navigateDetail(1)
+  }
   if (event.key === 'Escape' && showFilterModal.value) {
     showFilterModal.value = false
   }
@@ -898,6 +982,24 @@ watch(selectedPokemon, (newVal) => {
 
     <div v-if="selectedPokemon" class="pokemon-modal" @click.self="closeDetail">
       <div class="detail-card" role="dialog" aria-modal="true">
+        <button
+          v-if="detailNavigationItems.length > 1"
+          type="button"
+          class="detail-nav detail-nav-prev"
+          aria-label="Previous Pokemon"
+          @click="navigateDetail(-1)"
+        >
+          &#8249;
+        </button>
+        <button
+          v-if="detailNavigationItems.length > 1"
+          type="button"
+          class="detail-nav detail-nav-next"
+          aria-label="Next Pokemon"
+          @click="navigateDetail(1)"
+        >
+          &#8250;
+        </button>
         <div class="detail-header">
           <button class="detail-close" aria-label="Close details" @click="closeDetail">&#10006;</button>
           <div class="detail-main">
@@ -1583,6 +1685,48 @@ watch(selectedPokemon, (newVal) => {
   -webkit-overflow-scrolling: touch;
 }
 
+.detail-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 20;
+  width: 44px;
+  height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 15, 15, 0.78);
+  color: #fff;
+  cursor: pointer;
+  font-size: 2.4rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  padding: 2px 0px 6px 0px;
+}
+
+.detail-nav:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 71, 71, 0.9);
+}
+
+.detail-nav-prev {
+  left: 0;
+  border-radius: 0 14px 14px 0;
+}
+
+.detail-nav-next {
+  right: 0;
+  border-radius: 14px 0 0 14px;
+}
+
+.detail-nav-prev:hover {
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.detail-nav-next:hover {
+  transform: translateY(-50%) translateX(2px);
+}
+
 @media (max-width: 480px) {
   .pokemon-modal {
     padding: 10px;
@@ -1592,6 +1736,12 @@ watch(selectedPokemon, (newVal) => {
   }
   .detail-header, .detail-body {
     padding: 16px;
+  }
+
+  .detail-nav {
+    width: 38px;
+    height: 48px;
+    font-size: 2rem;
   }
 }
 

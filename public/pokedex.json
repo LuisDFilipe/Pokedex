@@ -9183,7 +9183,13 @@
             "gender": null,
             "region": null,
             "form": "c",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-c"
+              }
+            ]
           },
           {
             "id": "0201-d",
@@ -9195,7 +9201,13 @@
             "gender": null,
             "region": null,
             "form": "d",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-d"
+              }
+            ]
           },
           {
             "id": "0201-e",
@@ -9207,7 +9219,13 @@
             "gender": null,
             "region": null,
             "form": "e",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-e"
+              }
+            ]
           },
           {
             "id": "0201-f",
@@ -9219,7 +9237,13 @@
             "gender": null,
             "region": null,
             "form": "f",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-f"
+              }
+            ]
           },
           {
             "id": "0201-g",
@@ -9231,7 +9255,13 @@
             "gender": null,
             "region": null,
             "form": "g",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-g"
+              }
+            ]
           },
           {
             "id": "0201-h",
@@ -9243,7 +9273,13 @@
             "gender": null,
             "region": null,
             "form": "h",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-h"
+              }
+            ]
           },
           {
             "id": "0201-i",
@@ -9255,7 +9291,13 @@
             "gender": null,
             "region": null,
             "form": "i",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-i"
+              }
+            ]
           },
           {
             "id": "0201-j",
@@ -9267,7 +9309,13 @@
             "gender": null,
             "region": null,
             "form": "j",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-j"
+              }
+            ]
           },
           {
             "id": "0201-k",
@@ -9279,7 +9327,13 @@
             "gender": null,
             "region": null,
             "form": "k",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-k"
+              }
+            ]
           },
           {
             "id": "0201-l",
@@ -9291,7 +9345,13 @@
             "gender": null,
             "region": null,
             "form": "l",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-l"
+              }
+            ]
           },
           {
             "id": "0201-m",
@@ -9303,7 +9363,13 @@
             "gender": null,
             "region": null,
             "form": "m",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-m"
+              }
+            ]
           },
           {
             "id": "0201-n",
@@ -9315,7 +9381,13 @@
             "gender": null,
             "region": null,
             "form": "n",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-n"
+              }
+            ]
           },
           {
             "id": "0201-o",
@@ -9327,7 +9399,13 @@
             "gender": null,
             "region": null,
             "form": "o",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-o"
+              }
+            ]
           },
           {
             "id": "0201-p",
@@ -9339,7 +9417,13 @@
             "gender": null,
             "region": null,
             "form": "p",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-p"
+              }
+            ]
           },
           {
             "id": "0201-q",
@@ -9351,7 +9435,13 @@
             "gender": null,
             "region": null,
             "form": "q",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-q"
+              }
+            ]
           },
           {
             "id": "0201-r",
@@ -9363,7 +9453,13 @@
             "gender": null,
             "region": null,
             "form": "r",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-r"
+              }
+            ]
           },
           {
             "id": "0201-s",
@@ -9375,7 +9471,13 @@
             "gender": null,
             "region": null,
             "form": "s",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-s"
+              }
+            ]
           },
           {
             "id": "0201-t",
@@ -9387,7 +9489,13 @@
             "gender": null,
             "region": null,
             "form": "t",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-t"
+              }
+            ]
           },
           {
             "id": "0201-u",
@@ -9399,7 +9507,13 @@
             "gender": null,
             "region": null,
             "form": "u",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-u"
+              }
+            ]
           },
           {
             "id": "0201-v",
@@ -9411,7 +9525,13 @@
             "gender": null,
             "region": null,
             "form": "v",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-v"
+              }
+            ]
           },
           {
             "id": "0201-w",
@@ -9423,7 +9543,13 @@
             "gender": null,
             "region": null,
             "form": "w",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-w"
+              }
+            ]
           },
           {
             "id": "0201-x",
@@ -9435,7 +9561,13 @@
             "gender": null,
             "region": null,
             "form": "x",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-x"
+              }
+            ]
           },
           {
             "id": "0201-y",
@@ -9447,7 +9579,13 @@
             "gender": null,
             "region": null,
             "form": "y",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-y"
+              }
+            ]
           },
           {
             "id": "0201-z",
@@ -9459,7 +9597,13 @@
             "gender": null,
             "region": null,
             "form": "z",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-z"
+              }
+            ]
           },
           {
             "id": "0201-exclamation",
@@ -9471,7 +9615,13 @@
             "gender": null,
             "region": null,
             "form": "exclamation",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-exclamation"
+              }
+            ]
           },
           {
             "id": "0201-question",
@@ -9483,7 +9633,13 @@
             "gender": null,
             "region": null,
             "form": "question",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0201-question"
+              }
+            ]
           }
         ]
       },
@@ -9501,7 +9657,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0360"
+              },
+              {
+                "stage": 2,
+                "id": "0202-m"
+              }
+            ]
           },
           {
             "id": "0202-f",
@@ -9513,7 +9679,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0360"
+              },
+              {
+                "stage": 2,
+                "id": "0202-f"
+              }
+            ]
           }
         ]
       },
@@ -9531,7 +9707,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0203-m"
+              },
+              {
+                "stage": 2,
+                "id": "0981"
+              }
+            ]
           },
           {
             "id": "0203-f",
@@ -9543,7 +9729,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0203-f"
+              },
+              {
+                "stage": 2,
+                "id": "0981"
+              }
+            ]
           }
         ]
       },
@@ -9561,7 +9757,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0204"
+              },
+              {
+                "stage": 2,
+                "id": "0205"
+              }
+            ]
           }
         ]
       },
@@ -9579,7 +9785,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0204"
+              },
+              {
+                "stage": 2,
+                "id": "0205"
+              }
+            ]
           }
         ]
       },
@@ -9597,7 +9813,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0206"
+              },
+              {
+                "stage": 2,
+                "id": "0982-two-segment"
+              },
+              {
+                "stage": 2,
+                "id": "0982-three-segment"
+              }
+            ]
           }
         ]
       },
@@ -9615,7 +9845,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0207-m"
+              },
+              {
+                "stage": 2,
+                "id": "0472"
+              }
+            ]
           },
           {
             "id": "0207-f",
@@ -9627,7 +9867,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0207-f"
+              },
+              {
+                "stage": 2,
+                "id": "0472"
+              }
+            ]
           }
         ]
       },
@@ -9739,7 +9989,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0209"
+              },
+              {
+                "stage": 2,
+                "id": "0210"
+              }
+            ]
           }
         ]
       },
@@ -9757,7 +10017,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0209"
+              },
+              {
+                "stage": 2,
+                "id": "0210"
+              }
+            ]
           }
         ]
       },
@@ -9775,7 +10045,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0211"
+              }
+            ]
           },
           {
             "id": "0211-hisuian",
@@ -9787,7 +10063,17 @@
             "gender": null,
             "region": "hisui",
             "form": "hisuian",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0211-hisuian"
+              },
+              {
+                "stage": 2,
+                "id": "0904"
+              }
+            ]
           }
         ]
       },
@@ -9899,7 +10185,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0213"
+              }
+            ]
           }
         ]
       },
@@ -9917,7 +10209,13 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0214-m"
+              }
+            ]
           },
           {
             "id": "0214-f",
@@ -9929,7 +10227,13 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0214-f"
+              }
+            ]
           },
           {
             "id": "0214-m-mega",
@@ -9941,7 +10245,13 @@
             "gender": "male",
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0214-m"
+              }
+            ]
           },
           {
             "id": "0214-f-mega",
@@ -9953,7 +10263,13 @@
             "gender": "female",
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0214-f"
+              }
+            ]
           }
         ]
       },
@@ -9971,7 +10287,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-m"
+              },
+              {
+                "stage": 2,
+                "id": "0461-m"
+              }
+            ]
           },
           {
             "id": "0215-f",
@@ -9983,10 +10309,20 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-f"
+              },
+              {
+                "stage": 2,
+                "id": "0461-f"
+              }
+            ]
           },
           {
-            "id": "0215-m-hisuian",
+            "id": "0215-hisuian-m",
             "name": "Hisuian Sneasel",
             "type1": "Fighting",
             "type2": "Poison",
@@ -9995,10 +10331,20 @@
             "gender": "male",
             "region": "hisui",
             "form": "hisuian",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-hisuian-m"
+              },
+              {
+                "stage": 2,
+                "id": "0903"
+              }
+            ]
           },
           {
-            "id": "0215-f-hisuian-f",
+            "id": "0215-hisuian-f",
             "name": "Hisuian Sneasel",
             "type1": "Fighting",
             "type2": "Poison",
@@ -10007,7 +10353,17 @@
             "gender": "female",
             "region": "hisui",
             "form": "hisuian-f",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-hisuian-f"
+              },
+              {
+                "stage": 2,
+                "id": "0903"
+              }
+            ]
           }
         ]
       },
@@ -10025,7 +10381,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0216"
+              },
+              {
+                "stage": 2,
+                "id": "0217-m"
+              },
+              {
+                "stage": 3,
+                "id": "0901"
+              }
+            ]
           }
         ]
       },
@@ -10043,7 +10413,21 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0216"
+              },
+              {
+                "stage": 2,
+                "id": "0217-m"
+              },
+              {
+                "stage": 3,
+                "id": "0901"
+              }
+            ]
           },
           {
             "id": "0217-f",
@@ -10055,7 +10439,21 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0216"
+              },
+              {
+                "stage": 2,
+                "id": "0217-f"
+              },
+              {
+                "stage": 3,
+                "id": "0901"
+              }
+            ]
           }
         ]
       },
@@ -10073,7 +10471,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0218"
+              },
+              {
+                "stage": 2,
+                "id": "0219"
+              }
+            ]
           }
         ]
       },
@@ -10091,7 +10499,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0218"
+              },
+              {
+                "stage": 2,
+                "id": "0219"
+              }
+            ]
           }
         ]
       },
@@ -10109,7 +10527,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0220"
+              },
+              {
+                "stage": 2,
+                "id": "0221-m"
+              },
+              {
+                "stage": 3,
+                "id": "0473-m"
+              }
+            ]
           }
         ]
       },
@@ -10127,7 +10559,21 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0220"
+              },
+              {
+                "stage": 2,
+                "id": "0221-m"
+              },
+              {
+                "stage": 3,
+                "id": "0473-m"
+              }
+            ]
           },
           {
             "id": "0221-f",
@@ -10139,7 +10585,21 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0220"
+              },
+              {
+                "stage": 2,
+                "id": "0221-f"
+              },
+              {
+                "stage": 3,
+                "id": "0473-f"
+              }
+            ]
           }
         ]
       },
@@ -10157,7 +10617,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0222"
+              }
+            ]
           },
           {
             "id": "0222-galarian",
@@ -10169,7 +10635,17 @@
             "gender": null,
             "region": "galar",
             "form": "galarian",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0222-galarian"
+              },
+              {
+                "stage": 2,
+                "id": "0864"
+              }
+            ]
           }
         ]
       },
@@ -10187,7 +10663,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0223"
+              },
+              {
+                "stage": 2,
+                "id": "0224-m"
+              }
+            ]
           }
         ]
       },
@@ -10205,7 +10691,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0223"
+              },
+              {
+                "stage": 2,
+                "id": "0224-m"
+              }
+            ]
           },
           {
             "id": "0224-f",
@@ -10217,7 +10713,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0223"
+              },
+              {
+                "stage": 2,
+                "id": "0224-f"
+              }
+            ]
           }
         ]
       },
@@ -10235,7 +10741,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0225"
+              }
+            ]
           }
         ]
       },
@@ -10253,7 +10765,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0458"
+              },
+              {
+                "stage": 2,
+                "id": "0226"
+              }
+            ]
           }
         ]
       },
@@ -10271,7 +10793,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0227"
+              }
+            ]
           },
           {
             "id": "0227-mega",
@@ -10283,7 +10811,13 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0227"
+              }
+            ]
           }
         ]
       },
@@ -10301,7 +10835,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0228"
+              },
+              {
+                "stage": 2,
+                "id": "0229-m"
+              }
+            ]
           }
         ]
       },
@@ -10319,7 +10863,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0228"
+              },
+              {
+                "stage": 2,
+                "id": "0229-m"
+              }
+            ]
           },
           {
             "id": "0229-f",
@@ -10331,7 +10885,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0228"
+              },
+              {
+                "stage": 2,
+                "id": "0229-f"
+              }
+            ]
           },
           {
             "id": "0229-m-mega",
@@ -10343,7 +10907,17 @@
             "gender": "male",
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0228"
+              },
+              {
+                "stage": 2,
+                "id": "0229-m"
+              }
+            ]
           },
           {
             "id": "0229-f-mega",
@@ -10355,7 +10929,17 @@
             "gender": "female",
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0228"
+              },
+              {
+                "stage": 2,
+                "id": "0229-f"
+              }
+            ]
           }
         ]
       },
@@ -10405,7 +10989,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0231"
+              },
+              {
+                "stage": 2,
+                "id": "0232-m"
+              }
+            ]
           }
         ]
       },
@@ -10423,7 +11017,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0231"
+              },
+              {
+                "stage": 2,
+                "id": "0232-m"
+              }
+            ]
           },
           {
             "id": "0232-f",
@@ -10435,7 +11039,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0231"
+              },
+              {
+                "stage": 2,
+                "id": "0232-f"
+              }
+            ]
           }
         ]
       },
@@ -10485,7 +11099,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0234"
+              },
+              {
+                "stage": 2,
+                "id": "0899"
+              }
+            ]
           }
         ]
       },
@@ -10503,7 +11127,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0235"
+              }
+            ]
           }
         ]
       },
@@ -10677,7 +11307,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0241"
+              }
+            ]
           }
         ]
       },
@@ -10727,7 +11363,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0243"
+              }
+            ]
           }
         ]
       },
@@ -10745,7 +11387,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0244"
+              }
+            ]
           }
         ]
       },
@@ -10763,7 +11411,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0245"
+              }
+            ]
           }
         ]
       },
@@ -10781,7 +11435,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0246"
+              },
+              {
+                "stage": 2,
+                "id": "0247"
+              },
+              {
+                "stage": 3,
+                "id": "0248"
+              }
+            ]
           }
         ]
       },
@@ -10799,7 +11467,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0246"
+              },
+              {
+                "stage": 2,
+                "id": "0247"
+              },
+              {
+                "stage": 3,
+                "id": "0248"
+              }
+            ]
           }
         ]
       },
@@ -10817,7 +11499,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0246"
+              },
+              {
+                "stage": 2,
+                "id": "0247"
+              },
+              {
+                "stage": 3,
+                "id": "0248"
+              }
+            ]
           },
           {
             "id": "0248-mega",
@@ -10829,7 +11525,21 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0246"
+              },
+              {
+                "stage": 2,
+                "id": "0247"
+              },
+              {
+                "stage": 3,
+                "id": "0248"
+              }
+            ]
           }
         ]
       },
@@ -10847,7 +11557,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0249"
+              }
+            ]
           }
         ]
       },
@@ -10865,7 +11581,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0250"
+              }
+            ]
           }
         ]
       },
@@ -10883,7 +11605,13 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0251"
+              }
+            ]
           }
         ]
       },
@@ -13337,7 +14065,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0360"
+              },
+              {
+                "stage": 2,
+                "id": "0202-m"
+              }
+            ]
           }
         ]
       },
@@ -15829,7 +16567,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0458"
+              },
+              {
+                "stage": 2,
+                "id": "0226"
+              }
+            ]
           }
         ]
       },
@@ -15931,7 +16679,17 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-m"
+              },
+              {
+                "stage": 2,
+                "id": "0461-m"
+              }
+            ]
           },
           {
             "id": "0461-f",
@@ -15943,7 +16701,17 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-f"
+              },
+              {
+                "stage": 2,
+                "id": "0461-f"
+              }
+            ]
           }
         ]
       },
@@ -16365,7 +17133,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0207-m"
+              },
+              {
+                "stage": 2,
+                "id": "0472"
+              }
+            ]
           }
         ]
       },
@@ -16383,7 +17161,21 @@
             "gender": "male",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0220"
+              },
+              {
+                "stage": 2,
+                "id": "0221-m"
+              },
+              {
+                "stage": 3,
+                "id": "0473-m"
+              }
+            ]
           },
           {
             "id": "0473-f",
@@ -16395,7 +17187,21 @@
             "gender": "female",
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0220"
+              },
+              {
+                "stage": 2,
+                "id": "0221-f"
+              },
+              {
+                "stage": 3,
+                "id": "0473-f"
+              }
+            ]
           }
         ]
       },
@@ -25991,7 +26797,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0222-galarian"
+              },
+              {
+                "stage": 2,
+                "id": "0864"
+              }
+            ]
           }
         ]
       },
@@ -27581,7 +28397,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0234"
+              },
+              {
+                "stage": 2,
+                "id": "0899"
+              }
+            ]
           }
         ]
       },
@@ -27627,7 +28453,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0216"
+              },
+              {
+                "stage": 2,
+                "id": "0217-m"
+              },
+              {
+                "stage": 3,
+                "id": "0901"
+              }
+            ]
           },
           {
             "id": "0901-bloodmoon",
@@ -27639,7 +28479,13 @@
             "gender": null,
             "region": null,
             "form": "bloodmoon",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0901-bloodmoon"
+              }
+            ]
           }
         ]
       },
@@ -27687,7 +28533,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0215-hisuian-m"
+              },
+              {
+                "stage": 2,
+                "id": "0903"
+              }
+            ]
           }
         ]
       },
@@ -27705,7 +28561,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0211-hisuian"
+              },
+              {
+                "stage": 2,
+                "id": "0904"
+              }
+            ]
           }
         ]
       },
@@ -29283,7 +30149,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0203-m"
+              },
+              {
+                "stage": 2,
+                "id": "0981"
+              }
+            ]
           }
         ]
       },
@@ -29301,7 +30177,17 @@
             "gender": null,
             "region": null,
             "form": "two-segment",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0206"
+              },
+              {
+                "stage": 2,
+                "id": "0982-two-segment"
+              }
+            ]
           },
           {
             "id": "0982-three-segment",
@@ -29313,7 +30199,17 @@
             "gender": null,
             "region": null,
             "form": "three-segment",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0206"
+              },
+              {
+                "stage": 2,
+                "id": "0982-three-segment"
+              }
+            ]
           }
         ]
       },
