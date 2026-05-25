@@ -28,8 +28,19 @@ export default defineConfig({
           {
             src: 'icon_512.png',
             sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'icon_192_maskable.png',
+            sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          },
+          {
+            src: 'icon_512_maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       },
