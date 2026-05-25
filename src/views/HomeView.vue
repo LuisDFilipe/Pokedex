@@ -30,7 +30,25 @@ const quickLinks = [
 
     <div class="link-grid">
       <router-link v-for="link in quickLinks" :key="link.title" :to="link.to" class="link-card">
-        <strong>{{ link.title }}</strong>
+        <span class="link-card-heading">
+          <strong>{{ link.title }}</strong>
+          <svg
+            class="link-card-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </span>
         <p>{{ link.copy }}</p>
       </router-link>
     </div>
@@ -106,8 +124,21 @@ const quickLinks = [
   color: #f4f4f4;
 }
 
+.link-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .link-card strong {
   font-size: 1.05rem;
+}
+
+.link-card-icon {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.58);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .link-card p {
@@ -117,6 +148,11 @@ const quickLinks = [
 .link-card:hover {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.link-card:hover .link-card-icon {
+  color: #fff;
+  transform: translateX(3px);
 }
 
 .support-panel {

@@ -45,6 +45,10 @@ export const defaultSettings: PokedexSettings = {
 
   groupForms: true,
 
+  showEvolutionChain: true,
+  showTypeMatchups: true,
+  showForms: true,
+
   showCollectedOnly: false,
   showUncollectedOnly: false,
 }
@@ -64,6 +68,9 @@ export const defaultCollectionFilters: CollectionFilters = {
   showBaseFormOnly: defaultSettings.showBaseFormOnly,
   excludeBaseForm: defaultSettings.excludeBaseForm,
   groupForms: defaultSettings.groupForms,
+  showEvolutionChain: defaultSettings.showEvolutionChain,
+  showTypeMatchups: defaultSettings.showTypeMatchups,
+  showForms: defaultSettings.showForms,
   showCollectedOnly: defaultSettings.showCollectedOnly,
   showUncollectedOnly: defaultSettings.showUncollectedOnly,
 }
@@ -252,6 +259,9 @@ function normalizeSettings(value: unknown): PokedexSettings {
     showBaseFormOnly: isBoolean(settings?.showBaseFormOnly) ? settings.showBaseFormOnly : false,
     excludeBaseForm: isBoolean(settings?.excludeBaseForm) ? settings.excludeBaseForm : false,
     groupForms: isBoolean(settings?.groupForms) ? settings.groupForms : false,
+    showEvolutionChain: isBoolean(settings?.showEvolutionChain) ? settings.showEvolutionChain : true,
+    showTypeMatchups: isBoolean(settings?.showTypeMatchups) ? settings.showTypeMatchups : true,
+    showForms: isBoolean(settings?.showForms) ? settings.showForms : true,
     showCollectedOnly: isBoolean(settings?.showCollectedOnly) ? settings.showCollectedOnly : false,
     showUncollectedOnly: isBoolean(settings?.showUncollectedOnly) ? settings.showUncollectedOnly : false,
   }

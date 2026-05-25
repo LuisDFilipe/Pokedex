@@ -66,6 +66,10 @@ export interface PokedexSettings {
 
   groupForms: boolean
 
+  showEvolutionChain: boolean
+  showTypeMatchups: boolean
+  showForms: boolean
+
   showCollectedOnly: boolean
   showUncollectedOnly: boolean
 }
