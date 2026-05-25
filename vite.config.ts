@@ -14,7 +14,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: {
         name: 'The Pokédex',
-        short_name: 'Pokedex',
+        short_name: 'The Pokédex',
         description: 'A personal Pokemon tracker and collection logger.',
         theme_color: '#101010',
         background_color: '#101010',
