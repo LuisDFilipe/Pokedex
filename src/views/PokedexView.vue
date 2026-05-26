@@ -49,11 +49,19 @@ const groupForms = ref(false)
 
 const showShiny = ref(false)
 
+const PREDEFINED_TAGS = ['Favourite']
+
 const collectedNormal = ref<string[]>([])
 const collectedShiny = ref<string[]>([])
+const pokemonTags = ref<Record<string, string[]>>({})
 //Collection Status
 const showCollectedOnly = ref(false)
 const showUncollectedOnly = ref(false)
+const selectedTags = ref<string[]>([])
+const excludedTags = ref<string[]>([])
+const showUntaggedOnly = ref(false)
+const tagSearchQuery = ref('')
+const tagDraft = ref('')
 
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
@@ -164,6 +172,75 @@ const isCollected = (id: string, isShiny: boolean) => {
   return list.includes(id)
 }
 
+const getTags = (id: string) => pokemonTags.value[id] ?? []
+
+const normalizeTag = (value: string) => value.trim().replace(/\s+/g, ' ')
+
+const allTags = computed(() => {
+  const tags = new Set<string>(PREDEFINED_TAGS)
+  Object.values(pokemonTags.value).forEach((formTags) => {
+    formTags.forEach((tag) => tags.add(tag))
+  })
+  return Array.from(tags).sort((a, b) => a.localeCompare(b))
+})
+
+const filteredTags = computed(() => {
+  const q = tagSearchQuery.value.toLowerCase().trim()
+  if (!q) return allTags.value
+  return allTags.value.filter(tag => tag.toLowerCase().includes(q))
+})
+
+const addTag = (id: string, value: string = tagDraft.value) => {
+  const tag = normalizeTag(value)
+  if (!tag) return
+
+  const currentTags = getTags(id)
+  if (!currentTags.some((item) => item.toLowerCase() === tag.toLowerCase())) {
+    pokemonTags.value = {
+      ...pokemonTags.value,
+      [id]: [...currentTags, tag].sort((a, b) => a.localeCompare(b)),
+    }
+    saveCollections()
+  }
+  tagDraft.value = ''
+}
+
+const removeTag = (id: string, tag: string) => {
+  const nextTags = getTags(id).filter((item) => item !== tag)
+  const nextTagMap = { ...pokemonTags.value }
+
+  if (nextTags.length) {
+    nextTagMap[id] = nextTags
+  } else {
+    delete nextTagMap[id]
+  }
+
+  pokemonTags.value = nextTagMap
+  saveCollections()
+}
+
+const toggleTagFilter = (tag: string) => {
+  const index = selectedTags.value.indexOf(tag)
+  if (index > -1) {
+    selectedTags.value.splice(index, 1)
+  } else {
+    selectedTags.value.push(tag)
+    const eIndex = excludedTags.value.indexOf(tag)
+    if (eIndex > -1) excludedTags.value.splice(eIndex, 1)
+  }
+}
+
+const toggleExcludedTagFilter = (tag: string) => {
+  const index = excludedTags.value.indexOf(tag)
+  if (index > -1) {
+    excludedTags.value.splice(index, 1)
+  } else {
+    excludedTags.value.push(tag)
+    const sIndex = selectedTags.value.indexOf(tag)
+    if (sIndex > -1) selectedTags.value.splice(sIndex, 1)
+  }
+}
+
 const toggleCollection = (id: string, isShiny: boolean) => {
   const list = isShiny ? collectedShiny.value : collectedNormal.value
   const index = list.indexOf(id)
@@ -204,6 +281,7 @@ const isFormVisible = (form: PokemonForm & { pokemonName: string; pokemonId: str
   // Collection Filters
   const normalCollected = collectedNormal.value.includes(form.id)
   const shinyCollected = collectedShiny.value.includes(form.id)
+  const formTags = getTags(form.id)
 
   if (showCollectedOnly.value) {
     const isCurrentlyShiny = showShiny.value
@@ -217,16 +295,42 @@ const isFormVisible = (form: PokemonForm & { pokemonName: string; pokemonId: str
     if (!isCurrentlyShiny && normalCollected) return false
   }
 
+  if (!showUntaggedOnly.value && selectedTags.value.length > 0 && !selectedTags.value.some((tag) => formTags.includes(tag))) {
+    return false
+  }
+
+  if (excludedTags.value.length > 0 && excludedTags.value.some((tag) => formTags.includes(tag))) {
+    return false
+  }
+
+  if (showUntaggedOnly.value && formTags.length > 0 && selectedTags.value.length == 0) {
+    return false
+  }
+
   if (!query) return true
 
-  const q = query.trim().toLowerCase()
-  return (
-    form.id.toLowerCase().includes(q) ||
-    form.name.toLowerCase().includes(q) ||
-    form.pokemonName.toLowerCase().includes(q) ||
-    (form.type1?.toLowerCase() ?? '').includes(q) ||
-    (form.type2?.toLowerCase() ?? '').includes(q)
-  )
+  const q = query.toLowerCase()
+  const orParts = q.split(',').map(p => p.trim()).filter(p => p !== '')
+  if (orParts.length === 0) return true
+
+  return orParts.some(orPart => {
+    const andParts = orPart.split('&').map(p => p.trim()).filter(p => p !== '')
+    return andParts.every(term => {
+      const isNegated = term.startsWith('!')
+      const actualTerm = isNegated ? term.slice(1).trim() : term
+      if (!actualTerm) return true
+
+      const matches = (
+        form.id.toLowerCase().includes(actualTerm) ||
+        form.name.toLowerCase().includes(actualTerm) ||
+        form.pokemonName.toLowerCase().includes(actualTerm) ||
+        (form.type1?.toLowerCase() ?? '').includes(actualTerm) ||
+        (form.type2?.toLowerCase() ?? '').includes(actualTerm) ||
+        formTags.some(tag => tag.toLowerCase().includes(actualTerm))
+      )
+      return isNegated ? !matches : matches
+    })
+  })
 }
 
 const filteredPokemon = computed(() => {
@@ -279,6 +383,7 @@ const saveCollections = () => {
     allCollections.value[index].state = {
       normal: [...collectedNormal.value],
       shiny: [...collectedShiny.value],
+      tags: { ...pokemonTags.value },
     }
     allCollections.value[index].filters = getCurrentCollectionFilters()
   }
@@ -291,6 +396,7 @@ const saveCollectionSnapshot = (id: string) => {
     allCollections.value[index].state = {
       normal: [...collectedNormal.value],
       shiny: [...collectedShiny.value],
+      tags: { ...pokemonTags.value },
     }
     allCollections.value[index].filters = getCurrentCollectionFilters()
     writeCollections(allCollections.value)
@@ -302,6 +408,7 @@ const loadCollectionSnapshot = (id: string) => {
   if (collection) {
     collectedNormal.value = [...collection.state.normal]
     collectedShiny.value = [...collection.state.shiny]
+    pokemonTags.value = { ...collection.state.tags }
     applyCollectionFilters(collection.filters)
   }
 }
@@ -315,7 +422,7 @@ const createNewCollection = () => {
   allCollections.value.push({
     id: newId,
     name: name,
-    state: { normal: [], shiny: [] },
+    state: { normal: [], shiny: [], tags: {} },
     filters: { ...defaultCollectionFilters },
   })
   writeCollections(allCollections.value)
@@ -381,6 +488,9 @@ const getCurrentCollectionFilters = (): CollectionFilters => ({
   showForms: showForms.value,
   showCollectedOnly: showCollectedOnly.value,
   showUncollectedOnly: showUncollectedOnly.value,
+  selectedTags: selectedTags.value.filter((tag) => allTags.value.includes(tag)),
+  excludedTags: excludedTags.value.filter((tag) => allTags.value.includes(tag)),
+  showUntaggedOnly: showUntaggedOnly.value,
 })
 
 const getCurrentSettings = (): PokedexSettings => ({
@@ -409,6 +519,9 @@ const applyCollectionFilters = (filters: CollectionFilters) => {
   showForms.value = filters.showForms
   showCollectedOnly.value = filters.showCollectedOnly
   showUncollectedOnly.value = filters.showUncollectedOnly
+  selectedTags.value = filters.selectedTags.filter((tag) => allTags.value.includes(tag))
+  excludedTags.value = filters.excludedTags?.filter((tag) => allTags.value.includes(tag)) ?? []
+  showUntaggedOnly.value = filters.showUntaggedOnly
 }
 
 const applySettings = (settings: PokedexSettings) => {
@@ -422,6 +535,12 @@ const saveSettings = () => {
 
 watch(showCollectedOnly, (newVal) => { if (newVal) showUncollectedOnly.value = false })
 watch(showUncollectedOnly, (newVal) => { if (newVal) showCollectedOnly.value = false })
+//watch(showUntaggedOnly, (newVal) => { if (newVal) selectedTags.value = [] })
+//watch(selectedTags, (newVal) => { if (newVal.length > 0) showUntaggedOnly.value = false }, { deep: true })
+watch(allTags, (tags) => {
+  selectedTags.value = selectedTags.value.filter((tag) => tags.includes(tag))
+  excludedTags.value = excludedTags.value.filter((tag) => tags.includes(tag))
+})
 
 // Mutual exclusion for Special Forms
 watch(showBaseFormOnly, (val) => { if (val) {excludeBaseForm.value = false; excludeGigantamax.value = false; showOnlyGigantamax.value = false; excludeMegas.value = false; showOnlyMegas.value = false} })
@@ -443,7 +562,7 @@ watch([showEvolutionChain, showTypeMatchups, showForms], () => {
 })
 
 watch(
-  [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, randomOrder, itemsPerPage, showCollectedOnly, showUncollectedOnly, groupForms, activeCollectionId],
+  [selectedGenerations, excludeGigantamax, showOnlyGigantamax, excludeMegas, showOnlyMegas, excludeBoxable, showBoxableOnly, showBaseFormOnly, excludeBaseForm, filterQuery, randomOrder, itemsPerPage, showCollectedOnly, showUncollectedOnly, selectedTags, excludedTags, showUntaggedOnly, groupForms, activeCollectionId],
   () => {
     page.value = 1
     pageDraft.value = 1
@@ -466,7 +585,7 @@ watch(showShiny, () => {
   }
 })
 
-watch([collectedNormal, collectedShiny], () => {
+watch([collectedNormal, collectedShiny, pokemonTags], () => {
   saveCollections()
 }, { deep: true })
 
@@ -716,6 +835,7 @@ const lastPage = () => {
 
 const selectForm = (form: PokemonForm) => {
   selectedForm.value = form
+  tagDraft.value = ''
 }
 
 const cycleForm = (pokemonId: string, direction: number) => {
@@ -788,6 +908,7 @@ const navigateDetail = (direction: number) => {
 const closeDetail = () => {
   selectedPokemon.value = null
   selectedForm.value = null
+  tagDraft.value = ''
 }
 
 /* const toggleGenerationFilter = (gen: number) => {
@@ -853,7 +974,7 @@ const handleFileImport = async (event: Event) => {
           {
             id: payload.settings.activeCollectionId,
             name: 'Main Collection',
-            state: payload.collection ?? { normal: [], shiny: [] },
+            state: payload.collection ?? { normal: [], shiny: [], tags: {} },
             filters: defaultCollectionFilters,
           },
         ]
@@ -874,6 +995,7 @@ const handleFileImport = async (event: Event) => {
       applyCollectionFilters(defaultCollectionFilters)
       collectedNormal.value = []
       collectedShiny.value = []
+      pokemonTags.value = {}
     }
     page.value = 1
     pageDraft.value = 1
@@ -951,8 +1073,8 @@ watch(selectedPokemon, (newVal) => {
             <input
               v-model="filterQuery"
               type="search"
-              placeholder="Name, Type, or Number"
-              aria-label="Filter Pokemon by Name, Type, or Number"
+              placeholder="Search by Name, Type, Tag"
+              aria-label="Filter Pokemon. Use , for OR, & for AND, and ! for NOT."
             />
           </label>
         </div>
@@ -1063,15 +1185,45 @@ watch(selectedPokemon, (newVal) => {
               <span class="icon">&#9733;</span> Shiny
             </button>
           </div>
+
+          <div class="tag-editor" v-if="activeForm">
+            <div class="tag-list">
+              <button
+                v-for="tag in getTags(activeForm.id)"
+                :key="tag"
+                type="button"
+                class="tag-chip removable"
+                :title="`Remove ${tag}`"
+                @click="removeTag(activeForm.id, tag)"
+              >
+                {{ tag }} <span aria-hidden="true">&times;</span>
+              </button>
+              <span v-if="getTags(activeForm.id).length === 0" class="tag-empty">No tags</span>
+            </div>
+            <form class="tag-form" @submit.prevent="addTag(activeForm.id)">
+              <input
+                v-model="tagDraft"
+                type="text"
+                placeholder="Add tag"
+                aria-label="Add tag"
+                maxlength="32"
+                list="existing-tags"
+              />
+              <datalist id="existing-tags">
+                <option v-for="tag in allTags" :key="tag" :value="tag" />
+              </datalist>
+              <button type="submit">Add</button>
+            </form>
+          </div>
         </div>
 
         <div class="detail-body">
-          <div v-if="groupedEvolutionChain.length" class="evolution-chain-container">
+          <div class="evolution-chain-container">
             <button class="evolution-chain-toggle" @click="showEvolutionChain = !showEvolutionChain">
               <h3>Evolution Line</h3>
               <span class="toggle-arrow">{{ showEvolutionChain ? '&#x25BC;' : '&#x25B6;' }}</span>
             </button>
-            <div v-if="showEvolutionChain" class="evolution-list">
+            <div v-if="groupedEvolutionChain.length && showEvolutionChain" class="evolution-list">
               <template v-for="(group, gIndex) in groupedEvolutionChain" :key="group.stage">
                 <div v-if="gIndex > 0" class="evolution-arrow" aria-hidden="true">
                   <span class="arrow-horizontal">→</span>
@@ -1106,21 +1258,6 @@ watch(selectedPokemon, (newVal) => {
               <span class="toggle-arrow">{{ showTypeMatchups ? '&#x25BC;' : '&#x25B6;' }}</span>
             </button>
             <div v-if="showTypeMatchups" class="type-matchups">
-              <!-- <div class="matchup-group">
-                <h4>Strong Against</h4>
-                <div class="matchup-pills">
-                  <span
-                    v-for="matchup in attackingStrongAgainst"
-                    :key="`strong-${matchup.type}`"
-                    class="matchup-pill"
-                    :style="{ background: type_colors[matchup.type] || 'rgba(255,255,255,0.18)', color: '#111' }"
-                  >
-                    {{ matchup.type }} {{ formatMultiplier(matchup.multiplier) }}
-                  </span>
-                  <span v-if="attackingStrongAgainst.length === 0" class="matchup-empty">None</span>
-                </div>
-              </div> -->
-
               <div class="matchup-group">
                 <h4>Weaknesses</h4>
                 <div class="matchup-pills">
@@ -1168,7 +1305,7 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
 
-          <div class="detail-forms-list" v-if="selectedPokemon.forms.length > 1">
+          <div class="detail-forms-list">
             <button class="evolution-chain-toggle" @click="showForms = !showForms">
               <h3>Forms</h3>
               <span class="toggle-arrow">{{ showForms ? '&#x25BC;' : '&#x25B6;' }}</span>
@@ -1207,6 +1344,9 @@ watch(selectedPokemon, (newVal) => {
                   </div>
                   <div class="pokemon-card_info">
                     <p class="form-label">{{ form.name }}</p>
+                    <div v-if="getTags(form.id).length" class="pokemon-card_tags">
+                      <span v-for="tag in getTags(form.id).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
+                    </div>
                   </div>
                 </article>
               </li>
@@ -1327,6 +1467,54 @@ watch(selectedPokemon, (newVal) => {
           </div>
 
           <div class="filter-section">
+            <h3>Tags</h3>
+            <label class="filter-checkbox">
+              <input type="checkbox" v-model="showUntaggedOnly" />
+              <span>Show Untagged Only</span>
+            </label>
+            <div v-if="allTags.length" class="tag-filter-container">
+              <div class="tag-filter-header-actions">
+                <input
+                  v-model="tagSearchQuery"
+                  type="text"
+                  placeholder="Search tags..."
+                  class="tag-search-input"
+                />
+                <button 
+                  v-if="selectedTags.length > 0 || excludedTags.length > 0" 
+                  @click="selectedTags = []; excludedTags = []" 
+                  class="btn-tag-action"
+                >Clear Selected</button>
+              </div>
+              <div class="filter-options tag-filter-options">
+                <div v-for="tag in filteredTags" :key="tag" class="tag-filter-row">
+                  <div class="tag-filter-controls">
+                    <label class="filter-checkbox include" title="Include tag">
+                      <input
+                        type="checkbox"
+                        :checked="selectedTags.includes(tag)"
+                        @change="toggleTagFilter(tag)"
+                      />
+                      <span class="checkbox-label">Inc.</span>
+                    </label>
+                    <label class="filter-checkbox exclude" title="Exclude tag">
+                      <input
+                        type="checkbox"
+                        :checked="excludedTags.includes(tag)"
+                        @change="toggleExcludedTagFilter(tag)"
+                      />
+                      <span class="checkbox-label">Exc.</span>
+                    </label>
+                  </div>
+                  <span class="tag-name" :class="{ 'is-excluded': excludedTags.includes(tag) }"><strong>{{ tag }}</strong></span>
+                </div>
+                <p v-if="filteredTags.length === 0" class="tag-empty-msg">No matching tags</p>
+              </div>
+            </div>
+            <p v-else class="sync-copy">Add tags from a Pokemon detail view to filter by them here.</p>
+          </div>
+
+          <div class="filter-section">
             <h3>Sync Between Devices</h3>
             <p class="sync-copy">
               Export your collection and filters as a sync file, then import that file on another device.
@@ -1410,13 +1598,16 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
           <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
+          <div v-if="getTags(form.id).length" class="pokemon-card_tags">
+            <span v-for="tag in getTags(form.id).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
+          </div>
         </div>
       </article>
     </div>
 
     <div v-if="!loading && !error" class="pagination">
       <div class="pagination-main">
-        <button @click="firstPage" title="First Page" aria-label="First page">&laquo;</button>
+        <button @click="firstPage" :disabled="page === 1" title="First Page" aria-label="First page">&laquo;</button>
         <button @click="prevPage" :disabled="page === 1" title="Previous Page" aria-label="Previous page">&lsaquo;</button>
         
         <span class="pagination-status">
@@ -1424,7 +1615,7 @@ watch(selectedPokemon, (newVal) => {
         </span>
         
         <button @click="nextPage" :disabled="page === pageCount" title="Next Page" aria-label="Next page">&rsaquo;</button>
-        <button @click="lastPage" title="Last Page" aria-label="Last page">&raquo;</button>
+        <button @click="lastPage" :disabled="page === pageCount" title="Last Page" aria-label="Last page">&raquo;</button>
       </div>
 
       <div class="pagination-input">
@@ -1687,7 +1878,7 @@ watch(selectedPokemon, (newVal) => {
 
 .detail-nav {
   position: absolute;
-  top: 50%;
+  top: 150px;
   z-index: 20;
   width: 44px;
   height: 56px;
@@ -1786,6 +1977,8 @@ watch(selectedPokemon, (newVal) => {
   flex-wrap: wrap;
   gap: 24px;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 @media (max-width: 720px) {
@@ -1826,7 +2019,6 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .detail-text {
-  flex: 1;
 }
 
 .detail-text h2 {
@@ -1845,6 +2037,7 @@ watch(selectedPokemon, (newVal) => {
   flex-wrap: wrap;
   gap: 10px;
   margin: 12px 0 0;
+  justify-content: center;
 }
 
 .type-pill {
@@ -2445,6 +2638,110 @@ watch(selectedPokemon, (newVal) => {
   gap: 10px;
 }
 
+.tag-filter-container {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tag-filter-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tag-search-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.btn-tag-action {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #d1d1d1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.tag-filter-options {
+  max-height: 200px;
+  overflow: auto;
+  padding-right: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.tag-empty-msg {
+  color: #777;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px;
+}
+
+.checkbox-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  /* Inherits color from .filter-checkbox by default */
+  margin-left: -5px; /* Pull it closer to the checkbox */
+  transition: color 0.2s ease;
+}
+
+.filter-checkbox.include input[type="checkbox"] {
+  accent-color: #7ac74c; /* Green for include */
+}
+
+.filter-checkbox.exclude input[type="checkbox"] {
+  accent-color: #ff6b6b; /* Red for exclude */
+}
+
+.filter-checkbox.include input:checked + .checkbox-label {
+  color: #7ac74c;
+}
+.filter-checkbox.exclude input:checked + .checkbox-label {
+  color: #ff6b6b;
+}
+
+.tag-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tag-filter-row:last-child {
+  border-bottom: none;
+}
+
+.tag-filter-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.tag-name {
+  font-size: 0.9rem;
+  color: #d1d1d1;
+  transition: color 0.2s ease;
+}
+
+.tag-name.is-excluded {
+  text-decoration: line-through;
+  color: #ff6b6b;
+}
+
+.filter-checkbox.exclude input {
+  accent-color: #ff6b6b;
+}
+
 .filter-checkbox {
   display: flex;
   align-items: center;
@@ -2526,6 +2823,76 @@ watch(selectedPokemon, (newVal) => {
   margin-top: 24px;
 }
 
+.tag-editor {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tag-list,
+.pokemon-card_tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag-chip {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  padding: 3px 8px;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.tag-chip.removable {
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-chip.removable:hover {
+  background: rgba(255, 71, 71, 0.22);
+  border-color: rgba(255, 71, 71, 0.8);
+}
+
+.tag-empty {
+  color: #a6a6a6;
+  font-size: 0.85rem;
+}
+
+.tag-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.tag-form input {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 9px 10px;
+}
+
+.tag-form input::placeholder {
+  color: #9f9f9f;
+}
+
+.tag-form button {
+  border: none;
+  border-radius: 8px;
+  background: #ff4747;
+  color: #fff;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
 .collect-btn {
   flex: 1;
   display: flex;
@@ -2556,6 +2923,11 @@ watch(selectedPokemon, (newVal) => {
   background: rgba(247, 208, 44, 0.2);
   border-color: #f7d02c;
   color: #fff;
+}
+
+.pokemon-card_tags {
+  margin-top: 6px;
+  min-height: 20px;
 }
 
 .pokemon-card_collection {

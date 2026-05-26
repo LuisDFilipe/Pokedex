@@ -33,6 +33,7 @@ export interface PokedexJson {
 export interface CollectionState {
   normal: string[]
   shiny: string[]
+  tags: Record<string, string[]>
 }
 
 export interface NamedCollection {
@@ -72,6 +73,9 @@ export interface PokedexSettings {
 
   showCollectedOnly: boolean
   showUncollectedOnly: boolean
+  selectedTags: string[]
+  excludedTags: string[]
+  showUntaggedOnly: boolean
 }
 
 export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>
