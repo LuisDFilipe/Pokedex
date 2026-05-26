@@ -14,6 +14,12 @@ export const SETTINGS_STORAGE_KEY = 'pokedex-settings'
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string')
 
+const isStringArrayRecord = (value: unknown): value is Record<string, string[]> =>
+  Boolean(value)
+  && typeof value === 'object'
+  && !Array.isArray(value)
+  && Object.values(value as Record<string, unknown>).every(isStringArray)
+
 const isNumberArray = (value: unknown): value is number[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'number')
 
@@ -51,6 +57,9 @@ export const defaultSettings: PokedexSettings = {
 
   showCollectedOnly: false,
   showUncollectedOnly: false,
+  selectedTags: [],
+  excludedTags: [],
+  showUntaggedOnly: false,
 }
 
 export const defaultCollectionFilters: CollectionFilters = {
@@ -73,6 +82,9 @@ export const defaultCollectionFilters: CollectionFilters = {
   showForms: defaultSettings.showForms,
   showCollectedOnly: defaultSettings.showCollectedOnly,
   showUncollectedOnly: defaultSettings.showUncollectedOnly,
+  selectedTags: [...defaultSettings.selectedTags],
+  excludedTags: [...defaultSettings.excludedTags],
+  showUntaggedOnly: defaultSettings.showUntaggedOnly,
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
@@ -96,7 +108,7 @@ export function readCollections(): NamedCollection[] {
     // Migration: try to read from old single collection key
     const oldKey = 'pokedex-collection'
     const oldRaw = localStorage.getItem(oldKey)
-    const initialState = oldRaw ? normalizeCollection(JSON.parse(oldRaw)) : { normal: [], shiny: [] }
+    const initialState = oldRaw ? normalizeCollection(JSON.parse(oldRaw)) : { normal: [], shiny: [], tags: {} }
     return [{ id: 'default', name: 'Main Collection', state: initialState, filters: normalizeCollectionFilters(readSettings()) }]
   }
 
@@ -113,7 +125,7 @@ export function readCollections(): NamedCollection[] {
       ),
     )
   } catch {
-    return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [] }, filters: normalizeCollectionFilters(readSettings()) }]
+    return [{ id: 'default', name: 'Main Collection', state: { normal: [], shiny: [], tags: {} }, filters: normalizeCollectionFilters(readSettings()) }]
   }
 }
 
@@ -126,7 +138,7 @@ export function readActiveCollectionState(): CollectionState {
   const settings = readSettings()
   const collections = readCollections()
   const active = collections.find((c) => c.id === settings.activeCollectionId) || collections[0]
-  return active?.state || { normal: [], shiny: [] }
+  return active?.state || { normal: [], shiny: [], tags: {} }
 }
 
 export function readSettings(): PokedexSettings {
@@ -230,7 +242,27 @@ function normalizeCollection(value: unknown): CollectionState {
   return {
     normal: isStringArray(collection?.normal) ? [...new Set(collection.normal)] : [],
     shiny: isStringArray(collection?.shiny) ? [...new Set(collection.shiny)] : [],
+    tags: normalizeTags(collection?.tags),
   }
+}
+
+function normalizeTags(value: unknown): Record<string, string[]> {
+  if (!isStringArrayRecord(value)) {
+    return {}
+  }
+
+  const entries: Array<[string, string[]]> = []
+
+  Object.entries(value).forEach(([id, tags]) => {
+    const normalizedTags = [...new Set(tags.map((tag) => tag.trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b))
+
+    if (normalizedTags.length > 0) {
+      entries.push([id, normalizedTags])
+    }
+  })
+
+  return Object.fromEntries(entries)
 }
 
 function normalizeCollectionFilters(value: unknown): CollectionFilters {
@@ -264,5 +296,8 @@ function normalizeSettings(value: unknown): PokedexSettings {
     showForms: isBoolean(settings?.showForms) ? settings.showForms : true,
     showCollectedOnly: isBoolean(settings?.showCollectedOnly) ? settings.showCollectedOnly : false,
     showUncollectedOnly: isBoolean(settings?.showUncollectedOnly) ? settings.showUncollectedOnly : false,
+    selectedTags: isStringArray(settings?.selectedTags) ? settings.selectedTags : [],
+    excludedTags: isStringArray(settings?.excludedTags) ? settings.excludedTags : [],
+    showUntaggedOnly: isBoolean(settings?.showUntaggedOnly) ? settings.showUntaggedOnly : false,
   }
 }
