@@ -172,7 +172,10 @@ const isCollected = (id: string, isShiny: boolean) => {
   return list.includes(id)
 }
 
-const getTags = (id: string) => pokemonTags.value[id] ?? []
+const getTags = (id: string, isShiny: boolean) => {
+  const key = `${id}-${isShiny ? 's' : 'n'}`
+  return pokemonTags.value[key] ?? []
+}
 
 const normalizeTag = (value: string) => value.trim().replace(/\s+/g, ' ')
 
@@ -190,29 +193,31 @@ const filteredTags = computed(() => {
   return allTags.value.filter(tag => tag.toLowerCase().includes(q))
 })
 
-const addTag = (id: string, value: string = tagDraft.value) => {
+const addTag = (id: string, value: string = tagDraft.value, isShiny: boolean = localShowShiny.value) => {
   const tag = normalizeTag(value)
   if (!tag) return
 
-  const currentTags = getTags(id)
+  const key = `${id}-${isShiny ? 's' : 'n'}`
+  const currentTags = pokemonTags.value[key] ?? []
   if (!currentTags.some((item) => item.toLowerCase() === tag.toLowerCase())) {
     pokemonTags.value = {
       ...pokemonTags.value,
-      [id]: [...currentTags, tag].sort((a, b) => a.localeCompare(b)),
+      [key]: [...currentTags, tag].sort((a, b) => a.localeCompare(b)),
     }
     saveCollections()
   }
   tagDraft.value = ''
 }
 
-const removeTag = (id: string, tag: string) => {
-  const nextTags = getTags(id).filter((item) => item !== tag)
+const removeTag = (id: string, tag: string, isShiny: boolean = localShowShiny.value) => {
+  const key = `${id}-${isShiny ? 's' : 'n'}`
+  const nextTags = (pokemonTags.value[key] ?? []).filter((item) => item !== tag)
   const nextTagMap = { ...pokemonTags.value }
 
   if (nextTags.length) {
-    nextTagMap[id] = nextTags
+    nextTagMap[key] = nextTags
   } else {
-    delete nextTagMap[id]
+    delete nextTagMap[key]
   }
 
   pokemonTags.value = nextTagMap
@@ -281,7 +286,7 @@ const isFormVisible = (form: PokemonForm & { pokemonName: string; pokemonId: str
   // Collection Filters
   const normalCollected = collectedNormal.value.includes(form.id)
   const shinyCollected = collectedShiny.value.includes(form.id)
-  const formTags = getTags(form.id)
+  const formTags = getTags(form.id, showShiny.value)
 
   if (showCollectedOnly.value) {
     const isCurrentlyShiny = showShiny.value
@@ -1033,6 +1038,23 @@ onMounted(async () => {
   await loadPokedexData()
 
   allCollections.value = readCollections()
+
+  // Migration for separate normal/shiny tags
+  allCollections.value.forEach(col => {
+    const tags = col.state.tags
+    Object.keys(tags).forEach(key => {
+      if (!key.endsWith('-n') && !key.endsWith('-s')) {
+        const value = tags[key]
+        if (value && value.length > 0) {
+          if (!tags[`${key}-n`]) tags[`${key}-n`] = [...value]
+          if (!tags[`${key}-s`]) tags[`${key}-s`] = [...value]
+        }
+        delete tags[key]
+      }
+    })
+  })
+  writeCollections(allCollections.value)
+
   const settings = readSettings()
   const active = allCollections.value.find(c => c.id === settings.activeCollectionId) || allCollections.value[0]
 
@@ -1189,16 +1211,16 @@ watch(selectedPokemon, (newVal) => {
           <div class="tag-editor" v-if="activeForm">
             <div class="tag-list">
               <button
-                v-for="tag in getTags(activeForm.id)"
+                v-for="tag in getTags(activeForm.id, localShowShiny)"
                 :key="tag"
                 type="button"
                 class="tag-chip removable"
                 :title="`Remove ${tag}`"
-                @click="removeTag(activeForm.id, tag)"
+                @click="removeTag(activeForm.id, tag, localShowShiny)"
               >
                 {{ tag }} <span aria-hidden="true">&times;</span>
               </button>
-              <span v-if="getTags(activeForm.id).length === 0" class="tag-empty">No tags</span>
+              <span v-if="getTags(activeForm.id, localShowShiny).length === 0" class="tag-empty">No tags</span>
             </div>
             <form class="tag-form" @submit.prevent="addTag(activeForm.id)">
               <input
@@ -1344,8 +1366,8 @@ watch(selectedPokemon, (newVal) => {
                   </div>
                   <div class="pokemon-card_info">
                     <p class="form-label">{{ form.name }}</p>
-                    <div v-if="getTags(form.id).length" class="pokemon-card_tags">
-                      <span v-for="tag in getTags(form.id).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
+                    <div v-if="getTags(form.id, localShowShiny).length" class="pokemon-card_tags">
+                      <span v-for="tag in getTags(form.id, localShowShiny).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
                     </div>
                   </div>
                 </article>
@@ -1598,8 +1620,8 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
           <p v-if="!showBaseFormOnly" class="form-label">{{ form.name === form.pokemonName ? '·' : form.name }}</p>
-          <div v-if="getTags(form.id).length" class="pokemon-card_tags">
-            <span v-for="tag in getTags(form.id).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
+          <div v-if="getTags(form.id, showShiny).length" class="pokemon-card_tags">
+            <span v-for="tag in getTags(form.id, showShiny).slice(0, 3)" :key="tag" class="tag-chip">{{ tag }}</span>
           </div>
         </div>
       </article>
