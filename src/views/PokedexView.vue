@@ -259,7 +259,7 @@ const toggleCollection = (id: string, isShiny: boolean) => {
 }
 
 const isFormExcluded = (form: PokemonForm & { isBaseForm?: boolean }): boolean => {
-  const isGmax = form.form?.toLowerCase().includes('gigantamax')
+  const isGmax = form.form?.toLowerCase().includes('gigantamax') || form.form?.toLowerCase().includes('eternamax')
   const isMega = form.form?.toLowerCase().includes('mega') || form.form?.toLowerCase().includes('primal')
 
   if (excludeGigantamax.value && isGmax) return true
