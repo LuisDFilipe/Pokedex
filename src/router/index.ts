@@ -21,7 +21,7 @@ const router = createRouter({
       name: 'pokedex',
       component: PokedexView,
       meta: {
-        title: 'Pokedex',
+        title: 'Pokédex',
         description: 'Track forms, filter the dex, and mark your collection.',
       },
     },

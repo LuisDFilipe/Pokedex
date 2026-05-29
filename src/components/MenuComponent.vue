@@ -55,7 +55,7 @@ watch(
         </router-link>
 
         <router-link to="/pokedex" class="nav-item" @click="closeMenu">
-          <PokedexIcon /> <span>Pokedex</span>
+          <PokedexIcon /> <span>Pokédex</span>
         </router-link>
 
 <!--         <router-link to="/game" class="nav-item" @click="closeMenu">
