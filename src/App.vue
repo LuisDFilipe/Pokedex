@@ -52,7 +52,7 @@ body {
 
 .page-header {
   text-align: center;
-  padding: 20px 12px 8px;
+  padding: 10px 10px 8px;
 }
 
 .main-title {
@@ -64,7 +64,7 @@ body {
 }
 
 .section-description {
-  margin-top: 8px;
+  /* margin-top: 8px; */
   color: rgba(255, 255, 255, 0.68);
 }
 

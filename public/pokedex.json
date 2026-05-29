@@ -27047,7 +27047,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0653"
+              },
+              {
+                "stage": 2,
+                "id": "0654"
+              },
+              {
+                "stage": 3,
+                "id": "0655"
+              }
+            ]
           }
         ]
       },
@@ -27065,7 +27079,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0653"
+              },
+              {
+                "stage": 2,
+                "id": "0654"
+              },
+              {
+                "stage": 3,
+                "id": "0655"
+              }
+            ]
           }
         ]
       },
@@ -27083,7 +27111,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0653"
+              },
+              {
+                "stage": 2,
+                "id": "0654"
+              },
+              {
+                "stage": 3,
+                "id": "0655"
+              }
+            ]
           },
           {
             "id": "0655-mega",
@@ -27095,7 +27137,21 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0653"
+              },
+              {
+                "stage": 2,
+                "id": "0654"
+              },
+              {
+                "stage": 3,
+                "id": "0655"
+              }
+            ]
           }
         ]
       },
@@ -27113,7 +27169,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0656"
+              },
+              {
+                "stage": 2,
+                "id": "0657"
+              },
+              {
+                "stage": 3,
+                "id": "0658"
+              }
+            ]
           }
         ]
       },
@@ -27131,7 +27201,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0656"
+              },
+              {
+                "stage": 2,
+                "id": "0657"
+              },
+              {
+                "stage": 3,
+                "id": "0658"
+              }
+            ]
           }
         ]
       },
@@ -27149,7 +27233,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0656"
+              },
+              {
+                "stage": 2,
+                "id": "0657"
+              },
+              {
+                "stage": 3,
+                "id": "0658"
+              }
+            ]
           },
           {
             "id": "0658-ash",
@@ -27161,7 +27259,13 @@
             "gender": null,
             "region": null,
             "form": "ash",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0658-ash"
+              }
+            ]
           },
           {
             "id": "0658-mega",
@@ -27173,7 +27277,21 @@
             "gender": null,
             "region": null,
             "form": "mega",
-            "boxable": false
+            "boxable": false,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0656"
+              },
+              {
+                "stage": 2,
+                "id": "0657"
+              },
+              {
+                "stage": 3,
+                "id": "0658"
+              }
+            ]
           }
         ]
       },
@@ -27191,7 +27309,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0659"
+              },
+              {
+                "stage": 2,
+                "id": "0660"
+              }
+            ]
           }
         ]
       },
@@ -27209,7 +27337,17 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0659"
+              },
+              {
+                "stage": 2,
+                "id": "0660"
+              }
+            ]
           }
         ]
       },
@@ -27227,7 +27365,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0661"
+              },
+              {
+                "stage": 2,
+                "id": "0662"
+              },
+              {
+                "stage": 3,
+                "id": "0663"
+              }
+            ]
           }
         ]
       },
@@ -27245,7 +27397,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0661"
+              },
+              {
+                "stage": 2,
+                "id": "0662"
+              },
+              {
+                "stage": 3,
+                "id": "0663"
+              }
+            ]
           }
         ]
       },
@@ -27263,7 +27429,21 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0661"
+              },
+              {
+                "stage": 2,
+                "id": "0662"
+              },
+              {
+                "stage": 3,
+                "id": "0663"
+              }
+            ]
           }
         ]
       },
@@ -27281,7 +27461,97 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-archipelago"
+              },
+              {
+                "stage": 3,
+                "id": "0666-continental"
+              },
+              {
+                "stage": 3,
+                "id": "0666-elegant"
+              },
+              {
+                "stage": 3,
+                "id": "0666-fancy"
+              },
+              {
+                "stage": 3,
+                "id": "0666-garden"
+              },
+              {
+                "stage": 3,
+                "id": "0666-high-plains"
+              },
+              {
+                "stage": 3,
+                "id": "0666-icy-snow"
+              },
+              {
+                "stage": 3,
+                "id": "0666-jungle"
+              },
+              {
+                "stage": 3,
+                "id": "0666-marine"
+              },
+              {
+                "stage": 3,
+                "id": "0666-meadow"
+              },
+              {
+                "stage": 3,
+                "id": "0666-modern"
+              },
+              {
+                "stage": 3,
+                "id": "0666-monsoon"
+              },
+              {
+                "stage": 3,
+                "id": "0666-ocean"
+              },
+              {
+                "stage": 3,
+                "id": "0666-pokeball"
+              },
+              {
+                "stage": 3,
+                "id": "0666-polar"
+              },
+              {
+                "stage": 3,
+                "id": "0666-river"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sandstorm"
+              },
+              {
+                "stage": 3,
+                "id": "0666-savanna"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sun"
+              },
+              {
+                "stage": 3,
+                "id": "0666-tundra"
+              }
+            ]
           }
         ]
       },
@@ -27299,7 +27569,97 @@
             "gender": null,
             "region": null,
             "form": null,
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-archipelago"
+              },
+              {
+                "stage": 3,
+                "id": "0666-continental"
+              },
+              {
+                "stage": 3,
+                "id": "0666-elegant"
+              },
+              {
+                "stage": 3,
+                "id": "0666-fancy"
+              },
+              {
+                "stage": 3,
+                "id": "0666-garden"
+              },
+              {
+                "stage": 3,
+                "id": "0666-high-plains"
+              },
+              {
+                "stage": 3,
+                "id": "0666-icy-snow"
+              },
+              {
+                "stage": 3,
+                "id": "0666-jungle"
+              },
+              {
+                "stage": 3,
+                "id": "0666-marine"
+              },
+              {
+                "stage": 3,
+                "id": "0666-meadow"
+              },
+              {
+                "stage": 3,
+                "id": "0666-modern"
+              },
+              {
+                "stage": 3,
+                "id": "0666-monsoon"
+              },
+              {
+                "stage": 3,
+                "id": "0666-ocean"
+              },
+              {
+                "stage": 3,
+                "id": "0666-pokeball"
+              },
+              {
+                "stage": 3,
+                "id": "0666-polar"
+              },
+              {
+                "stage": 3,
+                "id": "0666-river"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sandstorm"
+              },
+              {
+                "stage": 3,
+                "id": "0666-savanna"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sun"
+              },
+              {
+                "stage": 3,
+                "id": "0666-tundra"
+              }
+            ]
           }
         ]
       },
@@ -27317,7 +27677,21 @@
             "gender": null,
             "region": null,
             "form": "archipelago",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-archipelago"
+              }
+            ]
           },
           {
             "id": "0666-continental",
@@ -27329,7 +27703,21 @@
             "gender": null,
             "region": null,
             "form": "continental",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-continental"
+              }
+            ]
           },
           {
             "id": "0666-elegant",
@@ -27341,7 +27729,21 @@
             "gender": null,
             "region": null,
             "form": "elegant",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-elegant"
+              }
+            ]
           },
           {
             "id": "0666-fancy",
@@ -27353,7 +27755,21 @@
             "gender": null,
             "region": null,
             "form": "fancy",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-fancy"
+              }
+            ]
           },
           {
             "id": "0666-garden",
@@ -27365,7 +27781,21 @@
             "gender": null,
             "region": null,
             "form": "garden",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-garden"
+              }
+            ]
           },
           {
             "id": "0666-high-plains",
@@ -27377,7 +27807,21 @@
             "gender": null,
             "region": null,
             "form": "high-plains",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-high-plains"
+              }
+            ]
           },
           {
             "id": "0666-icy-snow",
@@ -27389,7 +27833,21 @@
             "gender": null,
             "region": null,
             "form": "icy-snow",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-icy-snow"
+              }
+            ]
           },
           {
             "id": "0666-jungle",
@@ -27401,7 +27859,21 @@
             "gender": null,
             "region": null,
             "form": "jungle",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-jungle"
+              }
+            ]
           },
           {
             "id": "0666-marine",
@@ -27413,7 +27885,21 @@
             "gender": null,
             "region": null,
             "form": "marine",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-marine"
+              }
+            ]
           },
           {
             "id": "0666-meadow",
@@ -27425,7 +27911,21 @@
             "gender": null,
             "region": null,
             "form": "meadow",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-meadow"
+              }
+            ]
           },
           {
             "id": "0666-modern",
@@ -27437,7 +27937,21 @@
             "gender": null,
             "region": null,
             "form": "modern",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-modern"
+              }
+            ]
           },
           {
             "id": "0666-monsoon",
@@ -27449,7 +27963,21 @@
             "gender": null,
             "region": null,
             "form": "monsoon",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-monsoon"
+              }
+            ]
           },
           {
             "id": "0666-ocean",
@@ -27461,19 +27989,47 @@
             "gender": null,
             "region": null,
             "form": "ocean",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-ocean"
+              }
+            ]
           },
           {
-            "id": "0666-poke-ball",
+            "id": "0666-pokeball",
             "name": "Vivillon (Poké Ball Pattern)",
             "type1": "Bug",
             "type2": "Flying",
             "gen": 6,
-            "sprite": "0666-poke-ball",
+            "sprite": "0666-pokeball",
             "gender": null,
             "region": null,
-            "form": "poke-ball",
-            "boxable": true
+            "form": "pokeball",
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-pokeball"
+              }
+            ]
           },
           {
             "id": "0666-polar",
@@ -27485,7 +28041,21 @@
             "gender": null,
             "region": null,
             "form": "polar",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-polar"
+              }
+            ]
           },
           {
             "id": "0666-river",
@@ -27497,7 +28067,21 @@
             "gender": null,
             "region": null,
             "form": "river",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-river"
+              }
+            ]
           },
           {
             "id": "0666-sandstorm",
@@ -27509,7 +28093,21 @@
             "gender": null,
             "region": null,
             "form": "sandstorm",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sandstorm"
+              }
+            ]
           },
           {
             "id": "0666-savanna",
@@ -27521,7 +28119,21 @@
             "gender": null,
             "region": null,
             "form": "savanna",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-savanna"
+              }
+            ]
           },
           {
             "id": "0666-sun",
@@ -27533,7 +28145,21 @@
             "gender": null,
             "region": null,
             "form": "sun",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-sun"
+              }
+            ]
           },
           {
             "id": "0666-tundra",
@@ -27545,7 +28171,21 @@
             "gender": null,
             "region": null,
             "form": "tundra",
-            "boxable": true
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0664"
+              },
+              {
+                "stage": 2,
+                "id": "0665"
+              },
+              {
+                "stage": 3,
+                "id": "0666-tundra"
+              }
+            ]
           }
         ]
       },
