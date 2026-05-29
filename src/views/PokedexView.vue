@@ -2369,99 +2369,6 @@ watch(selectedPokemon, (newVal) => {
   color: #d1d1d1;
 }
 
-@media (max-width: 520px) {
-  .pokedex-view {
-    padding: 8px;
-  }
-
-  .pokemon-card {
-    border-radius: 12px;
-    padding: 7px;
-  }
-
-  .pokemon-card_badge {
-    top: 7px;
-    left: 7px;
-    font-size: 0.68rem;
-  }
-
-  .pokemon-card_gender {
-    top: 7px;
-    right: 7px;
-    gap: 3px;
-  }
-
-  .pokemon-card_gender img {
-    width: 16px;
-    height: 16px;
-    padding: 2px;
-  }
-
-  .pokemon-card_collection {
-    right: 8px;
-    bottom: 7px;
-    gap: 4px;
-  }
-
-  .collect-indicator {
-    font-size: 0.8rem;
-  }
-
-  .pokemon-card_image {
-    min-height: 82px;
-  }
-
-  .pokemon-card_image img {
-    max-height: 82px;
-  }
-
-  .pokemon-card_info h2 {
-    font-size: 0.9rem;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-  }
-
-  .carousel-placeholder {
-    min-height: 24px;
-  }
-
-  .pokemon-card_carousel {
-    gap: 4px;
-    padding: 2px;
-    border-radius: 7px;
-  }
-
-  .carousel-btn {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-
-  .carousel-dots {
-    min-width: 32px;
-    font-size: 0.68rem;
-  }
-
-  .form-label {
-    margin-top: 3px;
-    font-size: 0.74rem;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-  }
-
-  .pokemon-card_tags {
-    margin-top: 4px;
-    min-height: 0;
-    gap: 4px;
-  }
-
-  .pokemon-card_tags .tag-chip {
-    padding: 2px 5px;
-    font-size: 0.64rem;
-  }
-}
-
 .form-label {
   margin-top: 8px;
   font-size: 0.9rem;
@@ -3124,6 +3031,99 @@ watch(selectedPokemon, (newVal) => {
   color: #a6a6a6;
   min-width: 40px;
   text-align: center;
+}
+
+@media (max-width: 520px) {
+  .pokedex-view {
+    padding: 8px;
+  }
+
+  .pokemon-card {
+    border-radius: 12px;
+    padding: 7px;
+  }
+
+  .pokemon-card_badge {
+    top: 7px;
+    left: 7px;
+    font-size: 0.68rem;
+  }
+
+  .pokemon-card_gender {
+    top: 7px;
+    right: 7px;
+    gap: 3px;
+  }
+
+  .pokemon-card_gender img {
+    width: 16px;
+    height: 16px;
+    padding: 2px;
+  }
+
+  .pokemon-card_collection {
+    right: 8px;
+    bottom: 7px;
+    gap: 4px;
+  }
+
+  .collect-indicator {
+    font-size: 0.8rem;
+  }
+
+  .pokemon-card_image {
+    min-height: 82px;
+  }
+
+  .pokemon-card_image img {
+    max-height: 82px;
+  }
+
+  .pokemon-card_info h2 {
+    font-size: 0.9rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .carousel-placeholder {
+    min-height: 24px;
+  }
+
+  .pokemon-card_carousel {
+    gap: 4px;
+    padding: 2px;
+    border-radius: 7px;
+  }
+
+  .carousel-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .carousel-dots {
+    min-width: 32px;
+    font-size: 0.68rem;
+  }
+
+  .form-label {
+    margin-top: 3px;
+    font-size: 0.74rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .pokemon-card_tags {
+    margin-top: 4px;
+    min-height: 0;
+    gap: 4px;
+  }
+
+  .pokemon-card_tags .tag-chip {
+    padding: 2px 5px;
+    font-size: 0.64rem;
+  }
 }
 
 .collection-manager {
