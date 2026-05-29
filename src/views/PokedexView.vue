@@ -1091,7 +1091,7 @@ watch(selectedPokemon, (newVal) => {
 
 <template>
   <section class="pokedex-view">
-    <div class="page-header">
+    <div class="page-meta-header">
       <div class="page-meta">
         <div class="page-meta-left">
           <span v-if="loading">Loading...</span>
@@ -1682,7 +1682,7 @@ watch(selectedPokemon, (newVal) => {
   /* align-items: center; */
   /* justify-content: space-between; */
   /* gap: 16px; */
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
 
 .page-header h1 {
@@ -1695,6 +1695,9 @@ watch(selectedPokemon, (newVal) => {
   color: #b8b8b8;
 }
 
+.page-meta-header {
+  margin-bottom: 10px;
+}
 .page-meta {
   font-size: 0.95rem;
   color: #a6a6a6;
