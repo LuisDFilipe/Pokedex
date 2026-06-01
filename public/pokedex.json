@@ -21202,7 +21202,7 @@
           {
             "id": "0493-bug",
             "name": "Arceus (Bug)",
-            "type1": "Normal",
+            "type1": "Bug",
             "type2": null,
             "gen": 4,
             "sprite": "0493-bug",
@@ -21220,7 +21220,7 @@
           {
             "id": "0493-dark",
             "name": "Arceus (Dark)",
-            "type1": "Normal",
+            "type1": "Dark",
             "type2": null,
             "gen": 4,
             "sprite": "0493-dark",
@@ -21238,7 +21238,7 @@
           {
             "id": "0493-dragon",
             "name": "Arceus (Dragon)",
-            "type1": "Normal",
+            "type1": "Dragon",
             "type2": null,
             "gen": 4,
             "sprite": "0493-dragon",
@@ -21256,7 +21256,7 @@
           {
             "id": "0493-electric",
             "name": "Arceus (Electric)",
-            "type1": "Normal",
+            "type1": "Electric",
             "type2": null,
             "gen": 4,
             "sprite": "0493-electric",
@@ -21274,7 +21274,7 @@
           {
             "id": "0493-fairy",
             "name": "Arceus (Fairy)",
-            "type1": "Normal",
+            "type1": "Fairy",
             "type2": null,
             "gen": 4,
             "sprite": "0493-fairy",
@@ -21292,7 +21292,7 @@
           {
             "id": "0493-fighting",
             "name": "Arceus (Fighting)",
-            "type1": "Normal",
+            "type1": "Fighting",
             "type2": null,
             "gen": 4,
             "sprite": "0493-fighting",
@@ -21310,7 +21310,7 @@
           {
             "id": "0493-fire",
             "name": "Arceus (Fire)",
-            "type1": "Normal",
+            "type1": "Fire",
             "type2": null,
             "gen": 4,
             "sprite": "0493-fire",
@@ -21328,7 +21328,7 @@
           {
             "id": "0493-flying",
             "name": "Arceus (Flying)",
-            "type1": "Normal",
+            "type1": "Flying",
             "type2": null,
             "gen": 4,
             "sprite": "0493-flying",
@@ -21346,7 +21346,7 @@
           {
             "id": "0493-ghost",
             "name": "Arceus (Ghost)",
-            "type1": "Normal",
+            "type1": "Ghost",
             "type2": null,
             "gen": 4,
             "sprite": "0493-ghost",
@@ -21364,7 +21364,7 @@
           {
             "id": "0493-grass",
             "name": "Arceus (Grass)",
-            "type1": "Normal",
+            "type1": "Grass",
             "type2": null,
             "gen": 4,
             "sprite": "0493-grass",
@@ -21382,7 +21382,7 @@
           {
             "id": "0493-ground",
             "name": "Arceus (Ground)",
-            "type1": "Normal",
+            "type1": "Ground",
             "type2": null,
             "gen": 4,
             "sprite": "0493-ground",
@@ -21400,7 +21400,7 @@
           {
             "id": "0493-ice",
             "name": "Arceus (Ice)",
-            "type1": "Normal",
+            "type1": "Ice",
             "type2": null,
             "gen": 4,
             "sprite": "0493-ice",
@@ -21418,7 +21418,7 @@
           {
             "id": "0493-poison",
             "name": "Arceus (Poison)",
-            "type1": "Normal",
+            "type1": "Poison",
             "type2": null,
             "gen": 4,
             "sprite": "0493-poison",
@@ -21436,7 +21436,7 @@
           {
             "id": "0493-psychic",
             "name": "Arceus (Psychic)",
-            "type1": "Normal",
+            "type1": "Psychic",
             "type2": null,
             "gen": 4,
             "sprite": "0493-psychic",
@@ -21454,7 +21454,7 @@
           {
             "id": "0493-rock",
             "name": "Arceus (Rock)",
-            "type1": "Normal",
+            "type1": "Rock",
             "type2": null,
             "gen": 4,
             "sprite": "0493-rock",
@@ -21472,7 +21472,7 @@
           {
             "id": "0493-steel",
             "name": "Arceus (Steel)",
-            "type1": "Normal",
+            "type1": "Steel",
             "type2": null,
             "gen": 4,
             "sprite": "0493-steel",
@@ -21490,7 +21490,7 @@
           {
             "id": "0493-water",
             "name": "Arceus (Water)",
-            "type1": "Normal",
+            "type1": "Water",
             "type2": null,
             "gen": 4,
             "sprite": "0493-water",
@@ -23594,28 +23594,6 @@
             ]
           },
           {
-            "id": "0555-galarian",
-            "name": "Galarian Darmanitan",
-            "type1": "Ice",
-            "type2": null,
-            "gen": 8,
-            "sprite": "0555-galarian",
-            "gender": null,
-            "region": "galar",
-            "form": "galarian",
-            "boxable": true,
-            "evolutions": [
-              {
-                "stage": 1,
-                "id": "0554-galarian"
-              },
-              {
-                "stage": 2,
-                "id": "0555-galarian"
-              }
-            ]
-          },
-          {
             "id": "0555-zen",
             "name": "Darmanitan (Zen Mode)",
             "type1": "Fire",
@@ -23634,6 +23612,28 @@
               {
                 "stage": 2,
                 "id": "0555-zen"
+              }
+            ]
+          },
+          {
+            "id": "0555-galarian",
+            "name": "Galarian Darmanitan",
+            "type1": "Ice",
+            "type2": null,
+            "gen": 8,
+            "sprite": "0555-galarian",
+            "gender": null,
+            "region": "galar",
+            "form": "galarian",
+            "boxable": true,
+            "evolutions": [
+              {
+                "stage": 1,
+                "id": "0554-galarian"
+              },
+              {
+                "stage": 2,
+                "id": "0555-galarian"
               }
             ]
           },
@@ -30862,7 +30862,7 @@
           {
             "id": "0773-bug",
             "name": "Silvally (Bug)",
-            "type1": "Normal",
+            "type1": "Bug",
             "type2": null,
             "gen": 7,
             "sprite": "0773-bug",
@@ -30874,7 +30874,7 @@
           {
             "id": "0773-dark",
             "name": "Silvally (Dark)",
-            "type1": "Normal",
+            "type1": "Dark",
             "type2": null,
             "gen": 7,
             "sprite": "0773-dark",
@@ -30886,7 +30886,7 @@
           {
             "id": "0773-dragon",
             "name": "Silvally (Dragon)",
-            "type1": "Normal",
+            "type1": "Dragon",
             "type2": null,
             "gen": 7,
             "sprite": "0773-dragon",
@@ -30898,7 +30898,7 @@
           {
             "id": "0773-electric",
             "name": "Silvally (Electric)",
-            "type1": "Normal",
+            "type1": "Electric",
             "type2": null,
             "gen": 7,
             "sprite": "0773-electric",
@@ -30910,7 +30910,7 @@
           {
             "id": "0773-fairy",
             "name": "Silvally (Fairy)",
-            "type1": "Normal",
+            "type1": "Fairy",
             "type2": null,
             "gen": 7,
             "sprite": "0773-fairy",
@@ -30922,7 +30922,7 @@
           {
             "id": "0773-fighting",
             "name": "Silvally (Fighting)",
-            "type1": "Normal",
+            "type1": "Fighting",
             "type2": null,
             "gen": 7,
             "sprite": "0773-fighting",
@@ -30934,7 +30934,7 @@
           {
             "id": "0773-fire",
             "name": "Silvally (Fire)",
-            "type1": "Normal",
+            "type1": "Fire",
             "type2": null,
             "gen": 7,
             "sprite": "0773-fire",
@@ -30946,7 +30946,7 @@
           {
             "id": "0773-flying",
             "name": "Silvally (Flying)",
-            "type1": "Normal",
+            "type1": "Flying",
             "type2": null,
             "gen": 7,
             "sprite": "0773-flying",
@@ -30958,7 +30958,7 @@
           {
             "id": "0773-ghost",
             "name": "Silvally (Ghost)",
-            "type1": "Normal",
+            "type1": "Ghost",
             "type2": null,
             "gen": 7,
             "sprite": "0773-ghost",
@@ -30970,7 +30970,7 @@
           {
             "id": "0773-grass",
             "name": "Silvally (Grass)",
-            "type1": "Normal",
+            "type1": "Grass",
             "type2": null,
             "gen": 7,
             "sprite": "0773-grass",
@@ -30982,7 +30982,7 @@
           {
             "id": "0773-ground",
             "name": "Silvally (Ground)",
-            "type1": "Normal",
+            "type1": "Ground",
             "type2": null,
             "gen": 7,
             "sprite": "0773-ground",
@@ -30994,7 +30994,7 @@
           {
             "id": "0773-ice",
             "name": "Silvally (Ice)",
-            "type1": "Normal",
+            "type1": "Ice",
             "type2": null,
             "gen": 7,
             "sprite": "0773-ice",
@@ -31006,7 +31006,7 @@
           {
             "id": "0773-poison",
             "name": "Silvally (Poison)",
-            "type1": "Normal",
+            "type1": "Poison",
             "type2": null,
             "gen": 7,
             "sprite": "0773-poison",
@@ -31018,7 +31018,7 @@
           {
             "id": "0773-psychic",
             "name": "Silvally (Psychic)",
-            "type1": "Normal",
+            "type1": "Psychic",
             "type2": null,
             "gen": 7,
             "sprite": "0773-psychic",
@@ -31030,7 +31030,7 @@
           {
             "id": "0773-rock",
             "name": "Silvally (Rock)",
-            "type1": "Normal",
+            "type1": "Rock",
             "type2": null,
             "gen": 7,
             "sprite": "0773-rock",
@@ -31042,7 +31042,7 @@
           {
             "id": "0773-steel",
             "name": "Silvally (Steel)",
-            "type1": "Normal",
+            "type1": "Steel",
             "type2": null,
             "gen": 7,
             "sprite": "0773-steel",
@@ -31054,7 +31054,7 @@
           {
             "id": "0773-water",
             "name": "Silvally (Water)",
-            "type1": "Normal",
+            "type1": "Water",
             "type2": null,
             "gen": 7,
             "sprite": "0773-water",
