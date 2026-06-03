@@ -1509,11 +1509,11 @@ watch(selectedPokemon, (newVal) => {
                   placeholder="Search tags..."
                   class="tag-search-input"
                 />
-                <button 
+                <!-- <button 
                   v-if="selectedTags.length > 0 || excludedTags.length > 0" 
                   @click="selectedTags = []; excludedTags = []" 
                   class="btn-tag-action"
-                >Clear Selected</button>
+                >Clear Selected</button> -->
               </div>
               <div class="filter-options tag-filter-options">
                 <div v-for="tag in filteredTags" :key="tag" class="tag-filter-row">
@@ -2673,13 +2673,13 @@ watch(selectedPokemon, (newVal) => {
 
 .tag-filter-container {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   margin-top: 4px;
 }
 
 .tag-filter-header-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tag-search-input {
