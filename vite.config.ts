@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'The Pokédex',
         short_name: 'The Pokédex',
-        description: 'A personal Pokemon tracker and collection logger.',
+        description: 'A personal Pokémon tracker and collection logger.',
         theme_color: '#101010',
         background_color: '#101010',
         display: 'standalone',

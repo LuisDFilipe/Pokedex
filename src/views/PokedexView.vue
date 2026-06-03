@@ -1117,8 +1117,8 @@ watch(selectedPokemon, (newVal) => {
             <span>Shiny</span>
           </label>
 
-          <button v-if="!loading && !error" class="filter-btn" @click="showFilterModal = true" title="Open filter settings">
-            Filters
+          <button v-if="!loading && !error" class="filter-btn" @click="showFilterModal = true" title="Open settings">
+            Settings
           </button>
           <label v-if="!loading && !error" class="page-size-selector">
             Show
@@ -1388,7 +1388,7 @@ watch(selectedPokemon, (newVal) => {
     <div v-if="showFilterModal" class="filter-modal" @click.self="showFilterModal = false">
       <div class="filter-panel" role="dialog" aria-modal="true">
         <div class="filter-header">
-          <h2>Filter Settings</h2>
+          <h2>Filters & Settings</h2>
           <button class="filter-close" aria-label="Close filters" @click="showFilterModal = false">&times;</button>
         </div>
 
@@ -1549,8 +1549,8 @@ watch(selectedPokemon, (newVal) => {
               Export your collection and filters as a sync file, then import that file on another device.
             </p>
             <div class="sync-actions">
-              <button type="button" class="btn-clear" @click="exportCollection">Export Sync File</button>
-              <button type="button" class="btn-close" @click="importCollection">Import Sync File</button>
+              <button type="button" class="btn-export" @click="exportCollection">Export File</button>
+              <button type="button" class="btn-import" @click="importCollection">Import File</button>
             </div>
             <input
               ref="importFile"
@@ -1752,7 +1752,7 @@ watch(selectedPokemon, (newVal) => {
 }
 
 .page-size-selector select {
-  width: 96px;
+  width: 65px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.92);
@@ -2833,6 +2833,37 @@ watch(selectedPokemon, (newVal) => {
 
 .btn-close:hover {
   background: #ff5757;
+}
+
+.btn-export,
+.btn-import {
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.btn-export {
+  background: #0066ff84;
+  color: white;
+  flex: 1;
+  border: 1px white;
+}
+
+.btn-export:hover {
+  background: #0066ff94;
+}
+
+.btn-import {
+  background: #00ff6a84;
+  color: white;
+  flex: 1;
+  border: 1px white;
+}
+
+.btn-import:hover {
+  background: #00ff6a94;
 }
 
 /* Sprite transition styles */
