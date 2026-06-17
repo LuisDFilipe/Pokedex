@@ -7,6 +7,14 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    port: 3000,
+    strictPort: true
+  },
+  preview: {
+    port: 3001,
+    strictPort: true
+  },
   plugins: [
     vue(),
     vueDevTools(),
@@ -48,7 +56,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}']
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
