@@ -2051,9 +2051,6 @@ watch(selectedPokemon, (newVal) => {
   filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.5)) drop-shadow(1px 1px 0px rgb(0, 0, 0));
 }
 
-.detail-text {
-}
-
 .detail-text h2 {
   margin: 0 0 12px;
 }

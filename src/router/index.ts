@@ -28,10 +28,10 @@ const router = createRouter({
     {
       path: '/game',
       name: 'game',
-      component: () => import('../views/GameView.vue'),
+      component: () => import('../views/GameV2View.vue'),
       meta: {
-        title: 'Pokemon Game',
-        description: 'Walk the map and prototype wild encounter ideas.',
+        title: 'The Game',
+        description: 'Play some Pokémon.',
       },
     },
     {
