@@ -5,7 +5,7 @@ import type { NamedCollection, PokemonEntry, PokemonForm } from '@/types/pokedex
 
 const GAME_COLLECTION_NAME = 'Game Colletion'
 const GAME_COLLECTION_ID = 'game-colletion'
-const HOURLY_ENCOUNTER_POOL_SIZE = 7
+const HOURLY_ENCOUNTER_POOL_SIZE = 50
 const ENCOUNTER_DELAY = 1
 const SHINY_ODDS = 5 //Percentage
 
