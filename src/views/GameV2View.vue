@@ -5,7 +5,7 @@ import type { NamedCollection, PokemonEntry, PokemonForm } from '@/types/pokedex
 
 const GAME_COLLECTION_NAME = 'Game Colletion'
 const GAME_COLLECTION_ID = 'game-colletion'
-const HOURLY_ENCOUNTER_POOL_SIZE = 50
+const HOURLY_ENCOUNTER_POOL_SIZE = 7
 const ENCOUNTER_DELAY = 1
 const SHINY_ODDS = 5 //Percentage
 
@@ -123,6 +123,29 @@ const currentDisplayName = computed(() => {
   }
   return currentPokemon.value.name
 })
+
+const uncaughtEncounterForms = computed(() => {
+  const caughtNormalIds = new Set(gameCollection.value?.state.normal ?? [])
+  const uncaughtNormalForms = encounterForms.value
+    .filter(({ form }) => !caughtNormalIds.has(form.id))
+    .slice()
+    .sort((a, b) => a.form.id.localeCompare(b.form.id, undefined, { numeric: true }))
+
+  if (uncaughtNormalForms.length > 0) {
+    return uncaughtNormalForms.map((entry) => ({ ...entry, isShiny: false }))
+  }
+
+  const caughtShinyIds = new Set(gameCollection.value?.state.shiny ?? [])
+  return encounterForms.value
+    .filter(({ form }) => !caughtShinyIds.has(form.id))
+    .slice()
+    .sort((a, b) => a.form.id.localeCompare(b.form.id, undefined, { numeric: true }))
+    .map((entry) => ({ ...entry, isShiny: true }))
+})
+
+const isShowingOnlyShinies = computed(() =>
+  uncaughtEncounterForms.value.length > 0 && uncaughtEncounterForms.value.every((entry) => entry.isShiny)
+)
 
 const totalPossible = computed(() => encounterForms.value.length)
 
@@ -277,6 +300,27 @@ onMounted(async () => {
           <span>Total Progress</span>
           <strong>{{ totalCaughtInRange }} / {{ totalPossibleInRange }}</strong>
         </div>
+      </div>
+
+      <div v-if="!loading && !error" class="catchable-list">
+        <h3>
+          Catchable
+          <span v-if="isShowingOnlyShinies" class="catchable-title-shiny">Shiny</span>
+          Pokemon
+        </h3>
+        <ul>
+          <li v-for="{ pokemon, form, isShiny } in uncaughtEncounterForms" :key="`${form.id}-${isShiny ? 'shiny' : 'normal'}`">
+            <img v-if="getSpriteUrl(form, isShiny)" :src="getSpriteUrl(form, isShiny)" :alt="form.name || pokemon.name" />
+            <span v-else class="catchable-missing">?</span>
+            <span class="catchable-details">
+              <span class="catchable-number">{{ form.id }}</span>
+              <span class="catchable-name">
+                {{ form.name && form.name !== pokemon.name ? form.name : pokemon.name }}
+                <!-- <span v-if="isShiny" class="catchable-shiny">Shiny</span> -->
+              </span>
+            </span>
+          </li>
+        </ul>
       </div>
     </div>
   </section>
@@ -456,6 +500,78 @@ onMounted(async () => {
 .collection-summary strong {
   color: #fff;
   font-size: 1.2rem;
+}
+
+.catchable-list {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+
+.catchable-list h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.catchable-title-shiny {
+  color: #f7d02c;
+}
+
+.catchable-list ul {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catchable-list li {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e8e8;
+  font-size: 0.9rem;
+}
+
+.catchable-list img,
+.catchable-missing {
+  width: 54px;
+  height: 54px;
+}
+
+.catchable-list img {
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.catchable-missing {
+  display: grid;
+  place-items: center;
+  color: #777;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.catchable-details {
+  display: grid;
+  gap: 3px;
+}
+
+.catchable-number {
+  color: #a6a6a6;
+  font-weight: 800;
+}
+
+.catchable-name {
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 520px) {
