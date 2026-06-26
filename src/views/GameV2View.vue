@@ -184,9 +184,6 @@ const ensureGameCollection = () => {
     filters: { ...defaultCollectionFilters },
   }
 
-  totalPokemonEncountered.value = collection.filters.totalPokemonEncountered
-  totalShinyPokemonEncountered.value = collection.filters.totalShinyPokemonEncountered
-
   allCollections.value = [...allCollections.value, collection]
   writeCollections(allCollections.value)
   return collection

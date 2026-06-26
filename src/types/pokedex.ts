@@ -76,9 +76,6 @@ export interface PokedexSettings {
   selectedTags: string[]
   excludedTags: string[]
   showUntaggedOnly: boolean
-
-  totalPokemonEncountered: number
-  totalShinyPokemonEncountered: number
 }
 
 export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>

@@ -62,8 +62,6 @@ const excludedTags = ref<string[]>([])
 const showUntaggedOnly = ref(false)
 const tagSearchQuery = ref('')
 const tagDraft = ref('')
-const totalPokemonEncountered = ref(0)
-const totalShinyPokemonEncountered = ref(0)
 
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
@@ -498,8 +496,6 @@ const getCurrentCollectionFilters = (): CollectionFilters => ({
   selectedTags: selectedTags.value.filter((tag) => allTags.value.includes(tag)),
   excludedTags: excludedTags.value.filter((tag) => allTags.value.includes(tag)),
   showUntaggedOnly: showUntaggedOnly.value,
-  totalPokemonEncountered: totalPokemonEncountered.value,
-  totalShinyPokemonEncountered: totalShinyPokemonEncountered.value,
 })
 
 const getCurrentSettings = (): PokedexSettings => ({
