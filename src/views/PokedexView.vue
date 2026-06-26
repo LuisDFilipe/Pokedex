@@ -62,6 +62,8 @@ const excludedTags = ref<string[]>([])
 const showUntaggedOnly = ref(false)
 const tagSearchQuery = ref('')
 const tagDraft = ref('')
+const totalPokemonEncountered = ref(0)
+const totalShinyPokemonEncountered = ref(0)
 
 const importFile = ref<HTMLInputElement | null>(null)
 const syncMessage = ref('')
@@ -496,6 +498,8 @@ const getCurrentCollectionFilters = (): CollectionFilters => ({
   selectedTags: selectedTags.value.filter((tag) => allTags.value.includes(tag)),
   excludedTags: excludedTags.value.filter((tag) => allTags.value.includes(tag)),
   showUntaggedOnly: showUntaggedOnly.value,
+  totalPokemonEncountered: totalPokemonEncountered.value,
+  totalShinyPokemonEncountered: totalShinyPokemonEncountered.value,
 })
 
 const getCurrentSettings = (): PokedexSettings => ({
@@ -1198,7 +1202,11 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
           
-          <div class="collection-toggles" v-if="activeForm">
+          <div class="collection-toggles" v-if="activeForm && activeCollectionId == 'game-colletion'">
+            <span>Pokémon can't be added manually in this collection</span>
+          </div>
+          
+          <div class="collection-toggles" v-if="activeForm && activeCollectionId != 'game-colletion'">
             <button 
               class="collect-btn" 
               :class="{ collected: isCollected(activeForm.id, false) }"
@@ -2880,6 +2888,7 @@ watch(selectedPokemon, (newVal) => {
 /* Collection styles */
 .collection-toggles {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-top: 24px;
 }

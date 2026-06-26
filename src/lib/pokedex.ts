@@ -60,6 +60,9 @@ export const defaultSettings: PokedexSettings = {
   selectedTags: [],
   excludedTags: [],
   showUntaggedOnly: false,
+
+  totalPokemonEncountered: 0,
+  totalShinyPokemonEncountered: 0,
 }
 
 export const defaultCollectionFilters: CollectionFilters = {
@@ -85,6 +88,8 @@ export const defaultCollectionFilters: CollectionFilters = {
   selectedTags: [...defaultSettings.selectedTags],
   excludedTags: [...defaultSettings.excludedTags],
   showUntaggedOnly: defaultSettings.showUntaggedOnly,
+  totalPokemonEncountered: defaultSettings.totalPokemonEncountered,
+  totalShinyPokemonEncountered: defaultSettings.totalShinyPokemonEncountered,
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
@@ -299,5 +304,7 @@ function normalizeSettings(value: unknown): PokedexSettings {
     selectedTags: isStringArray(settings?.selectedTags) ? settings.selectedTags : [],
     excludedTags: isStringArray(settings?.excludedTags) ? settings.excludedTags : [],
     showUntaggedOnly: isBoolean(settings?.showUntaggedOnly) ? settings.showUntaggedOnly : false,
+    totalPokemonEncountered: isNumber(settings?.totalPokemonEncountered) ? settings.totalPokemonEncountered : 0,
+    totalShinyPokemonEncountered: isNumber(settings?.totalShinyPokemonEncountered) ? settings.totalShinyPokemonEncountered : 0,
   }
 }
