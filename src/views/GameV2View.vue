@@ -19,6 +19,8 @@ const error = ref('')
 const saveMessage = ref('')
 const isEncounterCooldown = ref(false)
 const cooldownRemaining = ref(0)
+const totalPokemonEncountered = ref(0)
+const totalShinyPokemonEncountered = ref(0)
 
 const normalSprites = import.meta.glob('../../sprites/pokemon/normal/*.png', {
   eager: true,
@@ -210,6 +212,13 @@ const encounterPokemon = () => {
   currentForm.value = encounter.form
   currentIsShiny.value = Math.random() < (SHINY_ODDS / 100)
 
+  totalPokemonEncountered.value += 1
+  if (currentIsShiny.value)
+    totalShinyPokemonEncountered.value += 1
+
+  localStorage.setItem('totalPokemonEncountered', String(totalPokemonEncountered.value));
+  localStorage.setItem('totalShinyPokemonEncountered', String(totalShinyPokemonEncountered.value));
+
   const timer = setInterval(() => {
     cooldownRemaining.value -= 1
     if (cooldownRemaining.value <= 0) {
@@ -241,6 +250,10 @@ const savePokemon = () => {
 }
 
 onMounted(async () => {
+  
+  totalPokemonEncountered.value = Number(localStorage.getItem('totalPokemonEncountered'));
+  totalShinyPokemonEncountered.value = Number(localStorage.getItem('totalShinyPokemonEncountered'));
+
   try {
     allCollections.value = readCollections()
     ensureGameCollection()
@@ -274,14 +287,14 @@ onMounted(async () => {
 
         <div class="pokemon-info">
           <h2>{{ currentDisplayName }}</h2>
-          <p class="caught-state">{{ isCaught ? 'Already caught' : 'Not caught yet' }}</p>
+          <!--<p class="caught-state">{{ isCaught ? 'Already caught' : 'Not caught yet' }}</p>-->
         </div>
 
         <button class="save-btn" type="button" :disabled="isCaught" @click="savePokemon">
           {{ isCaught ? 'Caught' : 'Catch Pokémon' }}
         </button>
 
-        <p v-if="saveMessage" class="save-message">{{ saveMessage }}</p>
+        <!-- <p v-if="saveMessage" class="save-message">{{ saveMessage }}</p> -->
       </article>
 
       <p v-else class="status-text">Press the button to find a Pokemon.</p>
@@ -297,8 +310,18 @@ onMounted(async () => {
         </div>
         
         <div class="collection-summary">
-          <span>Total Progress</span>
-          <strong>{{ totalCaughtInRange }} / {{ totalPossibleInRange }}</strong>
+          <div>
+            <span>Total Progress</span>
+            <strong>{{ totalCaughtInRange }} / {{ totalPossibleInRange }}</strong>
+          </div>
+          <div>
+            <span>Total Encountered</span>
+            <strong>{{ totalPokemonEncountered }}</strong>
+          </div>
+          <div>
+            <span>Total Shinies Encountered</span>
+            <strong>{{ totalShinyPokemonEncountered }}</strong>
+          </div>
         </div>
       </div>
 
@@ -421,7 +444,7 @@ onMounted(async () => {
 
 .sprite-stage img {
   width: 78%;
-  height: 78%;
+  /* height: 78%; */
   object-fit: contain;
   image-rendering: pixelated;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
@@ -484,16 +507,22 @@ onMounted(async () => {
   justify-content: space-between;
   font-size: 0.9rem;
   color: #a6a6a6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .collection-summary {
   width: 100%;
   display: flex;
+  flex-direction: column;
+}
+
+.collection-summary div {
+  width: 100%;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: #cfcfcf;
 }
 

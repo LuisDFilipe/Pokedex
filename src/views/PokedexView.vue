@@ -1198,7 +1198,11 @@ watch(selectedPokemon, (newVal) => {
             </div>
           </div>
           
-          <div class="collection-toggles" v-if="activeForm">
+          <div class="collection-toggles" v-if="activeForm && activeCollectionId == 'game-colletion'">
+            <span>Pokémon can't be added manually in this collection</span>
+          </div>
+          
+          <div class="collection-toggles" v-if="activeForm && activeCollectionId != 'game-colletion'">
             <button 
               class="collect-btn" 
               :class="{ collected: isCollected(activeForm.id, false) }"
@@ -2880,6 +2884,7 @@ watch(selectedPokemon, (newVal) => {
 /* Collection styles */
 .collection-toggles {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-top: 24px;
 }
