@@ -32,6 +32,8 @@ export const defaultSettings: PokedexSettings = {
   randomOrder: false,
   showShiny: false,
   itemsPerPage: 12,
+  totalPokemonEncountered: 0,
+  totalShinyPokemonEncountered: 0,
 
   activeCollectionId: 'default',
 
@@ -280,6 +282,8 @@ function normalizeSettings(value: unknown): PokedexSettings {
     randomOrder: isBoolean(settings?.randomOrder) ? settings.randomOrder : false,
     showShiny: isBoolean(settings?.showShiny) ? settings.showShiny : false,
     itemsPerPage: isNumber(settings?.itemsPerPage) ? settings.itemsPerPage : defaultSettings.itemsPerPage,
+    totalPokemonEncountered: isNumber(settings?.totalPokemonEncountered) ? settings.totalPokemonEncountered : defaultSettings.totalPokemonEncountered,
+    totalShinyPokemonEncountered: isNumber(settings?.totalShinyPokemonEncountered) ? settings.totalShinyPokemonEncountered : defaultSettings.totalShinyPokemonEncountered,
     activeCollectionId: isString(settings?.activeCollectionId) ? settings.activeCollectionId : 'default',
     selectedGenerations: isNumberArray(settings?.selectedGenerations) ? settings.selectedGenerations : [],
     excludeGigantamax: isBoolean(settings?.excludeGigantamax) ? settings.excludeGigantamax : false,
