@@ -500,6 +500,8 @@ const getCurrentCollectionFilters = (): CollectionFilters => ({
 
 const getCurrentSettings = (): PokedexSettings => ({
   ...getCurrentCollectionFilters(),
+  totalPokemonEncountered: readSettings().totalPokemonEncountered,
+  totalShinyPokemonEncountered: readSettings().totalShinyPokemonEncountered,
   activeCollectionId: activeCollectionId.value,
 })
 

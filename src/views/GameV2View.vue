@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { defaultCollectionFilters, loadPokedex, readCollections, writeCollections } from '@/lib/pokedex'
+import { defaultCollectionFilters, loadPokedex, readCollections, readSettings, writeCollections, writeSettings } from '@/lib/pokedex'
 import type { NamedCollection, PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 const GAME_COLLECTION_NAME = 'Game Colletion'
@@ -167,6 +167,23 @@ const caughtShinyCount = computed(() => {
 const totalCaughtInRange = computed(() => caughtNormalCount.value + caughtShinyCount.value)
 const totalPossibleInRange = computed(() => totalPossible.value * 2) // Normal + Shiny
 
+const saveEncounterTotals = () => {
+  const settings = readSettings()
+  writeSettings({
+    ...settings,
+    totalPokemonEncountered: totalPokemonEncountered.value,
+    totalShinyPokemonEncountered: totalShinyPokemonEncountered.value,
+  })
+}
+
+const readLegacyEncounterTotal = (key: string) => {
+  const rawValue = localStorage.getItem(key)
+  if (!rawValue) return null
+
+  const value = Number(rawValue)
+  return Number.isFinite(value) ? value : null
+}
+
 const ensureGameCollection = () => {
   const existing = gameCollection.value
   if (existing) {
@@ -213,11 +230,10 @@ const encounterPokemon = () => {
   currentIsShiny.value = Math.random() < (SHINY_ODDS / 100)
 
   totalPokemonEncountered.value += 1
-  if (currentIsShiny.value)
+  if (currentIsShiny.value) {
     totalShinyPokemonEncountered.value += 1
-
-  localStorage.setItem('totalPokemonEncountered', String(totalPokemonEncountered.value));
-  localStorage.setItem('totalShinyPokemonEncountered', String(totalShinyPokemonEncountered.value));
+  }
+  saveEncounterTotals()
 
   const timer = setInterval(() => {
     cooldownRemaining.value -= 1
@@ -250,9 +266,16 @@ const savePokemon = () => {
 }
 
 onMounted(async () => {
+  const settings = readSettings()
+  const legacyTotalPokemonEncountered = readLegacyEncounterTotal('totalPokemonEncountered') ?? 0
+  const legacyTotalShinyPokemonEncountered = readLegacyEncounterTotal('totalShinyPokemonEncountered') ?? 0
+
+  totalPokemonEncountered.value = (legacyTotalPokemonEncountered >= settings.totalPokemonEncountered) ? legacyTotalPokemonEncountered : settings.totalPokemonEncountered
+  totalShinyPokemonEncountered.value = (legacyTotalShinyPokemonEncountered >= settings.totalShinyPokemonEncountered) ? legacyTotalShinyPokemonEncountered : settings.totalShinyPokemonEncountered
   
-  totalPokemonEncountered.value = Number(localStorage.getItem('totalPokemonEncountered'));
-  totalShinyPokemonEncountered.value = Number(localStorage.getItem('totalShinyPokemonEncountered'));
+  if (legacyTotalPokemonEncountered !== null || legacyTotalShinyPokemonEncountered !== null) {
+    saveEncounterTotals()
+  }
 
   try {
     allCollections.value = readCollections()

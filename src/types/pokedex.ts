@@ -48,6 +48,8 @@ export interface PokedexSettings {
   randomOrder: boolean
   showShiny: boolean
   itemsPerPage: number
+  totalPokemonEncountered: number
+  totalShinyPokemonEncountered: number
   
   activeCollectionId: string
 
@@ -78,7 +80,10 @@ export interface PokedexSettings {
   showUntaggedOnly: boolean
 }
 
-export type CollectionFilters = Omit<PokedexSettings, 'activeCollectionId'>
+export type CollectionFilters = Omit<
+  PokedexSettings,
+  'activeCollectionId' | 'totalPokemonEncountered' | 'totalShinyPokemonEncountered'
+>
 
 export interface PokedexSyncPayload {
   version: 1 | 2
