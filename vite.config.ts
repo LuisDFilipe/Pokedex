@@ -15,7 +15,7 @@ export default defineConfig({
     port: 3001,
     strictPort: true
   },
-  base: "/Pokedex/",
+  base: '/Pokedex/',
   plugins: [
     vue(),
     vueDevTools(),
