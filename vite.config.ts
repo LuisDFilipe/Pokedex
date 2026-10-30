@@ -17,13 +17,12 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    resolve: {
-      alias: {
-        // Sets '@' to point to your './src' directory
-        '@': fileURLToPath(new URL('./src', import.meta.url))
-      }
-    },
     vueDevTools()
   ],
-  base: '/Pokedex/'
+  base: '/Pokedex/',
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
 })
