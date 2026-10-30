@@ -90,7 +90,7 @@ export const defaultCollectionFilters: CollectionFilters = {
 }
 
 export async function loadPokedex(): Promise<PokemonEntry[]> {
-  const response = await fetch('/pokedex.json')
+  const response = await fetch(`${import.meta.env.BASE_URL}pokedex.json`)
 
   if (!response.ok) {
     throw new Error(`Failed to load pokedex.json: ${response.status}`)
