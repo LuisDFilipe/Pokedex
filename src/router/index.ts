@@ -1,10 +1,10 @@
-import { createRouter, createHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PokedexView from '../views/PokedexView.vue'
 import StatsView from '../views/StatsView.vue'
 
 const router = createRouter({
-  history: createHashHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   linkActiveClass: 'active',
   routes: [
     {
