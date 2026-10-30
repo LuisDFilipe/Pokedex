@@ -19,6 +19,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    /*
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -53,13 +54,13 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}']
-      },
+      workbox: {*/
+        //globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}']
+      /*},
       devOptions: {
         enabled: false
       }
-    })
+    })*/
   ],
   resolve: {
     alias: {
