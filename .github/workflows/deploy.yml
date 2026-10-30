@@ -2,7 +2,7 @@ name: Deploy Vue App to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ] # Change to "master" if your default branch is master
+    branches: [ "main" ]
 
 jobs:
   build-and-deploy:
@@ -19,10 +19,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'npm' # Use 'yarn' or 'pnpm' if you don't use npm
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci # Or npm install / yarn install
+        run: npm ci
 
       - name: Build Project
         run: npm run build
@@ -31,4 +31,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # Change to './build' if using Vue CLI
+          publish_dir: ./dist
+          publish_branch: gh-pages
