@@ -679,9 +679,9 @@ const getGenderIcons = (gender: string | null) => {
   const icons: string[] = []
 
   if (normalized.includes('female')) {
-    icons.push('/female.png')
+    icons.push(`${import.meta.env.BASE_URL}/female.png`)
   } else if (normalized.includes('male')) {
-    icons.push('/male.png')
+    icons.push(`${import.meta.env.BASE_URL}/male.png`)
   }
 
   return icons
