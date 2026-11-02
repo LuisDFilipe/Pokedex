@@ -17,7 +17,48 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    vueDevTools()
+    vueDevTools(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'The Pokédex',
+        short_name: 'The Pokédex',
+        description: 'A personal Pokémon tracker and collection logger.',
+        theme_color: '#101010',
+        background_color: '#101010',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'icon_192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'icon_512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'icon_192_maskable.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: 'icon_512_maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}']
+      },
+      devOptions: {
+        enabled: false
+      }
+    })
   ],
   base: '/Pokedex/',
   resolve: {
