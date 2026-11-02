@@ -6,6 +6,11 @@ const quickLinks = [
     to: '/pokedex',
   },
   {
+    title: 'Play the Game',
+    copy: 'Click around to discover wild Pokémon and add them to your collection.',
+    to: '/game',
+  },
+  {
     title: 'Check your stats',
     copy: 'See completion by generation, type coverage, and the next missing forms worth hunting.',
     to: '/stats',
