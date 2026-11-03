@@ -15,11 +15,11 @@ const quickLinks = [
     copy: 'See completion by generation, type coverage, and the next missing forms worth hunting.',
     to: '/stats',
   },
-  {
-    title: 'Read the project notes',
-    copy: 'Get the current scope, release info, and the roadmap for the next pass.',
-    to: '/about',
-  },
+  //{
+  //  title: 'Read the project notes',
+  //  copy: 'Get the current scope, release info, and the roadmap for the next pass.',
+  //  to: '/about',
+  //}
 ]
 </script>
 
@@ -27,10 +27,7 @@ const quickLinks = [
   <section class="home-view">
     <div class="hero">
       <p class="eyebrow">Trainer dashboard</p>
-      <h2>Build your collection with a little more signal.</h2>
-      <p class="hero-copy">
-        This project is moving from a simple sprite browser into a more useful tracker, with saved progress, richer stats, and room to grow into battle and encounter tools.
-      </p>
+      <h2>Build your collection</h2>
     </div>
 
     <div class="link-grid">

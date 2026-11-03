@@ -1,6 +1,6 @@
 {
   "name": "pokedex",
-  "version": "0.0.115",
+  "version": "0.0.117",
   "private": true,
   "type": "module",
   "scripts": {
