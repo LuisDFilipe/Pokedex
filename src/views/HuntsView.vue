@@ -1377,7 +1377,7 @@ button:focus-visible {
   }
 
   .hunt-card:fullscreen .hunt-heading h3 {
-    font-size: clamp(2rem, 12vw, 3.5rem);
+    font-size: clamp(1.35rem, 7vw, 2.25rem);
   }
 
   .hunt-card:fullscreen .hunt-actions {
@@ -1412,7 +1412,7 @@ button:focus-visible {
   }
 
   .hunt-card:fullscreen .counter-value strong {
-    font-size: clamp(3rem, 17vw, 6rem);
+    font-size: clamp(4.5rem, 27vw, 12rem);
   }
 
 }
