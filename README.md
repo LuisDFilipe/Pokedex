@@ -15,6 +15,7 @@ A Vue 3 + TypeScript Pokédex focused on form browsing, collection tracking, and
 - Filter by generation, base forms, boxable forms, megas, and gigantamax forms
 - Track normal and shiny collection progress in local storage
 - Review collection stats by generation and type
+- Track multiple hunts and save their reset counts in local storage
 - Persistent filter settings between sessions
 
 ## Tech Stack

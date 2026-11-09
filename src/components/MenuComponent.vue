@@ -7,6 +7,7 @@ import HomeIcon from "./icons/HomeIcon.vue";
 import PokedexIcon from "./icons/PokedexIcon.vue";
 import GameIcon from "./icons/GameIcon.vue";
 import StatsIcon from "./icons/StatsIcon.vue";
+import HuntsIcon from "./icons/HuntsIcon.vue";
 import AboutIcon from "./icons/AboutIcon.vue";
 
 const appVersion = packageInfo.version;
@@ -64,6 +65,10 @@ watch(
         
         <router-link to="/stats" class="nav-item" @click="closeMenu">
           <StatsIcon /> <span>Stats</span>
+        </router-link>
+
+        <router-link to="/hunts" class="nav-item" @click="closeMenu">
+          <HuntsIcon /> <span>Hunts</span>
         </router-link>
 
         <router-link to="/about" class="nav-item" @click="closeMenu">

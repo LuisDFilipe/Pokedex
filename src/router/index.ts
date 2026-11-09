@@ -44,6 +44,15 @@ const router = createRouter({
       },
     },
     {
+      path: '/hunts',
+      name: 'hunts',
+      component: () => import('../views/HuntsView.vue'),
+      meta: {
+        title: 'Hunts',
+        description: 'Keep track of resets for each hunt.',
+      },
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),
