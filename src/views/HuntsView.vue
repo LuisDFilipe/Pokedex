@@ -859,6 +859,11 @@ button:focus-visible {
   background: #000;
 }
 
+.hunt-card:fullscreen,
+.hunt-card:fullscreen * {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .hunt-card:fullscreen .hunt-heading {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
