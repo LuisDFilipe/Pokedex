@@ -21,6 +21,7 @@ const editingHuntId = ref<string | null>(null)
 const oddsDraft = ref({ target: '', odds: '', resets: '' })
 const fullscreenHuntId = ref<string | null>(null)
 const pipHuntId = ref<string | null>(null)
+const pipOverlay = ref(false)
 const pipWindow = ref<Window | null>(null)
 const pipCard = ref<HTMLElement | null>(null)
 const pipPlaceholder = ref<Comment | null>(null)
@@ -192,6 +193,8 @@ const restorePipCard = (closeWindow = false) => {
   if (pipCard.value && pipPlaceholder.value?.isConnected) {
     pipCard.value.classList.remove('pip-active')
     pipPlaceholder.value.replaceWith(pipCard.value)
+  } else {
+    pipCard.value?.classList.remove('pip-active', 'pip-overlay')
   }
 
   const activePipWindow = pipWindow.value
@@ -199,20 +202,25 @@ const restorePipCard = (closeWindow = false) => {
   pipPlaceholder.value = null
   pipWindow.value = null
   pipHuntId.value = null
+  pipOverlay.value = false
 
   if (closeWindow && activePipWindow && !activePipWindow.closed) {
     activePipWindow.close()
   }
 }
 
+const openPipOverlay = (card: HTMLElement, hunt: Hunt) => {
+  card.classList.add('pip-active', 'pip-overlay')
+  pipCard.value = card
+  pipHuntId.value = hunt.id
+  pipOverlay.value = true
+  error.value = ''
+}
+
 const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
   const api = (window as Window & {
     documentPictureInPicture?: DocumentPictureInPictureApi
   }).documentPictureInPicture
-  if (!api) {
-    error.value = 'Picture-in-Picture is not supported by this browser.'
-    return
-  }
 
   const button = event.currentTarget
   if (!(button instanceof HTMLElement)) {
@@ -222,6 +230,11 @@ const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
   const card = button.closest<HTMLElement>('.hunt-card')
   if (!card || !card.parentNode) {
     error.value = 'Unable to find the hunt card to pop out.'
+    return
+  }
+
+  if (!api) {
+    openPipOverlay(card, hunt)
     return
   }
 
@@ -242,10 +255,11 @@ const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
     pipCard.value = card
     pipPlaceholder.value = placeholder
     pipHuntId.value = hunt.id
+    pipOverlay.value = false
     error.value = ''
     pip.addEventListener('pagehide', () => restorePipCard(), { once: true })
-  } catch (err) {
-    error.value = `Unable to open Picture-in-Picture: ${err instanceof Error ? err.message : String(err)}`
+  } catch {
+    openPipOverlay(card, hunt)
   }
 }
 
@@ -970,6 +984,20 @@ button:focus-visible {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.hunt-card.pip-active.pip-overlay {
+  position: fixed;
+  z-index: 1000;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(420px, calc(100vw - 24px));
+  height: min(360px, calc(100dvh - 24px));
+  min-height: 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
 }
 
 .hunt-card.pip-active .hunt-heading {
