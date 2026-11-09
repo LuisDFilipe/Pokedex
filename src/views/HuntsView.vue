@@ -18,8 +18,16 @@ const hunts = ref<Hunt[]>([])
 const target = ref('')
 const error = ref('')
 const editingHuntId = ref<string | null>(null)
-const oddsDraft = ref({ odds: '', resets: '' })
+const oddsDraft = ref({ target: '', odds: '', resets: '' })
 const fullscreenHuntId = ref<string | null>(null)
+const pipHuntId = ref<string | null>(null)
+const pipWindow = ref<Window | null>(null)
+const pipCard = ref<HTMLElement | null>(null)
+const pipPlaceholder = ref<Comment | null>(null)
+
+type DocumentPictureInPictureApi = {
+  requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
+}
 
 const totalResets = computed(() => hunts.value.reduce((total, hunt) => total + hunt.resets, 0))
 
@@ -82,6 +90,7 @@ const changeResets = (hunt: Hunt, amount: number) => {
 const editOdds = (hunt: Hunt) => {
   editingHuntId.value = hunt.id
   oddsDraft.value = {
+    target: hunt.target,
     odds: String(hunt.odds ?? DEFAULT_ODDS),
     resets: String(hunt.resets),
   }
@@ -90,14 +99,23 @@ const editOdds = (hunt: Hunt) => {
 
 const cancelOddsEdit = () => {
   editingHuntId.value = null
-  oddsDraft.value = { odds: '', resets: '' }
+  oddsDraft.value = { target: '', odds: '', resets: '' }
 }
 
 const saveHuntEdit = (hunt: Hunt) => {
+  const huntTarget = oddsDraft.value.target.trim()
   const oddsInput = String(oddsDraft.value.odds).trim()
   const resetsInput = String(oddsDraft.value.resets).trim()
   const odds = Number(oddsInput)
   const resets = Number(resetsInput)
+  if (!huntTarget) {
+    error.value = 'Hunt name cannot be empty.'
+    return
+  }
+  if (huntTarget.length > 80) {
+    error.value = 'Hunt name must be 80 characters or fewer.'
+    return
+  }
   if (!oddsInput || !Number.isSafeInteger(odds) || odds < 1) {
     error.value = 'Odds must be a whole number greater than 0.'
     return
@@ -108,7 +126,7 @@ const saveHuntEdit = (hunt: Hunt) => {
   }
 
   const updatedHunts = hunts.value.map((current) =>
-    current.id === hunt.id ? { ...current, odds, resets } : current,
+    current.id === hunt.id ? { ...current, target: huntTarget, odds, resets } : current,
   )
   if (saveHunts(updatedHunts)) cancelOddsEdit()
 }
@@ -161,14 +179,77 @@ const toggleFullscreen = async (event: MouseEvent) => {
   }
 }
 
-const handleFullscreenClick = (hunt: Hunt, event: MouseEvent) => {
-  if (fullscreenHuntId.value !== hunt.id) return
+const handleHuntCardClick = (hunt: Hunt, event: MouseEvent) => {
+  if (fullscreenHuntId.value !== hunt.id && pipHuntId.value !== hunt.id) return
 
   const target = event.target
-  if (target instanceof Element && target.closest('.fullscreen-button')) return
+  if (target instanceof Element && target.closest('.fullscreen-button, .pip-exit-button')) return
 
   changeResets(hunt, 1)
 }
+
+const restorePipCard = (closeWindow = false) => {
+  if (pipCard.value && pipPlaceholder.value?.isConnected) {
+    pipCard.value.classList.remove('pip-active')
+    pipPlaceholder.value.replaceWith(pipCard.value)
+  }
+
+  const activePipWindow = pipWindow.value
+  pipCard.value = null
+  pipPlaceholder.value = null
+  pipWindow.value = null
+  pipHuntId.value = null
+
+  if (closeWindow && activePipWindow && !activePipWindow.closed) {
+    activePipWindow.close()
+  }
+}
+
+const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
+  const api = (window as Window & {
+    documentPictureInPicture?: DocumentPictureInPictureApi
+  }).documentPictureInPicture
+  if (!api) {
+    error.value = 'Picture-in-Picture is not supported by this browser.'
+    return
+  }
+
+  const button = event.currentTarget
+  if (!(button instanceof HTMLElement)) {
+    error.value = 'Unable to find the hunt card to pop out.'
+    return
+  }
+  const card = button.closest<HTMLElement>('.hunt-card')
+  if (!card || !card.parentNode) {
+    error.value = 'Unable to find the hunt card to pop out.'
+    return
+  }
+
+  try {
+    const pip = await api.requestWindow({ width: 420, height: 360 })
+    document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((stylesheet) => {
+      pip.document.head.append(stylesheet.cloneNode(true))
+    })
+
+    pip.document.documentElement.style.height = '100%'
+    pip.document.body.style.cssText = 'height:100%;margin:0;overflow:hidden;background:#000;'
+    const placeholder = document.createComment('hunt-picture-in-picture')
+    card.parentNode.insertBefore(placeholder, card)
+    card.classList.add('pip-active')
+    pip.document.body.append(card)
+
+    pipWindow.value = pip
+    pipCard.value = card
+    pipPlaceholder.value = placeholder
+    pipHuntId.value = hunt.id
+    error.value = ''
+    pip.addEventListener('pagehide', () => restorePipCard(), { once: true })
+  } catch (err) {
+    error.value = `Unable to open Picture-in-Picture: ${err instanceof Error ? err.message : String(err)}`
+  }
+}
+
+const closePictureInPicture = () => restorePipCard(true)
 
 const removeHunt = (hunt: Hunt) => {
   if (!window.confirm(`Remove the ${hunt.target} hunt and its reset count?`)) return
@@ -195,6 +276,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', updateFullscreenState)
+  restorePipCard(true)
 })
 </script>
 
@@ -238,7 +320,7 @@ onUnmounted(() => {
         class="hunt-card"
         :class="{ completed: hunt.completed }"
         :data-hunt-id="hunt.id"
-        @click="handleFullscreenClick(hunt, $event)"
+        @click="handleHuntCardClick(hunt, $event)"
       >
         <div class="hunt-heading">
           <div class="hunt-title">
@@ -287,7 +369,50 @@ onUnmounted(() => {
               </svg>
             </button>
             <button
-              v-if="!hunt.completed && fullscreenHuntId !== hunt.id"
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
+              type="button"
+              class="popout-button"
+              :aria-label="`Open ${hunt.target} hunt in Picture-in-Picture`"
+              title="Pop out hunt"
+              @click.stop="openPictureInPicture($event, hunt)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M13 12h6v5h-6z" />
+              </svg>
+            </button>
+            <button
+              v-if="pipHuntId === hunt.id"
+              type="button"
+              class="pip-exit-button"
+              :aria-label="`Close ${hunt.target} Picture-in-Picture window`"
+              title="Close pop-out"
+              @click.stop="closePictureInPicture"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m18 6-12 12M6 6l12 12" />
+              </svg>
+            </button>
+            <button
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               type="button"
               :class="editingHuntId === hunt.id ? 'save-edit-button' : 'edit-button'"
               :aria-label="editingHuntId === hunt.id ? `Save ${hunt.target} changes` : `Edit ${hunt.target} hunt`"
@@ -363,7 +488,7 @@ onUnmounted(() => {
               </svg>
             </button>
             <button
-              v-if="!hunt.completed && fullscreenHuntId !== hunt.id"
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               type="button"
               class="remove-button"
               :aria-label="`Remove ${hunt.target} hunt`"
@@ -409,6 +534,17 @@ onUnmounted(() => {
           @submit.prevent="saveHuntEdit(hunt)"
         >
           <div class="odds-fields">
+            <label class="hunt-name-field" :for="`target-${hunt.id}`">
+              <span>Hunt name</span>
+              <input
+                :id="`target-${hunt.id}`"
+                v-model="oddsDraft.target"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                required
+              >
+            </label>
             <label :for="`odds-${hunt.id}`">
               <span>Odds <small>(1 in N)</small></span>
               <input
@@ -441,7 +577,7 @@ onUnmounted(() => {
         <div class="hunt-progress">
           <div class="counter" :class="{ 'completed-counter': hunt.completed }">
             <button
-              v-if="!hunt.completed && fullscreenHuntId !== hunt.id"
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               type="button"
               class="counter-button"
               :aria-label="`Decrease ${hunt.target} reset count`"
@@ -451,7 +587,7 @@ onUnmounted(() => {
               −
             </button>
             <div
-              v-if="!hunt.completed && fullscreenHuntId !== hunt.id"
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               class="counter-value"
             >
               <strong>{{ hunt.resets.toLocaleString() }}</strong>
@@ -460,25 +596,25 @@ onUnmounted(() => {
             <div
               v-else
               class="counter-value"
-              :class="{ 'fullscreen-count': fullscreenHuntId === hunt.id }"
-              :role="fullscreenHuntId === hunt.id ? 'button' : undefined"
-              :tabindex="fullscreenHuntId === hunt.id ? 0 : undefined"
-              :aria-label="fullscreenHuntId === hunt.id ? `Add one encounter to ${hunt.target}` : undefined"
+              :class="{ 'fullscreen-count': fullscreenHuntId === hunt.id, 'pip-count': pipHuntId === hunt.id }"
+              :role="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? 'button' : undefined"
+              :tabindex="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? 0 : undefined"
+              :aria-label="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? `Add one encounter to ${hunt.target}` : undefined"
               aria-live="polite"
-              @keydown.enter.prevent="fullscreenHuntId === hunt.id && changeResets(hunt, 1)"
-              @keydown.space.prevent="fullscreenHuntId === hunt.id && changeResets(hunt, 1)"
+              @keydown.enter.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, 1)"
+              @keydown.space.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, 1)"
             >
               <strong>{{ hunt.resets.toLocaleString() }}</strong>
               <span>encounters</span>
             </div>
             <button
-              v-if="!hunt.completed && fullscreenHuntId !== hunt.id"
+              v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               type="button"
               class="counter-button increment"
               :aria-label="`Add a reset to ${hunt.target}`"
               @click="changeResets(hunt, 1)"
             >
-              +
+              <span class="increment-glyph" aria-hidden="true">+</span>
             </button>
           </div>
           <p v-if="!hunt.completed" class="cumulative-chance">
@@ -602,6 +738,7 @@ button:focus-visible {
 .primary-button,
 .edit-button,
 .save-edit-button,
+.popout-button,
 .remove-button,
 .cancel-button,
 .counter-button {
@@ -615,6 +752,7 @@ button:focus-visible {
 
 .edit-button,
 .save-edit-button,
+.popout-button,
 .remove-button {
   padding: 7px 10px;
   background: transparent;
@@ -630,6 +768,7 @@ button:focus-visible {
 
 .edit-button,
 .save-edit-button,
+.popout-button,
 .fullscreen-button,
 .complete-button,
 .reopen-button,
@@ -646,6 +785,7 @@ button:focus-visible {
 
 .edit-button svg,
 .save-edit-button svg,
+.popout-button svg,
 .fullscreen-button svg,
 .complete-button svg,
 .reopen-button svg,
@@ -662,6 +802,14 @@ button:focus-visible {
 
 .save-edit-button:hover {
   background: rgba(122, 199, 76, 0.14);
+}
+
+.popout-button {
+  color: #b7d8ff;
+}
+
+.popout-button:hover {
+  background: rgba(122, 175, 255, 0.12);
 }
 
 .primary-button {
@@ -799,6 +947,112 @@ button:focus-visible {
   font-size: 1.3em;
 }
 
+.hunt-card.pip-active {
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  grid-template-rows: auto 1fr;
+  gap: 18px;
+  padding: 18px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hunt-card.pip-active .hunt-heading {
+  position: relative;
+  grid-template-columns: 1fr;
+  align-items: center;
+  padding-right: 42px;
+}
+
+.hunt-card.pip-active .hunt-heading h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 8vw, 2rem);
+  text-align: center;
+}
+
+.hunt-card.pip-active .hunt-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.hunt-card.pip-active .hunt-actions > :not(.pip-exit-button),
+.hunt-card.pip-active .hunt-details,
+.hunt-card.pip-active .odds-editor,
+.hunt-card.pip-active .counter-button {
+  display: none;
+}
+
+.hunt-card.pip-active .pip-exit-button {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+}
+
+.hunt-card.pip-active .pip-exit-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hunt-card.pip-active .hunt-progress {
+  width: 100%;
+  min-height: 0;
+  align-content: center;
+  gap: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.hunt-card.pip-active .counter {
+  justify-content: center;
+}
+
+.hunt-card.pip-active .pip-count {
+  min-height: 0;
+  cursor: pointer;
+}
+
+.hunt-card.pip-active .counter-value strong {
+  font-size: clamp(3rem, 22vw, 6rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.hunt-card.pip-active .counter-value span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hunt-card.pip-active .cumulative-chance {
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.hunt-card.pip-active .cumulative-chance strong {
+  font-size: 1.2em;
+}
+
 .hunt-heading {
   display: grid;
   min-width: 0;
@@ -884,6 +1138,10 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.hunt-name-field {
+  grid-column: 1 / -1;
 }
 
 .odds-editor label {
@@ -977,11 +1235,16 @@ button:focus-visible {
 }
 
 .counter-button {
+  display: grid;
   width: 42px;
   height: 42px;
+  padding: 0;
+  place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   background: #292929;
   font-size: 1.4rem;
+  line-height: 1;
   transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1002,6 +1265,14 @@ button:focus-visible {
   color: #fff;
   font-size: 2rem;
   box-shadow: 0 4px 16px rgba(217, 67, 67, 0.24);
+}
+
+.increment-glyph {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-2px);
 }
 
 .counter-button.increment:hover {
