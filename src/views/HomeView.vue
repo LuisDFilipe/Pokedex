@@ -11,6 +11,11 @@ const quickLinks = [
     to: '/game',
   },
   {
+    title: 'Track your Hunts',
+    copy: 'Create and manage individual hunts, track resets and keep your progress organized.',
+    to: '/hunts',
+  },
+  {
     title: 'Check your stats',
     copy: 'See completion by generation, type coverage, and the next missing forms worth hunting.',
     to: '/stats',
