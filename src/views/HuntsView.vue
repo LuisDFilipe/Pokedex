@@ -569,7 +569,7 @@ onUnmounted(() => {
               class="fullscreen-button"
               :aria-label="fullscreenHuntId === hunt.id ? `Exit fullscreen for ${hunt.target}` : `Make ${hunt.target} fullscreen`"
               :title="fullscreenHuntId === hunt.id ? 'Exit fullscreen' : 'Fullscreen'"
-              @click="toggleFullscreen"
+              @click.stop="toggleFullscreen"
             >
               <svg
                 v-if="fullscreenHuntId === hunt.id"
