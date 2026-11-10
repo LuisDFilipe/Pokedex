@@ -106,7 +106,7 @@ const quickLinks = [
   margin-top: 10px;
   font-size: clamp(2rem, 4vw, 3.1rem);
   font-weight: 800;
-  max-width: 14ch;
+  /*max-width: 14ch;*/
 }
 
 .hero-copy {

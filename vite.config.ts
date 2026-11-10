@@ -53,7 +53,21 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,ts}'],
+        globIgnores: ['**/assets/*.png'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/.*\.png$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pokedex-sprites',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false
