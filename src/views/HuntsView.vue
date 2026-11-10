@@ -287,14 +287,14 @@ const syncScreenWakeLock = async () => {
   }
 }
 
-const updateFullscreenState = () => {
-  fullscreenHuntId.value = document.fullscreenElement
-    ?.closest<HTMLElement>('.hunt-card')
-    ?.dataset.huntId ?? null
+const handleFullscreenKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape' || !fullscreenHuntId.value) return
+
+  fullscreenHuntId.value = null
   void syncScreenWakeLock()
 }
 
-const toggleFullscreen = async (event: MouseEvent) => {
+const toggleFullscreen = (event: MouseEvent) => {
   const button = event.currentTarget
   if (!(button instanceof HTMLElement)) {
     error.value = 'Unable to find the hunt card to display fullscreen.'
@@ -307,15 +307,14 @@ const toggleFullscreen = async (event: MouseEvent) => {
   }
 
   error.value = ''
-  try {
-    if (document.fullscreenElement === card) {
-      await document.exitFullscreen()
-    } else {
-      await card.requestFullscreen()
-    }
-  } catch (err) {
-    error.value = `Unable to change fullscreen mode: ${err instanceof Error ? err.message : String(err)}`
+  const huntId = card.dataset.huntId
+  if (!huntId) {
+    error.value = 'Unable to find the hunt to display fullscreen.'
+    return
   }
+
+  fullscreenHuntId.value = fullscreenHuntId.value === huntId ? null : huntId
+  void syncScreenWakeLock()
 }
 
 const handleHuntCardClick = (hunt: Hunt, event: MouseEvent) => {
@@ -397,8 +396,8 @@ const removeHunt = (hunt: Hunt) => {
 }
 
 onMounted(() => {
-  document.addEventListener('fullscreenchange', updateFullscreenState)
   document.addEventListener('visibilitychange', syncScreenWakeLock)
+  document.addEventListener('keydown', handleFullscreenKeydown)
   dateRefreshTimer = setInterval(() => {
     todayKey.value = getLocalDateKey(new Date())
   }, 60_000)
@@ -420,8 +419,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (dateRefreshTimer) clearInterval(dateRefreshTimer)
-  document.removeEventListener('fullscreenchange', updateFullscreenState)
   document.removeEventListener('visibilitychange', syncScreenWakeLock)
+  document.removeEventListener('keydown', handleFullscreenKeydown)
   fullscreenHuntId.value = null
   restorePipCard(true)
   void syncScreenWakeLock()
@@ -459,7 +458,7 @@ onUnmounted(() => {
         v-for="hunt in sortedHunts"
         :key="hunt.id"
         class="hunt-card"
-        :class="{ completed: hunt.completed }"
+        :class="{ completed: hunt.completed, 'fullscreen-mode': fullscreenHuntId === hunt.id }"
         :data-hunt-id="hunt.id"
         @click="handleHuntCardClick(hunt, $event)"
       >
@@ -1005,7 +1004,11 @@ button:focus-visible {
   border-color: rgba(122, 199, 76, 0.4);
 }
 
-.hunt-card:fullscreen {
+.hunt-card:fullscreen,
+.hunt-card.fullscreen-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   box-sizing: border-box;
   display: grid;
   width: 100vw;
@@ -1026,39 +1029,47 @@ button:focus-visible {
 }
 
 .hunt-card:fullscreen,
-.hunt-card:fullscreen * {
+.hunt-card.fullscreen-mode,
+.hunt-card:fullscreen *,
+.hunt-card.fullscreen-mode * {
   -webkit-tap-highlight-color: transparent;
 }
 
-.hunt-card:fullscreen .hunt-heading {
+.hunt-card:fullscreen .hunt-heading,
+.hunt-card.fullscreen-mode .hunt-heading {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 24px;
 }
 
-.hunt-card:fullscreen .hunt-heading h3 {
+.hunt-card:fullscreen .hunt-heading h3,
+.hunt-card.fullscreen-mode .hunt-heading h3 {
   margin: 0;
   font-size: clamp(2.5rem, 8vw, 6rem);
   letter-spacing: -0.04em;
   line-height: 1;
 }
 
-.hunt-card:fullscreen .hunt-actions {
+.hunt-card:fullscreen .hunt-actions,
+.hunt-card.fullscreen-mode .hunt-actions {
   justify-content: flex-end;
   gap: 10px;
 }
 
-.hunt-card:fullscreen .hunt-actions button {
+.hunt-card:fullscreen .hunt-actions button,
+.hunt-card.fullscreen-mode .hunt-actions button {
   width: 48px;
   height: 48px;
 }
 
-.hunt-card:fullscreen .hunt-actions svg {
+.hunt-card:fullscreen .hunt-actions svg,
+.hunt-card.fullscreen-mode .hunt-actions svg {
   width: 22px;
   height: 22px;
 }
 
-.hunt-card:fullscreen .hunt-progress {
+.hunt-card:fullscreen .hunt-progress,
+.hunt-card.fullscreen-mode .hunt-progress {
   width: min(100%, 900px);
   min-height: 0;
   justify-self: center;
@@ -1071,12 +1082,14 @@ button:focus-visible {
   background: transparent;
 }
 
-.hunt-card:fullscreen .counter {
+.hunt-card:fullscreen .counter,
+.hunt-card.fullscreen-mode .counter {
   justify-content: center;
   gap: clamp(20px, 6vw, 80px);
 }
 
-.hunt-card:fullscreen .counter-button {
+.hunt-card:fullscreen .counter-button,
+.hunt-card.fullscreen-mode .counter-button {
   width: clamp(56px, 8vw, 84px);
   height: clamp(56px, 8vw, 84px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1084,18 +1097,21 @@ button:focus-visible {
   font-size: 2rem;
 }
 
-.hunt-card:fullscreen .fullscreen-count {
+.hunt-card:fullscreen .fullscreen-count,
+.hunt-card.fullscreen-mode .fullscreen-count {
   min-height: 180px;
   user-select: none;
 }
 
-.hunt-card:fullscreen .counter-button.increment {
+.hunt-card:fullscreen .counter-button.increment,
+.hunt-card.fullscreen-mode .counter-button.increment {
   width: clamp(72px, 10vw, 104px);
   height: clamp(72px, 10vw, 104px);
   font-size: 2.8rem;
 }
 
-.hunt-card:fullscreen .counter-value strong {
+.hunt-card:fullscreen .counter-value strong,
+.hunt-card.fullscreen-mode .counter-value strong {
   max-width: 100%;
   font-size: clamp(2rem, min(27vw, 42vh), 12rem);
   font-weight: 900;
@@ -1103,20 +1119,23 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.hunt-card:fullscreen .counter-value span {
+.hunt-card:fullscreen .counter-value span,
+.hunt-card.fullscreen-mode .counter-value span {
   margin-top: 8px;
   font-size: clamp(1rem, 2vw, 1.4rem);
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
-.hunt-card:fullscreen .cumulative-chance {
+.hunt-card:fullscreen .cumulative-chance,
+.hunt-card.fullscreen-mode .cumulative-chance {
   justify-content: center;
   gap: 12px;
   font-size: clamp(1rem, 2vw, 1.35rem);
 }
 
-.hunt-card:fullscreen .cumulative-chance strong {
+.hunt-card:fullscreen .cumulative-chance strong,
+.hunt-card.fullscreen-mode .cumulative-chance strong {
   font-size: 1.3em;
 }
 
@@ -1561,46 +1580,55 @@ button:focus-visible {
     white-space: nowrap;
   }
 
-  .hunt-card:fullscreen {
+  .hunt-card:fullscreen,
+  .hunt-card.fullscreen-mode {
     gap: 20px;
     padding: 20px;
   }
 
-  .hunt-card:fullscreen .hunt-heading {
+  .hunt-card:fullscreen .hunt-heading,
+  .hunt-card.fullscreen-mode .hunt-heading {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
   }
 
-  .hunt-card:fullscreen .hunt-heading h3 {
+  .hunt-card:fullscreen .hunt-heading h3,
+  .hunt-card.fullscreen-mode .hunt-heading h3 {
     font-size: clamp(1.35rem, 7vw, 2.25rem);
   }
 
-  .hunt-card:fullscreen .hunt-actions {
+  .hunt-card:fullscreen .hunt-actions,
+  .hunt-card.fullscreen-mode .hunt-actions {
     gap: 4px;
   }
 
-  .hunt-card:fullscreen .hunt-actions button {
+  .hunt-card:fullscreen .hunt-actions button,
+  .hunt-card.fullscreen-mode .hunt-actions button {
     width: 40px;
     height: 40px;
   }
 
-  .hunt-card:fullscreen .hunt-progress {
+  .hunt-card:fullscreen .hunt-progress,
+  .hunt-card.fullscreen-mode .hunt-progress {
     gap: 24px;
     padding: 20px 12px;
     border-radius: 20px;
   }
 
-  .hunt-card:fullscreen .counter {
+  .hunt-card:fullscreen .counter,
+  .hunt-card.fullscreen-mode .counter {
     gap: 12px;
   }
 
-  .hunt-card:fullscreen .counter-button {
+  .hunt-card:fullscreen .counter-button,
+  .hunt-card.fullscreen-mode .counter-button {
     width: 48px;
     height: 48px;
     border-radius: 15px;
   }
 
-  .hunt-card:fullscreen .counter-button.increment {
+  .hunt-card:fullscreen .counter-button.increment,
+  .hunt-card.fullscreen-mode .counter-button.increment {
     width: 64px;
     height: 64px;
     font-size: 2rem;
@@ -1620,7 +1648,8 @@ button:focus-visible {
 }
 
 @media (max-height: 480px), (max-width: 320px) {
-  .hunt-card:fullscreen {
+  .hunt-card:fullscreen,
+  .hunt-card.fullscreen-mode {
     grid-template-rows: 1fr;
     gap: 0;
     padding: 8px;
@@ -1628,21 +1657,27 @@ button:focus-visible {
   }
 
   .hunt-card:fullscreen .hunt-heading,
+  .hunt-card.fullscreen-mode .hunt-heading,
   .hunt-card:fullscreen .counter-value span,
-  .hunt-card:fullscreen .cumulative-chance {
+  .hunt-card.fullscreen-mode .counter-value span,
+  .hunt-card:fullscreen .cumulative-chance,
+  .hunt-card.fullscreen-mode .cumulative-chance {
     display: none;
   }
 
-  .hunt-card:fullscreen .hunt-progress {
+  .hunt-card:fullscreen .hunt-progress,
+  .hunt-card.fullscreen-mode .hunt-progress {
     width: 100%;
     padding: 0;
   }
 
-  .hunt-card:fullscreen .fullscreen-count {
+  .hunt-card:fullscreen .fullscreen-count,
+  .hunt-card.fullscreen-mode .fullscreen-count {
     min-height: 0;
   }
 
-  .hunt-card:fullscreen .counter {
+  .hunt-card:fullscreen .counter,
+  .hunt-card.fullscreen-mode .counter {
     gap: 0;
   }
 }
