@@ -6,6 +6,8 @@ interface Hunt {
   target: string
   resets: number
   createdAt: string
+  updatedAt?: string
+  dailyResets?: Record<string, number>
   odds?: number
   completed?: boolean
   completedAt?: string
@@ -13,12 +15,15 @@ interface Hunt {
 
 const STORAGE_KEY = 'pokedex-hunts'
 const DEFAULT_ODDS = 4096
+const getLocalDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 const hunts = ref<Hunt[]>([])
+const todayKey = ref(getLocalDateKey(new Date()))
 const target = ref('')
 const error = ref('')
 const editingHuntId = ref<string | null>(null)
-const oddsDraft = ref({ target: '', odds: '', resets: '' })
+const oddsDraft = ref({ target: '', odds: '', resets: '', startDate: '' })
 const fullscreenHuntId = ref<string | null>(null)
 const pipHuntId = ref<string | null>(null)
 const pipWindow = ref<Window | null>(null)
@@ -26,12 +31,36 @@ const pipCard = ref<HTMLElement | null>(null)
 const pipPlaceholder = ref<Comment | null>(null)
 const screenWakeLock = ref<WakeLockSentinel | null>(null)
 let wakeLockRequestId = 0
+let dateRefreshTimer: ReturnType<typeof setInterval> | undefined
 
 type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
 }
 
 const totalResets = computed(() => hunts.value.reduce((total, hunt) => total + hunt.resets, 0))
+const getAverageEncountersPerDay = (hunt: Hunt) => {
+  const startedAt = new Date(hunt.createdAt)
+  if (Number.isNaN(startedAt.getTime())) return 0
+
+  const endDate = hunt.completed && hunt.completedAt
+    ? new Date(hunt.completedAt)
+    : new Date(`${todayKey.value}T00:00:00`)
+  if (Number.isNaN(endDate.getTime())) return 0
+
+  const startDay = Date.UTC(startedAt.getFullYear(), startedAt.getMonth(), startedAt.getDate())
+  const endDay = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+  const activeDays = Math.max(1, Math.floor((endDay - startDay) / 86_400_000) + 1)
+  return hunt.resets / activeDays
+}
+const sortedHunts = computed(() =>
+  [...hunts.value].sort((a, b) => {
+    if (Boolean(a.completed) !== Boolean(b.completed)) {
+      return Number(Boolean(a.completed)) - Number(Boolean(b.completed))
+    }
+
+    return Date.parse(b.updatedAt ?? b.createdAt) - Date.parse(a.updatedAt ?? a.createdAt)
+  }),
+)
 
 const isHunt = (value: unknown): value is Hunt =>
   typeof value === 'object'
@@ -46,15 +75,42 @@ const isHunt = (value: unknown): value is Hunt =>
   && value.resets >= 0
   && 'createdAt' in value
   && typeof value.createdAt === 'string'
+  && (!('updatedAt' in value) || typeof value.updatedAt === 'string')
+  && (!('dailyResets' in value)
+    || (typeof value.dailyResets === 'object'
+      && value.dailyResets !== null
+      && !Array.isArray(value.dailyResets)
+      && Object.entries(value.dailyResets).every(([date, count]) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(date)
+        && typeof count === 'number'
+        && Number.isSafeInteger(count)
+        && count >= 0)))
   && (!('odds' in value)
     || (typeof value.odds === 'number' && Number.isSafeInteger(value.odds) && value.odds > 0))
   && (!('completed' in value) || typeof value.completed === 'boolean')
   && (!('completedAt' in value) || typeof value.completedAt === 'string')
 
 const saveHunts = (updatedHunts: Hunt[]) => {
+  const timestamp = new Date().toISOString()
+  const huntsWithUpdateTimes = updatedHunts.map((hunt) => {
+    const previous = hunts.value.find((current) => current.id === hunt.id)
+    if (!previous) {
+      return { ...hunt, updatedAt: hunt.updatedAt ?? hunt.createdAt }
+    }
+
+    const changed = hunt.target !== previous.target
+      || hunt.resets !== previous.resets
+      || JSON.stringify(hunt.dailyResets ?? {}) !== JSON.stringify(previous.dailyResets ?? {})
+      || hunt.odds !== previous.odds
+      || hunt.completed !== previous.completed
+      || hunt.completedAt !== previous.completedAt
+
+    return changed ? { ...hunt, updatedAt: timestamp } : hunt
+  })
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHunts))
-    hunts.value = updatedHunts
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(huntsWithUpdateTimes))
+    hunts.value = huntsWithUpdateTimes
     error.value = ''
     return true
   } catch (err) {
@@ -72,6 +128,7 @@ const addHunt = () => {
     target: huntTarget,
     resets: 0,
     createdAt: new Date().toISOString(),
+    dailyResets: {},
     odds: DEFAULT_ODDS,
   }
 
@@ -82,9 +139,24 @@ const addHunt = () => {
 
 const changeResets = (hunt: Hunt, amount: number) => {
   const updatedHunts = hunts.value.map((current) =>
-    current.id === hunt.id
-      ? { ...current, resets: Math.max(0, current.resets + amount) }
-      : current,
+    {
+      if (current.id !== hunt.id) return current
+
+      const dailyResets = { ...current.dailyResets }
+      const todayCount = dailyResets[todayKey.value] ?? 0
+      const nextTodayCount = amount > 0 ? todayCount + amount : Math.max(0, todayCount + amount)
+      if (nextTodayCount > 0) {
+        dailyResets[todayKey.value] = nextTodayCount
+      } else {
+        delete dailyResets[todayKey.value]
+      }
+
+      return {
+        ...current,
+        resets: Math.max(0, current.resets + amount),
+        dailyResets,
+      }
+    },
   )
   saveHunts(updatedHunts)
 }
@@ -95,19 +167,21 @@ const editOdds = (hunt: Hunt) => {
     target: hunt.target,
     odds: String(hunt.odds ?? DEFAULT_ODDS),
     resets: String(hunt.resets),
+    startDate: getLocalDateKey(new Date(hunt.createdAt)),
   }
   error.value = ''
 }
 
 const cancelOddsEdit = () => {
   editingHuntId.value = null
-  oddsDraft.value = { target: '', odds: '', resets: '' }
+  oddsDraft.value = { target: '', odds: '', resets: '', startDate: '' }
 }
 
 const saveHuntEdit = (hunt: Hunt) => {
   const huntTarget = oddsDraft.value.target.trim()
   const oddsInput = String(oddsDraft.value.odds).trim()
   const resetsInput = String(oddsDraft.value.resets).trim()
+  const startDateInput = oddsDraft.value.startDate
   const odds = Number(oddsInput)
   const resets = Number(resetsInput)
   if (!huntTarget) {
@@ -126,9 +200,28 @@ const saveHuntEdit = (hunt: Hunt) => {
     error.value = 'Encounters must be a whole number greater than or equal to 0.'
     return
   }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDateInput)) {
+    error.value = 'Enter a valid hunt start date.'
+    return
+  }
+  const dateParts = startDateInput.split('-')
+  const year = Number(dateParts[0])
+  const month = Number(dateParts[1])
+  const day = Number(dateParts[2])
+  const startDate = new Date(year, month - 1, day, 12)
+  if (getLocalDateKey(startDate) !== startDateInput) {
+    error.value = 'Enter a valid hunt start date.'
+    return
+  }
+  if (startDateInput > todayKey.value) {
+    error.value = 'Hunt start date cannot be in the future.'
+    return
+  }
 
   const updatedHunts = hunts.value.map((current) =>
-    current.id === hunt.id ? { ...current, target: huntTarget, odds, resets } : current,
+    current.id === hunt.id
+      ? { ...current, target: huntTarget, odds, resets, createdAt: startDate.toISOString() }
+      : current,
   )
   if (saveHunts(updatedHunts)) cancelOddsEdit()
 }
@@ -306,6 +399,9 @@ const removeHunt = (hunt: Hunt) => {
 onMounted(() => {
   document.addEventListener('fullscreenchange', updateFullscreenState)
   document.addEventListener('visibilitychange', syncScreenWakeLock)
+  dateRefreshTimer = setInterval(() => {
+    todayKey.value = getLocalDateKey(new Date())
+  }, 60_000)
 
   try {
     const storedValue = localStorage.getItem(STORAGE_KEY)
@@ -323,6 +419,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (dateRefreshTimer) clearInterval(dateRefreshTimer)
   document.removeEventListener('fullscreenchange', updateFullscreenState)
   document.removeEventListener('visibilitychange', syncScreenWakeLock)
   fullscreenHuntId.value = null
@@ -337,26 +434,19 @@ onUnmounted(() => {
       <div>
         <p class="eyebrow">Hunt tracker</p>
         <h2>Every reset brings you closer</h2>
-        <p class="hero-copy">Keep a separate counter for each hunt. Your hunts are saved in this browser.</p>
-      </div>
-      <div class="total-card" aria-live="polite">
-        <span class="total-label">Total resets</span>
-        <strong>{{ totalResets.toLocaleString() }}</strong>
-        <span class="total-helper">across {{ hunts.length }} {{ hunts.length === 1 ? 'hunt' : 'hunts' }}</span>
       </div>
     </header>
 
     <p v-if="error" class="status error" role="alert">{{ error }}</p>
 
     <form class="add-hunt panel" @submit.prevent="addHunt">
-      <label for="hunt-target">What are you hunting?</label>
       <div class="add-controls">
         <input
           id="hunt-target"
           v-model="target"
           type="text"
           maxlength="80"
-          placeholder="e.g. Mewtwo"
+          placeholder="What are we hunting?"
           autocomplete="off"
           required
         >
@@ -366,7 +456,7 @@ onUnmounted(() => {
 
     <div v-if="hunts.length" class="hunt-grid">
       <article
-        v-for="hunt in hunts"
+        v-for="hunt in sortedHunts"
         :key="hunt.id"
         class="hunt-card"
         :class="{ completed: hunt.completed }"
@@ -596,6 +686,16 @@ onUnmounted(() => {
                 required
               >
             </label>
+            <label class="hunt-start-date-field" :for="`start-date-${hunt.id}`">
+              <span>Start date</span>
+              <input
+                :id="`start-date-${hunt.id}`"
+                v-model="oddsDraft.startDate"
+                type="date"
+                :max="todayKey"
+                required
+              >
+            </label>
             <label :for="`odds-${hunt.id}`">
               <span>Odds <small>(1 in N)</small></span>
               <input
@@ -671,6 +771,16 @@ onUnmounted(() => {
           <p v-if="!hunt.completed" class="cumulative-chance">
             Cumulative chance <strong>{{ cumulativeChance(hunt).toLocaleString(undefined, { maximumFractionDigits: 2 }) }}%</strong>
           </p>
+          <div v-if="fullscreenHuntId === hunt.id" class="fullscreen-daily-stats">
+            <div>
+              <span>Encounters today</span>
+              <strong>{{ (hunt.dailyResets?.[todayKey] ?? 0).toLocaleString() }}</strong>
+            </div>
+            <div>
+              <span>Average per day</span>
+              <strong>{{ getAverageEncountersPerDay(hunt).toLocaleString(undefined, { maximumFractionDigits: 1 }) }}</strong>
+            </div>
+          </div>
         </div>
       </article>
     </div>
@@ -758,9 +868,13 @@ onUnmounted(() => {
   padding: 18px;
 }
 
+.add-hunt {
+  padding: 12px 16px;
+}
+
 .add-hunt label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   font-weight: 700;
 }
 
@@ -772,7 +886,7 @@ onUnmounted(() => {
 .add-controls input {
   flex: 1;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 8px 12px;
   border: 1px solid #3b3b3b;
   border-radius: 10px;
   background: #101010;
@@ -864,6 +978,7 @@ button:focus-visible {
 }
 
 .primary-button {
+  min-height: 40px;
   padding: 0 20px;
   background: #d94343;
 }
@@ -1003,6 +1118,33 @@ button:focus-visible {
 
 .hunt-card:fullscreen .cumulative-chance strong {
   font-size: 1.3em;
+}
+
+.fullscreen-daily-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: min(100%, 620px);
+  justify-self: center;
+  text-align: center;
+}
+
+.fullscreen-daily-stats div {
+  display: grid;
+  gap: 6px;
+}
+
+.fullscreen-daily-stats span {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: clamp(0.8rem, 1.8vw, 1rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fullscreen-daily-stats strong {
+  color: #ffcf5c;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-variant-numeric: tabular-nums;
 }
 
 .hunt-card.pip-active {
@@ -1411,11 +1553,12 @@ button:focus-visible {
   }
 
   .add-controls {
-    flex-direction: column;
+    align-items: stretch;
   }
 
   .primary-button {
-    padding: 12px;
+    padding: 0 12px;
+    white-space: nowrap;
   }
 
   .hunt-card:fullscreen {
@@ -1463,6 +1606,17 @@ button:focus-visible {
     font-size: 2rem;
   }
 
+}
+
+@media (max-width: 360px) {
+  .add-controls {
+    flex-direction: column;
+  }
+
+  .primary-button {
+    min-height: 40px;
+    padding: 0 12px;
+  }
 }
 
 @media (max-height: 480px), (max-width: 320px) {
