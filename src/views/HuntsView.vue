@@ -1088,9 +1088,11 @@ button:focus-visible {
 }
 
 .hunt-card:fullscreen .counter-value strong {
-  font-size: clamp(4rem, 16vw, 11rem);
+  max-width: 100%;
+  font-size: clamp(2rem, min(27vw, 42vh), 12rem);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .hunt-card:fullscreen .counter-value span {
@@ -1590,9 +1592,34 @@ button:focus-visible {
     font-size: 2rem;
   }
 
-  .hunt-card:fullscreen .counter-value strong {
-    font-size: clamp(4.5rem, 27vw, 12rem);
+}
+
+@media (max-height: 480px), (max-width: 320px) {
+  .hunt-card:fullscreen {
+    grid-template-rows: 1fr;
+    gap: 0;
+    padding: 8px;
+    overflow: hidden;
   }
 
+  .hunt-card:fullscreen .hunt-heading,
+  .hunt-card:fullscreen .counter-value span,
+  .hunt-card:fullscreen .cumulative-chance {
+    display: none;
+  }
+
+  .hunt-card:fullscreen .hunt-progress {
+    width: 100%;
+    padding: 0;
+  }
+
+  .hunt-card:fullscreen .fullscreen-count {
+    min-height: 0;
+  }
+
+  .hunt-card:fullscreen .counter {
+    gap: 0;
+  }
 }
+
 </style>
