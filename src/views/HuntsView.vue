@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { loadPokedex } from '@/lib/pokedex'
+import type { PokemonEntry, PokemonForm } from '@/types/pokedex'
 
 interface Hunt {
   id: string
   target: string
+  sprite?: string | null
   resets: number
   createdAt: string
   updatedAt?: string
@@ -15,15 +18,18 @@ interface Hunt {
 
 const STORAGE_KEY = 'pokedex-hunts'
 const DEFAULT_ODDS = 4096
+const NO_SPRITE = '__no_sprite__'
 const getLocalDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 const hunts = ref<Hunt[]>([])
+const pokemonEntries = ref<PokemonEntry[]>([])
+const spritesByHuntName = ref<Record<string, string>>({})
 const todayKey = ref(getLocalDateKey(new Date()))
 const target = ref('')
 const error = ref('')
 const editingHuntId = ref<string | null>(null)
-const oddsDraft = ref({ target: '', odds: '', resets: '', startDate: '' })
+const oddsDraft = ref({ target: '', sprite: '', odds: '', resets: '', startDate: '' })
 const fullscreenHuntId = ref<string | null>(null)
 const pipHuntId = ref<string | null>(null)
 const pipWindow = ref<Window | null>(null)
@@ -32,6 +38,71 @@ const pipPlaceholder = ref<Comment | null>(null)
 const screenWakeLock = ref<WakeLockSentinel | null>(null)
 let wakeLockRequestId = 0
 let dateRefreshTimer: ReturnType<typeof setInterval> | undefined
+
+const normalSprites = import.meta.glob('../../sprites/pokemon/normal/*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+const normalSpriteMap = Object.fromEntries(
+  Object.entries(normalSprites).map(([path, url]) => [
+    path.split('/').pop()?.replace('.png', '') ?? '',
+    url,
+  ]),
+)
+const normalizePokemonName = (name: string) =>
+  name.trim().toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const getPokemonForHunt = (name: string) => {
+  const findPokemon = (normalizedName: string) => pokemonEntries.value.find((pokemon) =>
+    normalizePokemonName(pokemon.name) === normalizedName
+    || pokemon.forms.some((form) => normalizePokemonName(form.name) === normalizedName),
+  )
+  const normalizedName = normalizePokemonName(name)
+  const exactMatch = findPokemon(normalizedName)
+  if (exactMatch) return exactMatch
+
+  const firstName = name.trim().split(/\s+/, 1)[0]
+  return firstName ? findPokemon(normalizePokemonName(firstName)) : undefined
+}
+const getHuntSpriteOptions = (name: string) => {
+  const pokemon = getPokemonForHunt(name)
+  if (!pokemon) return []
+
+  const seenSprites = new Set<string>()
+  return pokemon.forms.filter((form) => {
+    if (!normalSpriteMap[form.sprite] || seenSprites.has(form.sprite)) return false
+    seenSprites.add(form.sprite)
+    return true
+  })
+}
+const getSpriteOptionLabel = (form: PokemonForm) =>
+  [form.name, form.form, form.region, form.gender, form.sprite].filter(Boolean).join(' · ')
+const getHuntSprite = (hunt: Hunt) => {
+  if (hunt.sprite === null) return ''
+
+  return (hunt.sprite ? normalSpriteMap[hunt.sprite] : undefined)
+    ?? spritesByHuntName.value[normalizePokemonName(
+      getPokemonForHunt(hunt.target)?.name ?? hunt.target,
+    )]
+    ?? ''
+}
+const createHuntSpriteLookup = (pokemon: PokemonEntry[]) => {
+  const lookup: Record<string, string> = {}
+
+  for (const entry of pokemon) {
+    const baseForm = entry.forms[0]
+    const baseSprite = baseForm ? normalSpriteMap[baseForm.sprite] : undefined
+    if (baseSprite) lookup[normalizePokemonName(entry.name)] = baseSprite
+
+    for (const form of entry.forms) {
+      const sprite = normalSpriteMap[form.sprite]
+      const name = normalizePokemonName(form.name)
+      if (sprite && name && !lookup[name]) lookup[name] = sprite
+    }
+  }
+
+  return lookup
+}
 
 type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
@@ -69,6 +140,7 @@ const isHunt = (value: unknown): value is Hunt =>
   && typeof value.id === 'string'
   && 'target' in value
   && typeof value.target === 'string'
+  && (!('sprite' in value) || typeof value.sprite === 'string' || value.sprite === null)
   && 'resets' in value
   && typeof value.resets === 'number'
   && Number.isSafeInteger(value.resets)
@@ -99,6 +171,7 @@ const saveHunts = (updatedHunts: Hunt[]) => {
     }
 
     const changed = hunt.target !== previous.target
+      || hunt.sprite !== previous.sprite
       || hunt.resets !== previous.resets
       || JSON.stringify(hunt.dailyResets ?? {}) !== JSON.stringify(previous.dailyResets ?? {})
       || hunt.odds !== previous.odds
@@ -165,6 +238,7 @@ const editOdds = (hunt: Hunt) => {
   editingHuntId.value = hunt.id
   oddsDraft.value = {
     target: hunt.target,
+    sprite: hunt.sprite ?? '',
     odds: String(hunt.odds ?? DEFAULT_ODDS),
     resets: String(hunt.resets),
     startDate: getLocalDateKey(new Date(hunt.createdAt)),
@@ -174,7 +248,7 @@ const editOdds = (hunt: Hunt) => {
 
 const cancelOddsEdit = () => {
   editingHuntId.value = null
-  oddsDraft.value = { target: '', odds: '', resets: '', startDate: '' }
+  oddsDraft.value = { target: '', sprite: '', odds: '', resets: '', startDate: '' }
 }
 
 const saveHuntEdit = (hunt: Hunt) => {
@@ -182,14 +256,20 @@ const saveHuntEdit = (hunt: Hunt) => {
   const oddsInput = String(oddsDraft.value.odds).trim()
   const resetsInput = String(oddsDraft.value.resets).trim()
   const startDateInput = oddsDraft.value.startDate
+  const sprite = oddsDraft.value.sprite === NO_SPRITE
+    ? null
+    : getHuntSpriteOptions(huntTarget)
+      .some((form) => form.sprite === oddsDraft.value.sprite)
+      ? oddsDraft.value.sprite || undefined
+      : undefined
   const odds = Number(oddsInput)
   const resets = Number(resetsInput)
   if (!huntTarget) {
-    error.value = 'Hunt name cannot be empty.'
+    error.value = 'Target\'s name cannot be empty.'
     return
   }
   if (huntTarget.length > 80) {
-    error.value = 'Hunt name must be 80 characters or fewer.'
+    error.value = 'Target\'s name must be 80 characters or fewer.'
     return
   }
   if (!oddsInput || !Number.isSafeInteger(odds) || odds < 1) {
@@ -220,7 +300,7 @@ const saveHuntEdit = (hunt: Hunt) => {
 
   const updatedHunts = hunts.value.map((current) =>
     current.id === hunt.id
-      ? { ...current, target: huntTarget, odds, resets, createdAt: startDate.toISOString() }
+      ? { ...current, target: huntTarget, sprite, odds, resets, createdAt: startDate.toISOString() }
       : current,
   )
   if (saveHunts(updatedHunts)) cancelOddsEdit()
@@ -395,7 +475,7 @@ const removeHunt = (hunt: Hunt) => {
   saveHunts(hunts.value.filter((current) => current.id !== hunt.id))
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('visibilitychange', syncScreenWakeLock)
   document.addEventListener('keydown', handleFullscreenKeydown)
   dateRefreshTimer = setInterval(() => {
@@ -404,16 +484,24 @@ onMounted(() => {
 
   try {
     const storedValue = localStorage.getItem(STORAGE_KEY)
-    if (!storedValue) return
+    if (storedValue) {
+      const parsed: unknown = JSON.parse(storedValue)
+      if (!Array.isArray(parsed) || !parsed.every(isHunt)) {
+        throw new Error('Saved hunt data is invalid.')
+      }
 
-    const parsed: unknown = JSON.parse(storedValue)
-    if (!Array.isArray(parsed) || !parsed.every(isHunt)) {
-      throw new Error('Saved hunt data is invalid.')
+      hunts.value = parsed
     }
-
-    hunts.value = parsed
   } catch (err) {
     error.value = `Unable to load hunts: ${err instanceof Error ? err.message : String(err)}`
+  }
+
+  try {
+    pokemonEntries.value = await loadPokedex()
+    spritesByHuntName.value = createHuntSpriteLookup(pokemonEntries.value)
+  } catch (err) {
+    const message = `Unable to load Pokémon sprites: ${err instanceof Error ? err.message : String(err)}`
+    error.value = error.value ? `${error.value} ${message}` : message
   }
 })
 
@@ -462,6 +550,14 @@ onUnmounted(() => {
         :data-hunt-id="hunt.id"
         @click="handleHuntCardClick(hunt, $event)"
       >
+        <img
+          v-if="getHuntSprite(hunt)"
+          class="hunt-sprite-watermark"
+          :src="getHuntSprite(hunt)"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        >
         <div class="hunt-heading">
           <div class="hunt-title">
             <h3>{{ hunt.target }}</h3>
@@ -674,8 +770,26 @@ onUnmounted(() => {
           @submit.prevent="saveHuntEdit(hunt)"
         >
           <div class="odds-fields">
+            <label
+              v-if="getHuntSpriteOptions(oddsDraft.target).length"
+              class="hunt-sprite-field"
+              :for="`sprite-${hunt.id}`"
+            >
+              <span>Sprite</span>
+              <select :id="`sprite-${hunt.id}`" v-model="oddsDraft.sprite">
+                <option value="">Automatic</option>
+                <option :value="NO_SPRITE">No background image</option>
+                <option
+                  v-for="form in getHuntSpriteOptions(oddsDraft.target)"
+                  :key="form.sprite"
+                  :value="form.sprite"
+                >
+                  {{ getSpriteOptionLabel(form) }}
+                </option>
+              </select>
+            </label>
             <label class="hunt-name-field" :for="`target-${hunt.id}`">
-              <span>Hunt name</span>
+              <span>Target</span>
               <input
                 :id="`target-${hunt.id}`"
                 v-model="oddsDraft.target"
@@ -720,8 +834,10 @@ onUnmounted(() => {
               >
             </label>
           </div>
-          <button type="submit" class="visually-hidden-submit" tabindex="-1" aria-hidden="true"></button>
-          <button type="button" class="cancel-button" @click="cancelOddsEdit">Cancel</button>
+          <div class="editor-actions">
+            <button type="button" class="cancel-button" @click="cancelOddsEdit">Cancel</button>
+            <button type="submit" class="save-edit-form-button">Save</button>
+          </div>
         </form>
 
         <div class="hunt-progress">
@@ -993,11 +1109,33 @@ button:focus-visible {
 }
 
 .hunt-card {
+  position: relative;
+  isolation: isolate;
   display: grid;
   min-width: 0;
   align-content: start;
   gap: 12px;
   padding: 16px;
+  overflow: hidden;
+}
+
+.hunt-card > :not(.hunt-sprite-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+.hunt-sprite-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 12px;
+  width: min(48%, 150px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: 0.2;
+  filter: grayscale(1) brightness(0.55) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 
 .hunt-card.completed {
@@ -1034,6 +1172,13 @@ button:focus-visible {
 .hunt-card:fullscreen *,
 .hunt-card.fullscreen-mode * {
   -webkit-tap-highlight-color: transparent;
+}
+
+.hunt-card:fullscreen .hunt-sprite-watermark,
+.hunt-card.fullscreen-mode .hunt-sprite-watermark {
+  right: 5vw;
+  width: min(65vw, 65vh, 620px);
+  opacity: 0.16;
 }
 
 .hunt-card:fullscreen .hunt-heading,
@@ -1364,6 +1509,10 @@ button:focus-visible {
   grid-column: 1 / -1;
 }
 
+.hunt-sprite-field {
+  grid-column: 1 / -1;
+}
+
 .odds-editor label {
   display: grid;
   min-width: 0;
@@ -1376,7 +1525,8 @@ button:focus-visible {
   font-weight: 700;
 }
 
-.odds-editor input {
+.odds-editor input,
+.odds-editor select {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -1393,16 +1543,15 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-.visually-hidden-submit {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.odds-editor select:focus-visible {
+  outline: 2px solid #ffcf5c;
+  outline-offset: 2px;
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .odds-summary,
@@ -1418,7 +1567,6 @@ button:focus-visible {
 
 .cancel-button {
   padding: 0 12px;
-  justify-self: end;
   min-height: 34px;
 }
 
@@ -1428,6 +1576,22 @@ button:focus-visible {
 
 .cancel-button:hover {
   background: #3a3a3a;
+}
+
+.save-edit-form-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #2f7d4f;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save-edit-form-button:hover {
+  background: #3b9862;
 }
 
 .started-date {
