@@ -469,7 +469,6 @@ onMounted(async () => {
   width: 78%;
   /* height: 78%; */
   object-fit: contain;
-  image-rendering: pixelated;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
 }
 
@@ -601,7 +600,6 @@ onMounted(async () => {
 
 .catchable-list img {
   object-fit: contain;
-  image-rendering: pixelated;
 }
 
 .catchable-missing {
