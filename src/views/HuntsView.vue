@@ -1011,9 +1011,10 @@ button:focus-visible {
   z-index: 9999;
   box-sizing: border-box;
   display: grid;
-  width: 100vw;
-  min-height: 100vh;
-  height: 100dvh;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
   grid-template-rows: auto 1fr;
   align-content: stretch;
   justify-items: stretch;
@@ -1038,7 +1039,7 @@ button:focus-visible {
 .hunt-card:fullscreen .hunt-heading,
 .hunt-card.fullscreen-mode .hunt-heading {
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   gap: 24px;
 }
 
@@ -1650,6 +1651,7 @@ button:focus-visible {
 @media (max-height: 480px), (max-width: 320px) {
   .hunt-card:fullscreen,
   .hunt-card.fullscreen-mode {
+    inset: 0;
     grid-template-rows: 1fr;
     gap: 0;
     padding: 8px;
@@ -1661,7 +1663,9 @@ button:focus-visible {
   .hunt-card:fullscreen .counter-value span,
   .hunt-card.fullscreen-mode .counter-value span,
   .hunt-card:fullscreen .cumulative-chance,
-  .hunt-card.fullscreen-mode .cumulative-chance {
+  .hunt-card.fullscreen-mode .cumulative-chance,
+  .hunt-card:fullscreen .fullscreen-daily-stats,
+  .hunt-card.fullscreen-mode .fullscreen-daily-stats {
     display: none;
   }
 
