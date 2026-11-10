@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 interface Hunt {
   id: string
@@ -24,12 +24,107 @@ const pipHuntId = ref<string | null>(null)
 const pipWindow = ref<Window | null>(null)
 const pipCard = ref<HTMLElement | null>(null)
 const pipPlaceholder = ref<Comment | null>(null)
+const nativePipVideo = ref<HTMLVideoElement | null>(null)
+const nativePipCanvas = ref<HTMLCanvasElement | null>(null)
+const nativePipHuntId = ref<string | null>(null)
+const screenWakeLock = ref<WakeLockSentinel | null>(null)
+let wakeLockRequestId = 0
 
 type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
 }
 
 const totalResets = computed(() => hunts.value.reduce((total, hunt) => total + hunt.resets, 0))
+
+const drawNativePipFrame = (hunt: Hunt) => {
+  const canvas = nativePipCanvas.value
+  const context = canvas?.getContext('2d')
+  if (!canvas || !context) throw new Error('Unable to render the hunt for Picture-in-Picture.')
+
+  const width = canvas.width
+  const center = width / 2
+  context.fillStyle = '#000'
+  context.fillRect(0, 0, width, canvas.height)
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillStyle = '#fff'
+
+  let titleSize = 46
+  context.font = `700 ${titleSize}px system-ui, sans-serif`
+  while (titleSize > 24 && context.measureText(hunt.target).width > width - 64) {
+    titleSize -= 2
+    context.font = `700 ${titleSize}px system-ui, sans-serif`
+  }
+  context.fillText(hunt.target, center, 92, width - 64)
+
+  const count = hunt.resets.toLocaleString()
+  let countSize = 190
+  context.font = `900 ${countSize}px system-ui, sans-serif`
+  while (countSize > 48 && context.measureText(count).width > width - 64) {
+    countSize -= 4
+    context.font = `900 ${countSize}px system-ui, sans-serif`
+  }
+  context.fillText(count, center, 260, width - 64)
+
+  context.fillStyle = 'rgba(255,255,255,0.65)'
+  context.font = '700 28px system-ui, sans-serif'
+  context.fillText('ENCOUNTERS', center, 365)
+}
+
+const cleanupNativeVideoPip = (exitPip = false) => {
+  const video = nativePipVideo.value
+  if (video && exitPip && document.pictureInPictureElement === video) {
+    void document.exitPictureInPicture().catch((err: unknown) => {
+      error.value = `Unable to close Picture-in-Picture: ${err instanceof Error ? err.message : String(err)}`
+    })
+  }
+
+  video?.pause()
+  if (video) video.srcObject = null
+  video?.remove()
+  nativePipCanvas.value = null
+  nativePipVideo.value = null
+  nativePipHuntId.value = null
+  pipHuntId.value = null
+}
+
+const openNativeVideoPip = async (hunt: Hunt) => {
+  if (!document.pictureInPictureEnabled || !('requestPictureInPicture' in HTMLVideoElement.prototype)) {
+    error.value = 'Native video Picture-in-Picture is not supported by this browser.'
+    return
+  }
+
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = 720
+    canvas.height = 480
+    nativePipCanvas.value = canvas
+    drawNativePipFrame(hunt)
+
+    const video = document.createElement('video')
+    video.muted = true
+    video.playsInline = true
+    video.srcObject = canvas.captureStream(1)
+    video.style.cssText = 'position:fixed;width:1px;height:1px;left:0;bottom:0;opacity:0.01;pointer-events:none;'
+    video.addEventListener('leavepictureinpicture', () => cleanupNativeVideoPip(), { once: true })
+    document.body.append(video)
+    nativePipVideo.value = video
+    nativePipHuntId.value = hunt.id
+
+    await video.play()
+    await video.requestPictureInPicture()
+    pipHuntId.value = hunt.id
+    error.value = ''
+  } catch (err) {
+    cleanupNativeVideoPip()
+    error.value = `Unable to open native Picture-in-Picture: ${err instanceof Error ? err.message : String(err)}`
+  }
+}
+
+watch(hunts, () => {
+  const hunt = hunts.value.find((current) => current.id === nativePipHuntId.value)
+  if (hunt && nativePipCanvas.value) drawNativePipFrame(hunt)
+})
 
 const isHunt = (value: unknown): value is Hunt =>
   typeof value === 'object'
@@ -149,10 +244,54 @@ const toggleHuntCompleted = (hunt: Hunt) => {
   ))
 }
 
+const syncScreenWakeLock = async () => {
+  const requestId = ++wakeLockRequestId
+  if (!fullscreenHuntId.value) {
+    const activeWakeLock = screenWakeLock.value
+    screenWakeLock.value = null
+    if (activeWakeLock && !activeWakeLock.released) {
+      try {
+        await activeWakeLock.release()
+      } catch (err) {
+        error.value = `Unable to release the screen wake lock: ${err instanceof Error ? err.message : String(err)}`
+      }
+    }
+    return
+  }
+
+  if (document.visibilityState !== 'visible' || screenWakeLock.value) return
+
+  if (!('wakeLock' in navigator)) {
+    error.value = 'Keeping the screen awake is not supported by this browser.'
+    return
+  }
+
+  try {
+    const wakeLock = await navigator.wakeLock.request('screen')
+    if (requestId !== wakeLockRequestId || !fullscreenHuntId.value || document.visibilityState !== 'visible') {
+      await wakeLock.release()
+      return
+    }
+
+    screenWakeLock.value = wakeLock
+    wakeLock.addEventListener('release', () => {
+      if (screenWakeLock.value === wakeLock) screenWakeLock.value = null
+      if (fullscreenHuntId.value && document.visibilityState === 'visible') {
+        void syncScreenWakeLock()
+      }
+    }, { once: true })
+  } catch (err) {
+    if (requestId === wakeLockRequestId && fullscreenHuntId.value) {
+      error.value = `Unable to keep the screen awake: ${err instanceof Error ? err.message : String(err)}`
+    }
+  }
+}
+
 const updateFullscreenState = () => {
   fullscreenHuntId.value = document.fullscreenElement
     ?.closest<HTMLElement>('.hunt-card')
     ?.dataset.huntId ?? null
+  void syncScreenWakeLock()
 }
 
 const toggleFullscreen = async (event: MouseEvent) => {
@@ -167,13 +306,13 @@ const toggleFullscreen = async (event: MouseEvent) => {
     return
   }
 
+  error.value = ''
   try {
     if (document.fullscreenElement === card) {
       await document.exitFullscreen()
     } else {
       await card.requestFullscreen()
     }
-    error.value = ''
   } catch (err) {
     error.value = `Unable to change fullscreen mode: ${err instanceof Error ? err.message : String(err)}`
   }
@@ -209,7 +348,14 @@ const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
   const api = (window as Window & {
     documentPictureInPicture?: DocumentPictureInPictureApi
   }).documentPictureInPicture
-  
+
+  const supportsNativeVideoPip = document.pictureInPictureEnabled
+    && 'requestPictureInPicture' in HTMLVideoElement.prototype
+  if (supportsNativeVideoPip && (/Android/i.test(navigator.userAgent) || !api)) {
+    await openNativeVideoPip(hunt)
+    return
+  }
+
   if (!api) {
     error.value = 'Picture-in-Picture is not supported by this browser.'
     return
@@ -250,7 +396,13 @@ const openPictureInPicture = async (event: MouseEvent, hunt: Hunt) => {
   }
 }
 
-const closePictureInPicture = () => restorePipCard(true)
+const closePictureInPicture = () => {
+  if (nativePipVideo.value) {
+    cleanupNativeVideoPip(true)
+    return
+  }
+  restorePipCard(true)
+}
 
 const removeHunt = (hunt: Hunt) => {
   if (!window.confirm(`Remove the ${hunt.target} hunt and its reset count?`)) return
@@ -259,6 +411,7 @@ const removeHunt = (hunt: Hunt) => {
 
 onMounted(() => {
   document.addEventListener('fullscreenchange', updateFullscreenState)
+  document.addEventListener('visibilitychange', syncScreenWakeLock)
 
   try {
     const storedValue = localStorage.getItem(STORAGE_KEY)
@@ -277,7 +430,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', updateFullscreenState)
+  document.removeEventListener('visibilitychange', syncScreenWakeLock)
+  fullscreenHuntId.value = null
+  cleanupNativeVideoPip(true)
   restorePipCard(true)
+  void syncScreenWakeLock()
 })
 </script>
 
@@ -319,7 +476,7 @@ onUnmounted(() => {
         v-for="hunt in hunts"
         :key="hunt.id"
         class="hunt-card"
-        :class="{ completed: hunt.completed }"
+        :class="{ completed: hunt.completed, 'native-pip-active': nativePipHuntId === hunt.id }"
         :data-hunt-id="hunt.id"
         @click="handleHuntCardClick(hunt, $event)"
       >
@@ -1012,7 +1169,29 @@ button:focus-visible {
   cursor: pointer;
 }
 
+.hunt-card.native-pip-active .pip-exit-button {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+}
+
+.hunt-card.native-pip-active .hunt-actions > :not(.pip-exit-button) {
+  display: none;
+}
+
 .hunt-card.pip-active .pip-exit-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hunt-card.native-pip-active .pip-exit-button svg {
   width: 18px;
   height: 18px;
 }
