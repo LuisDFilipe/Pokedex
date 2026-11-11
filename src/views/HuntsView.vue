@@ -12,6 +12,7 @@ interface Hunt {
   updatedAt?: string
   dailyResets?: Record<string, number>
   odds?: number
+  incrementBy?: number
   completed?: boolean
   completedAt?: string
 }
@@ -23,13 +24,14 @@ const getLocalDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 const hunts = ref<Hunt[]>([])
+const importFile = ref<HTMLInputElement | null>(null)
 const pokemonEntries = ref<PokemonEntry[]>([])
 const spritesByHuntName = ref<Record<string, string>>({})
 const todayKey = ref(getLocalDateKey(new Date()))
 const target = ref('')
 const error = ref('')
 const editingHuntId = ref<string | null>(null)
-const oddsDraft = ref({ target: '', sprite: '', odds: '', resets: '', startDate: '' })
+const oddsDraft = ref({ target: '', sprite: '', odds: '', resets: '', incrementBy: '', startDate: '' })
 const fullscreenHuntId = ref<string | null>(null)
 const pipHuntId = ref<string | null>(null)
 const pipWindow = ref<Window | null>(null)
@@ -109,6 +111,62 @@ type DocumentPictureInPictureApi = {
 }
 
 const totalResets = computed(() => hunts.value.reduce((total, hunt) => total + hunt.resets, 0))
+const exportHunts = () => {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    hunts: hunts.value,
+  }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  const dateStamp = getLocalDateKey(new Date())
+
+  link.href = url
+  link.download = `pokedex-hunts-${dateStamp}.json`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+const importHunts = () => importFile.value?.click()
+
+const handleHuntsImport = async (event: Event) => {
+  const input = event.currentTarget
+  if (!(input instanceof HTMLInputElement)) return
+
+  const file = input.files?.item(0)
+  if (!file) return
+
+  try {
+    const parsed: unknown = JSON.parse(await file.text())
+    if (
+      typeof parsed !== 'object'
+      || parsed === null
+      || !('exportedAt' in parsed)
+      || typeof parsed.exportedAt !== 'string'
+      || !('hunts' in parsed)
+      || !Array.isArray(parsed.hunts)
+      || !parsed.hunts.every(isHunt)
+    ) {
+      throw new Error('The selected file is not a valid hunt export.')
+    }
+
+    const importedHunts = parsed.hunts
+    if (new Set(importedHunts.map((hunt) => hunt.id)).size !== importedHunts.length) {
+      throw new Error('The hunt export contains duplicate hunt IDs.')
+    }
+    if (!window.confirm(`Replace your current hunts with ${importedHunts.length} imported hunts?`)) return
+
+    if (saveHunts(importedHunts)) {
+      editingHuntId.value = null
+      oddsDraft.value = { target: '', sprite: '', odds: '', resets: '', incrementBy: '', startDate: '' }
+    }
+  } catch (err) {
+    error.value = `Unable to import hunts: ${err instanceof Error ? err.message : String(err)}`
+  } finally {
+    input.value = ''
+  }
+}
+
 const getAverageEncountersPerDay = (hunt: Hunt) => {
   const startedAt = new Date(hunt.createdAt)
   if (Number.isNaN(startedAt.getTime())) return 0
@@ -159,6 +217,8 @@ const isHunt = (value: unknown): value is Hunt =>
         && count >= 0)))
   && (!('odds' in value)
     || (typeof value.odds === 'number' && Number.isSafeInteger(value.odds) && value.odds > 0))
+  && (!('incrementBy' in value)
+    || (typeof value.incrementBy === 'number' && Number.isSafeInteger(value.incrementBy) && value.incrementBy > 0))
   && (!('completed' in value) || typeof value.completed === 'boolean')
   && (!('completedAt' in value) || typeof value.completedAt === 'string')
 
@@ -175,6 +235,7 @@ const saveHunts = (updatedHunts: Hunt[]) => {
       || hunt.resets !== previous.resets
       || JSON.stringify(hunt.dailyResets ?? {}) !== JSON.stringify(previous.dailyResets ?? {})
       || hunt.odds !== previous.odds
+      || hunt.incrementBy !== previous.incrementBy
       || hunt.completed !== previous.completed
       || hunt.completedAt !== previous.completedAt
 
@@ -203,6 +264,7 @@ const addHunt = () => {
     createdAt: new Date().toISOString(),
     dailyResets: {},
     odds: DEFAULT_ODDS,
+    incrementBy: 1,
   }
 
   if (saveHunts([newHunt, ...hunts.value])) {
@@ -241,6 +303,7 @@ const editOdds = (hunt: Hunt) => {
     sprite: hunt.sprite ?? '',
     odds: String(hunt.odds ?? DEFAULT_ODDS),
     resets: String(hunt.resets),
+    incrementBy: String(hunt.incrementBy ?? 1),
     startDate: getLocalDateKey(new Date(hunt.createdAt)),
   }
   error.value = ''
@@ -248,13 +311,14 @@ const editOdds = (hunt: Hunt) => {
 
 const cancelOddsEdit = () => {
   editingHuntId.value = null
-  oddsDraft.value = { target: '', sprite: '', odds: '', resets: '', startDate: '' }
+  oddsDraft.value = { target: '', sprite: '', odds: '', resets: '', incrementBy: '', startDate: '' }
 }
 
 const saveHuntEdit = (hunt: Hunt) => {
   const huntTarget = oddsDraft.value.target.trim()
   const oddsInput = String(oddsDraft.value.odds).trim()
   const resetsInput = String(oddsDraft.value.resets).trim()
+  const incrementByInput = String(oddsDraft.value.incrementBy).trim()
   const startDateInput = oddsDraft.value.startDate
   const sprite = oddsDraft.value.sprite === NO_SPRITE
     ? null
@@ -264,6 +328,7 @@ const saveHuntEdit = (hunt: Hunt) => {
       : undefined
   const odds = Number(oddsInput)
   const resets = Number(resetsInput)
+  const incrementBy = Number(incrementByInput)
   if (!huntTarget) {
     error.value = 'Target\'s name cannot be empty.'
     return
@@ -278,6 +343,10 @@ const saveHuntEdit = (hunt: Hunt) => {
   }
   if (!resetsInput || !Number.isSafeInteger(resets) || resets < 0) {
     error.value = 'Encounters must be a whole number greater than or equal to 0.'
+    return
+  }
+  if (!incrementByInput || !Number.isSafeInteger(incrementBy) || incrementBy < 1) {
+    error.value = 'Increase amount must be a whole number greater than 0.'
     return
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startDateInput)) {
@@ -300,7 +369,15 @@ const saveHuntEdit = (hunt: Hunt) => {
 
   const updatedHunts = hunts.value.map((current) =>
     current.id === hunt.id
-      ? { ...current, target: huntTarget, sprite, odds, resets, createdAt: startDate.toISOString() }
+      ? {
+          ...current,
+          target: huntTarget,
+          sprite,
+          odds,
+          resets,
+          incrementBy,
+          createdAt: startDate.toISOString(),
+        }
       : current,
   )
   if (saveHunts(updatedHunts)) cancelOddsEdit()
@@ -403,7 +480,7 @@ const handleHuntCardClick = (hunt: Hunt, event: MouseEvent) => {
   const target = event.target
   if (target instanceof Element && target.closest('.fullscreen-button, .pip-exit-button')) return
 
-  changeResets(hunt, 1)
+  changeResets(hunt, hunt.incrementBy ?? 1)
 }
 
 const restorePipCard = (closeWindow = false) => {
@@ -521,6 +598,21 @@ onUnmounted(() => {
       <div>
         <p class="eyebrow">Hunt tracker</p>
         <h2>Every reset brings you closer</h2>
+      </div>
+      <div class="hunt-data-actions">
+        <button v-if="hunts.length" type="button" class="export-hunts-button" @click="exportHunts">
+          Export hunts
+        </button>
+        <button type="button" class="import-hunts-button" @click="importHunts">
+          Import hunts
+        </button>
+        <input
+          ref="importFile"
+          class="import-hunts-input"
+          type="file"
+          accept="application/json,.json"
+          @change="handleHuntsImport"
+        >
       </div>
     </header>
 
@@ -833,6 +925,18 @@ onUnmounted(() => {
                 required
               >
             </label>
+            <label :for="`increment-by-${hunt.id}`">
+              <span>Increase by</span>
+              <input
+                :id="`increment-by-${hunt.id}`"
+                v-model="oddsDraft.incrementBy"
+                type="number"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                required
+              >
+            </label>
           </div>
           <div class="editor-actions">
             <button type="button" class="cancel-button" @click="cancelOddsEdit">Cancel</button>
@@ -865,10 +969,10 @@ onUnmounted(() => {
               :class="{ 'fullscreen-count': fullscreenHuntId === hunt.id, 'pip-count': pipHuntId === hunt.id }"
               :role="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? 'button' : undefined"
               :tabindex="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? 0 : undefined"
-              :aria-label="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? `Add one encounter to ${hunt.target}` : undefined"
+              :aria-label="fullscreenHuntId === hunt.id || pipHuntId === hunt.id ? `Add ${hunt.incrementBy ?? 1} encounters to ${hunt.target}` : undefined"
               aria-live="polite"
-              @keydown.enter.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, 1)"
-              @keydown.space.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, 1)"
+              @keydown.enter.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, hunt.incrementBy ?? 1)"
+              @keydown.space.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, hunt.incrementBy ?? 1)"
             >
               <strong>{{ hunt.resets.toLocaleString() }}</strong>
               <span>encounters</span>
@@ -877,8 +981,8 @@ onUnmounted(() => {
               v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               type="button"
               class="counter-button increment"
-              :aria-label="`Add a reset to ${hunt.target}`"
-              @click="changeResets(hunt, 1)"
+              :aria-label="`Add ${hunt.incrementBy ?? 1} encounters to ${hunt.target}`"
+              @click="changeResets(hunt, hunt.incrementBy ?? 1)"
             >
               <span class="increment-glyph" aria-hidden="true">+</span>
             </button>
@@ -886,6 +990,20 @@ onUnmounted(() => {
           <p v-if="!hunt.completed" class="cumulative-chance">
             Cumulative chance <strong>{{ cumulativeChance(hunt).toLocaleString(undefined, { maximumFractionDigits: 2 }) }}%</strong>
           </p>
+          <div
+            v-if="fullscreenHuntId === hunt.id && !hunt.completed"
+            class="fullscreen-chance-progress"
+            role="progressbar"
+            aria-label="Cumulative chance"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-valuenow="cumulativeChance(hunt)"
+          >
+            <div
+              class="fullscreen-chance-progress-fill"
+              :style="{ width: `${Math.min(100, Math.max(0, cumulativeChance(hunt)))}%` }"
+            ></div>
+          </div>
           <div v-if="fullscreenHuntId === hunt.id" class="fullscreen-daily-stats">
             <div>
               <span>Encounters today</span>
@@ -942,6 +1060,44 @@ onUnmounted(() => {
   margin: 8px 0;
   font-size: clamp(1.8rem, 3vw, 2.8rem);
   font-weight: 800;
+}
+
+.hunt-data-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.export-hunts-button,
+.import-hunts-button {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 207, 92, 0.45);
+  border-radius: 10px;
+  background: rgba(255, 207, 92, 0.1);
+  color: #ffcf5c;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.import-hunts-button {
+  border-color: rgba(183, 216, 255, 0.45);
+  background: rgba(183, 216, 255, 0.1);
+  color: #b7d8ff;
+}
+
+.export-hunts-button:hover {
+  background: rgba(255, 207, 92, 0.18);
+}
+
+.import-hunts-button:hover {
+  background: rgba(183, 216, 255, 0.18);
+}
+
+.import-hunts-input {
+  display: none;
 }
 
 .hero-copy,
@@ -1259,7 +1415,7 @@ button:focus-visible {
 .hunt-card:fullscreen .counter-value strong,
 .hunt-card.fullscreen-mode .counter-value strong {
   max-width: 100%;
-  font-size: clamp(2rem, min(27vw, 42vh), 12rem);
+  font-size: clamp(2rem, min(25vw, 40vh), 11rem);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1283,6 +1439,24 @@ button:focus-visible {
 .hunt-card:fullscreen .cumulative-chance strong,
 .hunt-card.fullscreen-mode .cumulative-chance strong {
   font-size: 1.3em;
+}
+
+.fullscreen-chance-progress {
+  width: min(100%, 620px);
+  height: clamp(10px, 1.5vh, 18px);
+  justify-self: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 207, 92, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.fullscreen-chance-progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d94343, #ffcf5c);
+  transition: width 0.35s ease;
 }
 
 .fullscreen-daily-stats {
@@ -1725,6 +1899,14 @@ button:focus-visible {
     padding: 20px;
   }
 
+  .hunt-data-actions {
+    width: 100%;
+  }
+
+  .hunt-data-actions button {
+    flex: 1;
+  }
+
   .total-card {
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -1828,6 +2010,8 @@ button:focus-visible {
   .hunt-card.fullscreen-mode .counter-value span,
   .hunt-card:fullscreen .cumulative-chance,
   .hunt-card.fullscreen-mode .cumulative-chance,
+  .hunt-card:fullscreen .fullscreen-chance-progress,
+  .hunt-card.fullscreen-mode .fullscreen-chance-progress,
   .hunt-card:fullscreen .fullscreen-daily-stats,
   .hunt-card.fullscreen-mode .fullscreen-daily-stats {
     display: none;
