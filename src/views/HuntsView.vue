@@ -110,6 +110,9 @@ type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
 }
 
+const formatNumber = (value: number, maximumFractionDigits?: number) =>
+  value.toLocaleString('fr-FR', maximumFractionDigits === undefined ? undefined : { maximumFractionDigits })
+
 const exportHunts = () => {
   const payload = {
     exportedAt: new Date().toISOString(),
@@ -166,7 +169,7 @@ const handleHuntsImport = async (event: Event) => {
   }
 }
 
-const getAverageEncountersPerDay = (hunt: Hunt) => {
+const getAveragePeriodDays = (hunt: Hunt) => {
   const startedAt = new Date(hunt.createdAt)
   if (Number.isNaN(startedAt.getTime())) return 0
 
@@ -177,8 +180,11 @@ const getAverageEncountersPerDay = (hunt: Hunt) => {
 
   const startDay = Date.UTC(startedAt.getFullYear(), startedAt.getMonth(), startedAt.getDate())
   const endDay = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
-  const activeDays = Math.max(1, Math.floor((endDay - startDay) / 86_400_000) + 1)
-  return hunt.resets / activeDays
+  return Math.max(1, Math.floor((endDay - startDay) / 86_400_000) + 1)
+}
+const getAverageEncountersPerDay = (hunt: Hunt) => {
+  const days = getAveragePeriodDays(hunt)
+  return days ? hunt.resets / days : 0
 }
 const sortedHunts = computed(() =>
   [...hunts.value].sort((a, b) => {
@@ -851,7 +857,7 @@ onUnmounted(() => {
             </template>
           </p>
           <p v-if="!hunt.completed && editingHuntId !== hunt.id" class="odds-summary">
-            Odds: 1 in {{ (hunt.odds ?? DEFAULT_ODDS).toLocaleString() }}
+            Odds: 1 in {{ formatNumber(hunt.odds ?? DEFAULT_ODDS) }}
           </p>
         </div>
 
@@ -959,7 +965,7 @@ onUnmounted(() => {
               v-if="!hunt.completed && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
               class="counter-value"
             >
-              <strong>{{ hunt.resets.toLocaleString() }}</strong>
+              <strong>{{ formatNumber(hunt.resets) }}</strong>
               <span>encounters</span>
             </div>
             <div
@@ -973,7 +979,7 @@ onUnmounted(() => {
               @keydown.enter.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, hunt.incrementBy ?? 1)"
               @keydown.space.prevent="(fullscreenHuntId === hunt.id || pipHuntId === hunt.id) && changeResets(hunt, hunt.incrementBy ?? 1)"
             >
-              <strong>{{ hunt.resets.toLocaleString() }}</strong>
+              <strong>{{ formatNumber(hunt.resets) }}</strong>
               <span>encounters</span>
             </div>
             <button
@@ -987,7 +993,7 @@ onUnmounted(() => {
             </button>
           </div>
           <p v-if="!hunt.completed" class="cumulative-chance">
-            Cumulative chance <strong>{{ cumulativeChance(hunt).toLocaleString(undefined, { maximumFractionDigits: 2 }) }}%</strong>
+            Cumulative chance <strong>{{ formatNumber(cumulativeChance(hunt), 2) }}%</strong>
           </p>
           <div
             v-if="fullscreenHuntId === hunt.id && !hunt.completed"
@@ -1005,12 +1011,14 @@ onUnmounted(() => {
           </div>
           <div v-if="fullscreenHuntId === hunt.id" class="fullscreen-daily-stats">
             <div>
-              <span>Encounters today</span>
-              <strong>{{ (hunt.dailyResets?.[todayKey] ?? 0).toLocaleString() }}</strong>
+              <span>Encounters</span>
+              <small>today</small>
+              <strong>{{ formatNumber(hunt.dailyResets?.[todayKey] ?? 0) }}</strong>
             </div>
             <div>
               <span>Average per day</span>
-              <strong>{{ getAverageEncountersPerDay(hunt).toLocaleString(undefined, { maximumFractionDigits: 1 }) }}</strong>
+              <small>{{ getAveragePeriodDays(hunt) }} days</small>
+              <strong>{{ formatNumber(getAverageEncountersPerDay(hunt), 1) }}</strong>
             </div>
           </div>
         </div>
