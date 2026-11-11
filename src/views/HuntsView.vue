@@ -34,6 +34,7 @@ const error = ref('')
 const editingHuntId = ref<string | null>(null)
 const oddsDraft = ref({ target: '', sprite: '', odds: '', resets: '', incrementBy: '', startDate: '' })
 const fullscreenHuntId = ref<string | null>(null)
+const recentFullscreenClicks = ref<Record<string, string[]>>({})
 const pipHuntId = ref<string | null>(null)
 const pipWindow = ref<Window | null>(null)
 const pipCard = ref<HTMLElement | null>(null)
@@ -513,6 +514,12 @@ const handleHuntCardClick = (hunt: Hunt, event: MouseEvent) => {
   if (target instanceof Element && target.closest('.fullscreen-button, .pip-exit-button')) return
 
   changeResets(hunt, hunt.incrementBy ?? 1)
+  if (fullscreenHuntId.value === hunt.id) {
+    recentFullscreenClicks.value[hunt.id] = [
+      new Date().toISOString(),
+      ...(recentFullscreenClicks.value[hunt.id] ?? []),
+    ].slice(0, 3)
+  }
 }
 
 const restorePipCard = (closeWindow = false) => {
@@ -1077,6 +1084,17 @@ onUnmounted(() => {
               <strong>{{ formatNumber(getAverageEncountersPerDay(hunt), 1) }}</strong>
             </div>
           </div>
+          <div
+            v-if="fullscreenHuntId === hunt.id && recentFullscreenClicks[hunt.id]?.length"
+            class="fullscreen-click-history"
+            aria-label="Recent fullscreen clicks"
+          >
+            <ol>
+              <li v-for="(timestamp, index) in recentFullscreenClicks[hunt.id]" :key="index">
+                {{ new Date(timestamp).toLocaleString() }}
+              </li>
+            </ol>
+          </div>
         </div>
       </article>
     </div>
@@ -1544,6 +1562,18 @@ button:focus-visible {
   color: #ffcf5c;
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-variant-numeric: tabular-nums;
+}
+
+.fullscreen-click-history ol {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+  font-variant-numeric: tabular-nums;
+  list-style: none;
 }
 
 .hunt-card.pip-active {
@@ -2068,7 +2098,9 @@ button:focus-visible {
   .hunt-card:fullscreen .fullscreen-chance-progress,
   .hunt-card.fullscreen-mode .fullscreen-chance-progress,
   .hunt-card:fullscreen .fullscreen-daily-stats,
-  .hunt-card.fullscreen-mode .fullscreen-daily-stats {
+  .hunt-card.fullscreen-mode .fullscreen-daily-stats,
+  .hunt-card:fullscreen .fullscreen-click-history,
+  .hunt-card.fullscreen-mode .fullscreen-click-history {
     display: none;
   }
 
