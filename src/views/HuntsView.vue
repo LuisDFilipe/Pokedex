@@ -110,7 +110,6 @@ type DocumentPictureInPictureApi = {
   requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>
 }
 
-const totalResets = computed(() => hunts.value.reduce((total, hunt) => total + hunt.resets, 0))
 const exportHunts = () => {
   const payload = {
     exportedAt: new Date().toISOString(),
@@ -1047,8 +1046,7 @@ onUnmounted(() => {
     linear-gradient(135deg, rgba(255, 71, 71, 0.24), rgba(22, 22, 22, 0.94));
 }
 
-.eyebrow,
-.hunt-kicker {
+.eyebrow {
   margin: 0;
   color: #ffb0b0;
   font-size: 0.82rem;
@@ -1100,39 +1098,17 @@ onUnmounted(() => {
   display: none;
 }
 
-.hero-copy,
 .started-date,
 .empty-state p {
   margin: 0;
   color: rgba(255, 255, 255, 0.7);
 }
 
-.total-card,
 .panel,
 .hunt-card {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   background: rgba(14, 14, 14, 0.92);
-}
-
-.total-card {
-  display: grid;
-  flex: 0 0 auto;
-  gap: 4px;
-  min-width: 150px;
-  padding: 16px 20px;
-  text-align: center;
-}
-
-.total-label,
-.total-helper {
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.88rem;
-}
-
-.total-card strong {
-  color: #ffcf5c;
-  font-size: 2rem;
 }
 
 .panel {
@@ -1905,17 +1881,6 @@ button:focus-visible {
 
   .hunt-data-actions button {
     flex: 1;
-  }
-
-  .total-card {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    text-align: left;
-  }
-
-  .total-card strong {
-    grid-column: 2;
-    grid-row: 1 / span 2;
   }
 
   .add-controls {
