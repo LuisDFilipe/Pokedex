@@ -10,6 +10,7 @@ interface Hunt {
   resets: number
   createdAt: string
   updatedAt?: string
+  sortOrder?: number
   dailyResets?: Record<string, number>
   odds?: number
   incrementBy?: number
@@ -169,31 +170,39 @@ const handleHuntsImport = async (event: Event) => {
   }
 }
 
-const getAveragePeriodDays = (hunt: Hunt) => {
+const getEncountersBeforeToday = (hunt: Hunt) => {
   const startedAt = new Date(hunt.createdAt)
-  if (Number.isNaN(startedAt.getTime())) return 0
+  if (Number.isNaN(startedAt.getTime())) return []
 
-  const endDate = hunt.completed && hunt.completedAt
-    ? new Date(hunt.completedAt)
-    : new Date(`${todayKey.value}T00:00:00`)
-  if (Number.isNaN(endDate.getTime())) return 0
+  const startDateKey = getLocalDateKey(startedAt)
+  const completedAt = hunt.completed && hunt.completedAt ? new Date(hunt.completedAt) : null
+  const completedDateKey = completedAt && !Number.isNaN(completedAt.getTime())
+    ? getLocalDateKey(completedAt)
+    : undefined
 
-  const startDay = Date.UTC(startedAt.getFullYear(), startedAt.getMonth(), startedAt.getDate())
-  const endDay = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
-  return Math.max(1, Math.floor((endDay - startDay) / 86_400_000) + 1)
+  return Object.entries(hunt.dailyResets ?? {}).filter(([date, count]) =>
+    date >= startDateKey
+    && date <= todayKey.value
+    && (!completedDateKey || date <= completedDateKey)
+    && count > 0,
+  )
 }
+const getAveragePeriodDays = (hunt: Hunt) => getEncountersBeforeToday(hunt).length
 const getAverageEncountersPerDay = (hunt: Hunt) => {
-  const days = getAveragePeriodDays(hunt)
-  return days ? hunt.resets / days : 0
-}
-const sortedHunts = computed(() =>
-  [...hunts.value].sort((a, b) => {
-    if (Boolean(a.completed) !== Boolean(b.completed)) {
-      return Number(Boolean(a.completed)) - Number(Boolean(b.completed))
-    }
+  const encounterDays = getEncountersBeforeToday(hunt)
+  const daysWithEncounters = encounterDays.length
+  if (!daysWithEncounters) return 0
 
-    return Date.parse(b.updatedAt ?? b.createdAt) - Date.parse(a.updatedAt ?? a.createdAt)
-  }),
+  const encountersBeforeToday = encounterDays.reduce((total, [, count]) => total + count, 0)
+  return encountersBeforeToday / daysWithEncounters
+}
+const hasManualHuntOrder = (items: Hunt[]) =>
+  items.length > 0 && items.every((hunt) => Number.isSafeInteger(hunt.sortOrder))
+
+const sortedHunts = computed(() =>
+  hasManualHuntOrder(hunts.value)
+    ? [...hunts.value].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    : [...hunts.value].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
 )
 
 const isHunt = (value: unknown): value is Hunt =>
@@ -211,6 +220,7 @@ const isHunt = (value: unknown): value is Hunt =>
   && 'createdAt' in value
   && typeof value.createdAt === 'string'
   && (!('updatedAt' in value) || typeof value.updatedAt === 'string')
+  && (!('sortOrder' in value) || (typeof value.sortOrder === 'number' && Number.isSafeInteger(value.sortOrder)))
   && (!('dailyResets' in value)
     || (typeof value.dailyResets === 'object'
       && value.dailyResets !== null
@@ -272,9 +282,26 @@ const addHunt = () => {
     incrementBy: 1,
   }
 
-  if (saveHunts([newHunt, ...hunts.value])) {
+  const updatedHunts = hasManualHuntOrder(hunts.value)
+    ? [newHunt, ...sortedHunts.value].map((hunt, sortOrder) => ({ ...hunt, sortOrder }))
+    : [newHunt, ...hunts.value]
+  if (saveHunts(updatedHunts)) {
     target.value = ''
   }
+}
+
+const moveHunt = (hunt: Hunt, direction: -1 | 1) => {
+  const reorderedHunts = [...sortedHunts.value]
+  const currentIndex = reorderedHunts.findIndex((current) => current.id === hunt.id)
+  const nextIndex = currentIndex + direction
+  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= reorderedHunts.length) return
+
+  const currentHunt = reorderedHunts[currentIndex]
+  const nextHunt = reorderedHunts[nextIndex]
+  if (!currentHunt || !nextHunt) return
+  reorderedHunts[currentIndex] = nextHunt
+  reorderedHunts[nextIndex] = currentHunt
+  saveHunts(reorderedHunts.map((current, sortOrder) => ({ ...current, sortOrder })))
 }
 
 const changeResets = (hunt: Hunt, amount: number) => {
@@ -640,7 +667,7 @@ onUnmounted(() => {
 
     <div v-if="hunts.length" class="hunt-grid">
       <article
-        v-for="hunt in sortedHunts"
+        v-for="(hunt, huntIndex) in sortedHunts"
         :key="hunt.id"
         class="hunt-card"
         :class="{ completed: hunt.completed, 'fullscreen-mode': fullscreenHuntId === hunt.id }"
@@ -844,6 +871,35 @@ onUnmounted(() => {
                 <path d="M10 11v5M14 11v5" />
               </svg>
             </button>
+            <div
+              v-if="editingHuntId !== hunt.id && fullscreenHuntId !== hunt.id && pipHuntId !== hunt.id"
+              class="hunt-reorder-actions"
+            >
+              <button
+                type="button"
+                class="move-hunt-button"
+                :aria-label="`Move ${hunt.target} hunt up`"
+                title="Move hunt up"
+                :disabled="huntIndex === 0"
+                @click.stop="moveHunt(hunt, -1)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="move-hunt-button"
+                :aria-label="`Move ${hunt.target} hunt down`"
+                title="Move hunt down"
+                :disabled="huntIndex === sortedHunts.length - 1"
+                @click.stop="moveHunt(hunt, 1)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1159,6 +1215,7 @@ button:focus-visible {
 .edit-button,
 .save-edit-button,
 .popout-button,
+.move-hunt-button,
 .remove-button,
 .cancel-button,
 .counter-button {
@@ -1173,6 +1230,7 @@ button:focus-visible {
 .edit-button,
 .save-edit-button,
 .popout-button,
+.move-hunt-button,
 .remove-button {
   padding: 7px 10px;
   background: transparent;
@@ -1189,6 +1247,7 @@ button:focus-visible {
 .edit-button,
 .save-edit-button,
 .popout-button,
+.move-hunt-button,
 .fullscreen-button,
 .complete-button,
 .reopen-button,
@@ -1206,6 +1265,7 @@ button:focus-visible {
 .edit-button svg,
 .save-edit-button svg,
 .popout-button svg,
+.move-hunt-button svg,
 .fullscreen-button svg,
 .complete-button svg,
 .reopen-button svg,
@@ -1222,6 +1282,22 @@ button:focus-visible {
 
 .save-edit-button:hover {
   background: rgba(122, 199, 76, 0.14);
+}
+
+.move-hunt-button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.move-hunt-button:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.move-hunt-button:disabled {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
 }
 
 .popout-button {
@@ -1590,6 +1666,12 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.hunt-reorder-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
 }
 
 .hunt-heading h3 {
